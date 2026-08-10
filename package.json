@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "remotion studio",
     "studio": "remotion studio",
-    "render": "remotion render LiteratureQuiz out/literature-quiz.mp4",
+    "render": "node scripts/render-with-cover.mjs",
     "still": "remotion still LiteratureQuiz out/preview.png",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test tests/*.test.mjs",
     "upgrade": "remotion upgrade"

@@ -1,0 +1,24 @@
+{
+  "name": "cn-literature-quiz-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "视频号竖屏「中国文学常识选择题」短视频 - Remotion 模板（换题库即可批量复刻）",
+  "scripts": {
+    "dev": "remotion studio",
+    "studio": "remotion studio",
+    "render": "remotion render LiteratureQuiz out/literature-quiz.mp4",
+    "still": "remotion still LiteratureQuiz out/preview.png",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test tests/*.test.mjs",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.507",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.507"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}

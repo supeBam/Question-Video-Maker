@@ -1,0 +1,69 @@
+{
+  "meta": {
+    "series": "中国文学常识",
+    "episode": 1,
+    "episodeLabel": "第 01 期",
+    "hostTag": "@每日文学小测"
+  },
+  "timing": {
+    "fps": 30,
+    "introSeconds": 5,
+    "outroSeconds": 5,
+    "perQuestion": {
+      "presentSeconds": 2,
+      "countdownSeconds": 5,
+      "revealSeconds": 5.5
+    }
+  },
+  "intro": {
+    "kicker": "中国文学常识",
+    "title": "四道题\n看看你的文学功底",
+    "subtitle": "全部答对的，评论区扣个「6」",
+    "hint": "每题 5 秒作答"
+  },
+  "outro": {
+    "headline": "你答对了几题？",
+    "scoreHints": [
+      "1 题 · 再多读两页书",
+      "2-3 题 · 底子不错",
+      "4 题 · 学霸本霸"
+    ],
+    "cta": "点赞 + 关注",
+    "ctaSub": "每天一道文学常识题，明天见"
+  },
+  "bgm": {
+    "enabled": false,
+    "file": "assets/bgm.mp3",
+    "volume": 0.22
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "stem": "「先天下之忧而忧，后天下之乐而乐」\n出自下面哪一篇？",
+      "options": ["《岳阳楼记》", "《醉翁亭记》", "《滕王阁序》", "《赤壁赋》"],
+      "answerIndex": 0,
+      "explanation": "北宋范仲淹《岳阳楼记》名句。《醉翁亭记》为欧阳修所作。"
+    },
+    {
+      "id": "q2",
+      "stem": "被后人尊称为「诗圣」的唐代诗人是？",
+      "options": ["李白", "杜甫", "白居易", "王维"],
+      "answerIndex": 1,
+      "explanation": "杜甫沉郁顿挫，人称「诗圣」，其诗被誉为「诗史」；李白才是「诗仙」。"
+    },
+    {
+      "id": "q3",
+      "stem": "「路漫漫其修远兮，吾将上下而求索」\n的作者是？",
+      "options": ["屈原", "陶渊明", "曹操", "李商隐"],
+      "answerIndex": 0,
+      "explanation": "出自屈原《离骚》，我国古代最长的抒情诗，楚辞的代表作。"
+    },
+    {
+      "id": "q4",
+      "stem": "四大名著中，成书年代最晚的是？",
+      "options": ["《三国演义》", "《水浒传》", "《西游记》", "《红楼梦》"],
+      "answerIndex": 3,
+      "explanation": "《红楼梦》成书于清乾隆年间，其余三部均成书于明代。"
+    }
+  ]
+}

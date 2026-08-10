@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="360" viewBox="0 0 1080 360">
+  <defs>
+    <g id="ruyi">
+      <path d="M0 60 C0 26 26 0 60 0 C94 0 120 26 120 60 C120 82 104 98 84 98 C66 98 52 84 52 66 C52 52 62 42 74 42 C84 42 92 50 92 60"
+            fill="none" stroke="#E5B96B" stroke-width="6" stroke-linecap="round"/>
+      <path d="M120 60 C120 94 146 120 180 120 L240 120"
+            fill="none" stroke="#E5B96B" stroke-width="6" stroke-linecap="round"/>
+    </g>
+  </defs>
+  <g opacity="0.5">
+    <use href="#ruyi" x="20" y="40"/>
+    <use href="#ruyi" x="300" y="120"/>
+    <use href="#ruyi" x="580" y="30"/>
+    <use href="#ruyi" x="820" y="150"/>
+  </g>
+</svg>

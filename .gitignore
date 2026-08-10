@@ -1,0 +1,46 @@
+# 依赖与包管理器缓存
+node_modules/
+.pnp/
+.pnp.js
+.npm/
+.yarn/
+.yarn-cache/
+
+# 构建、渲染与临时输出
+out/
+dist/
+build/
+.cache/
+.remotion/
+*.tsbuildinfo
+
+# 日志与运行时文件
+*.log
+logs/
+*.pid
+*.seed
+
+# 本地环境变量与密钥（示例文件可提交）
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# 编辑器与操作系统文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 测试覆盖率与报告
+coverage/
+.nyc_output/
+test-results/
+
+# 本地工具状态
+.agent/**/.cache/
+.agent/**/node_modules/

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.15" y2="1">
+      <stop offset="0%" stop-color="#0A1620"/>
+      <stop offset="38%" stop-color="#102A3E"/>
+      <stop offset="72%" stop-color="#123043"/>
+      <stop offset="100%" stop-color="#08131C"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.28" r="0.62">
+      <stop offset="0%" stop-color="#2E6285" stop-opacity="0.55"/>
+      <stop offset="55%" stop-color="#1B3C55" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#0A1620" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="moon" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#F6E7C4" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#E5B96B" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#E5B96B" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mtnFar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#16354B" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#0C1E2C" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="mtnMid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0E2637" stop-opacity="0.98"/>
+      <stop offset="100%" stop-color="#081521" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="mtnNear" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#071219" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#040A0F" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="vignetteTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="vignetteBottom" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#sky)"/>
+  <rect width="1080" height="1920" fill="url(#glow)"/>
+
+  <!-- 月 -->
+  <circle cx="812" cy="330" r="210" fill="url(#moon)"/>
+  <circle cx="812" cy="330" r="86" fill="#F4E3BE" opacity="0.30"/>
+
+  <!-- 远山 -->
+  <path d="M0 1268 L92 1200 L188 1246 L286 1160 L392 1236 L500 1148 L604 1230 L712 1152 L822 1234 L930 1176 L1030 1240 L1080 1208 L1080 1920 L0 1920 Z"
+        fill="url(#mtnFar)" opacity="0.55"/>
+
+  <!-- 中山 -->
+  <path d="M0 1420 L120 1330 L232 1398 L352 1288 L470 1392 L586 1300 L706 1400 L830 1312 L950 1404 L1080 1338 L1080 1920 L0 1920 Z"
+        fill="url(#mtnMid)" opacity="0.85"/>
+
+  <!-- 近山 -->
+  <path d="M0 1620 L146 1520 L296 1596 L438 1494 L584 1600 L730 1512 L880 1608 L1010 1540 L1080 1584 L1080 1920 L0 1920 Z"
+        fill="url(#mtnNear)"/>
+
+  <!-- 水面横线（留白意象） -->
+  <g stroke="#7FA9C4" stroke-linecap="round" opacity="0.16">
+    <line x1="120" y1="1712" x2="430" y2="1712" stroke-width="3"/>
+    <line x1="640" y1="1758" x2="962" y2="1758" stroke-width="3"/>
+    <line x1="240" y1="1804" x2="700" y2="1804" stroke-width="2"/>
+  </g>
+
+  <!-- 星点 -->
+  <g fill="#EAF2F8">
+    <circle cx="148" cy="212" r="2.6" opacity="0.55"/>
+    <circle cx="286" cy="146" r="2" opacity="0.4"/>
+    <circle cx="418" cy="268" r="2.4" opacity="0.45"/>
+    <circle cx="196" cy="392" r="1.8" opacity="0.35"/>
+    <circle cx="962" cy="132" r="2.2" opacity="0.4"/>
+    <circle cx="1024" cy="470" r="2" opacity="0.32"/>
+    <circle cx="92" cy="620" r="2" opacity="0.28"/>
+    <circle cx="332" cy="86" r="1.6" opacity="0.3"/>
+  </g>
+
+  <rect width="1080" height="420" fill="url(#vignetteTop)"/>
+  <rect y="1500" width="1080" height="420" fill="url(#vignetteBottom)"/>
+</svg>

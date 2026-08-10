@@ -7,6 +7,7 @@ import { QuestionCard } from "../components/QuestionCard";
 import { OptionItem, type OptionState } from "../components/OptionItem";
 import { AnswerReveal } from "../components/AnswerReveal";
 import { QuestionSoundEffects } from "../components/QuestionSoundEffects";
+import { QuestionVoiceTracks } from "../components/QuestionVoiceTracks";
 import { stagger } from "../animations";
 import type { QuestionSlot, QuizData } from "../types";
 
@@ -20,7 +21,7 @@ export type QuestionSceneProps = {
 
 /**
  * 单题场景（三段式）：
- *  ① 呈现  presentFrames  —— 题干+选项依次入场
+ *  ① 呈现  presentFrames  —— 题干语音+题干与选项依次入场
  *  ② 作答  countdownFrames —— 倒计时环走秒
  *  ③ 揭晓  revealFrames    —— 正解高亮 + 解析滑入
  */
@@ -55,6 +56,10 @@ export const QuestionScene: React.FC<QuestionSceneProps> = ({
       <QuestionSoundEffects
         presentFrames={presentFrames}
         countdownFrames={countdownFrames}
+      />
+      <QuestionVoiceTracks
+        questionId={question.id}
+        answerStartFrame={revealStart}
       />
 
       <Header

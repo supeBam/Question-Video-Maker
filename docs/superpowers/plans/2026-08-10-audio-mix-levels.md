@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 将题目和正确答案人声累计提高 10 dB，并将背景音乐音量降至 0.05 后重新生成完整视频。
+**Goal:** 将题目和正确答案人声放大 4 倍，并将背景音乐音量降至 0.02 后重新生成完整视频。
 
 **Architecture:** 在现有 `getQuestionVoiceTracks()` 返回值中增加统一的人声音量倍率，让题目和答案组件共享同一配置。背景音乐继续由题库 JSON 驱动，不改动原始 TTS 文件。
 
@@ -27,7 +27,7 @@
 assert.deepEqual(getQuestionVoiceTracks("q3"), {
   question: "assets/tts/中国朝代历史-第02期/q3-question.mp3",
   answer: "assets/tts/中国朝代历史-第02期/q3-answer.mp3",
-  volume: 10 ** (10 / 20),
+  volume: 4,
 });
 ```
 
@@ -36,8 +36,8 @@ assert.deepEqual(getQuestionVoiceTracks("q3"), {
 将 `tests/audio-mix.test.mjs` 的断言改为精确参数：
 
 ```js
-test("背景音乐音量为老年人听感混音值", () => {
-  assert.equal(questions.bgm.volume, 0.05);
+test("背景音乐音量为 0.02", () => {
+  assert.equal(questions.bgm.volume, 0.02);
 });
 ```
 
@@ -47,13 +47,12 @@ Run: `npm test`
 
 Expected: 人声音轨缺少 `volume`，背景音乐实际为 `0.08`，两项测试失败。
 
-- [ ] **Step 4: 实现 10 dB 人声倍率**
+- [ ] **Step 4: 实现 4 倍人声倍率**
 
 在 `src/questionVoiceTracks.ts` 中加入并返回统一音量：
 
 ```ts
-export const VOICE_GAIN_DB = 10;
-export const VOICE_VOLUME = 10 ** (VOICE_GAIN_DB / 20);
+const VOICE_VOLUME = 4;
 
 export type QuestionVoiceTracks = {
   question: string;
@@ -75,12 +74,12 @@ volume: VOICE_VOLUME,
 <Audio src={staticFile(tracks.answer)} volume={tracks.volume} />
 ```
 
-- [ ] **Step 5: 实现背景音乐音量 0.05**
+- [ ] **Step 5: 实现背景音乐音量 0.02**
 
 在 `src/data/questions.json` 中设置：
 
 ```json
-"volume": 0.05
+"volume": 0.02
 ```
 
 - [ ] **Step 6: 运行完整测试**

@@ -33,9 +33,8 @@ export const Background: React.FC<BackgroundProps> = ({
         <Img
           src={staticFile(src)}
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
+          from={2} />
       </AbsoluteFill>
-
       {cloudSrc ? (
         <Img
           src={staticFile(cloudSrc)}

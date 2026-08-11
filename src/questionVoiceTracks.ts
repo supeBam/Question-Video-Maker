@@ -1,20 +1,31 @@
+import type { QuizData } from "./types";
+
 export type QuestionVoiceTracks = {
   question: string;
   answer: string;
   volume: number;
 };
 
-const SERIES_DIRECTORY = "assets/tts/中国朝代历史-第02期";
 const VOICE_VOLUME = 4;
 
-export const getQuestionVoiceTracks = (questionId: string): QuestionVoiceTracks => {
-  if (!questionId.trim()) {
-    throw new Error("题目 ID 不能为空");
-  }
+type VoiceTrackMeta = Pick<QuizData["meta"], "series" | "episodeLabel">;
 
+export const getQuestionVoiceTracks = (
+  meta: VoiceTrackMeta,
+  questionId: string
+): QuestionVoiceTracks => {
+  const series = meta.series.trim();
+  const episodeLabel = meta.episodeLabel.replace(/\s+/g, "");
+  const normalizedQuestionId = questionId.trim();
+
+  if (!series) throw new Error("栏目名不能为空");
+  if (!episodeLabel) throw new Error("期数不能为空");
+  if (!normalizedQuestionId) throw new Error("题目 ID 不能为空");
+
+  const seriesDirectory = `assets/tts/${series}-${episodeLabel}`;
   return {
-    question: `${SERIES_DIRECTORY}/${questionId}-question.mp3`,
-    answer: `${SERIES_DIRECTORY}/${questionId}-answer.mp3`,
+    question: `${seriesDirectory}/${normalizedQuestionId}-question.mp3`,
+    answer: `${seriesDirectory}/${normalizedQuestionId}-answer.mp3`,
     volume: VOICE_VOLUME,
   };
 };

@@ -1,17 +1,20 @@
 import React from "react";
 import { Audio, Sequence, staticFile } from "remotion";
 import { getQuestionVoiceTracks } from "../questionVoiceTracks";
+import type { QuizData } from "../types";
 
 export type QuestionVoiceTracksProps = {
+  meta: Pick<QuizData["meta"], "series" | "episodeLabel">;
   questionId: string;
   answerStartFrame: number;
 };
 
 export const QuestionVoiceTracks: React.FC<QuestionVoiceTracksProps> = ({
+  meta,
   questionId,
   answerStartFrame,
 }) => {
-  const tracks = getQuestionVoiceTracks(questionId);
+  const tracks = getQuestionVoiceTracks(meta, questionId);
 
   return (
     <>

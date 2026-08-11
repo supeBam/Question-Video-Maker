@@ -58,6 +58,7 @@ export const QuestionScene: React.FC<QuestionSceneProps> = ({
         countdownFrames={countdownFrames}
       />
       <QuestionVoiceTracks
+        meta={meta}
         questionId={question.id}
         answerStartFrame={revealStart}
       />

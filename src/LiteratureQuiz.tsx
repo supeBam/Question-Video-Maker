@@ -42,7 +42,7 @@ export const LiteratureQuiz: React.FC<LiteratureQuizProps> = ({ data }) => {
           durationInFrames={slot.durationInFrames}
           name={`第${slot.index + 1}题`}
         >
-          <QuestionScene slot={slot} total={slots.length} meta={data.meta} />
+          <QuestionScene slot={slot} total={slots.length} meta={data.meta} voiceOverEnabled={data.voiceOver.enabled} />
         </Sequence>
       ))}
 

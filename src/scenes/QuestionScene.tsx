@@ -17,6 +17,7 @@ export type QuestionSceneProps = {
   slot: QuestionSlot;
   total: number;
   meta: QuizData["meta"];
+  voiceOverEnabled: boolean;
 };
 
 /**
@@ -29,6 +30,7 @@ export const QuestionScene: React.FC<QuestionSceneProps> = ({
   slot,
   total,
   meta,
+  voiceOverEnabled,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -57,11 +59,13 @@ export const QuestionScene: React.FC<QuestionSceneProps> = ({
         presentFrames={presentFrames}
         countdownFrames={countdownFrames}
       />
-      <QuestionVoiceTracks
-        meta={meta}
-        questionId={question.id}
-        answerStartFrame={revealStart}
-      />
+      {voiceOverEnabled && (
+        <QuestionVoiceTracks
+          meta={meta}
+          questionId={question.id}
+          answerStartFrame={revealStart}
+        />
+      )}
 
       <Header
         series={meta.series}

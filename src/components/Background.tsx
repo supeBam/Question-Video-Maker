@@ -45,7 +45,7 @@ export const Background: React.FC<BackgroundProps> = ({
             width: 1400,
             opacity: 0.28,
           }}
-        />
+          from={2} />
       ) : null}
     </AbsoluteFill>
   );

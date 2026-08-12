@@ -46,6 +46,9 @@ export type QuizData = {
     cta: string;
     ctaSub: string;
   };
+  voiceOver: {
+    enabled: boolean;
+  };
   bgm: {
     enabled: boolean;
     file: string;

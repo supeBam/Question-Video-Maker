@@ -47,3 +47,6 @@ test-results/
 .agent/**/__pycache__/
 .agents/**/__pycache__/
 .listenhub/
+
+# tts
+tts/

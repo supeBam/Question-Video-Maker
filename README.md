@@ -26,10 +26,12 @@ remotion-quiz-video/
 │   │   ├── CountdownRing.tsx      倒计时环（秒数/尺寸/配色/警戒色/文案全可配）
 │   │   ├── QuestionCard.tsx       题干卡片（字号按字数自动缩放）
 │   │   ├── OptionItem.tsx         选项行（idle / correct / wrong 三态）
+│   │   ├── CrosswordGrid.tsx      诗词填字纵横网格（纵横交叉 + 编号 + 补字高亮）
 │   │   └── AnswerReveal.tsx       答案揭晓条（盖章 + 解析）
 │   ├── scenes/                    分镜场景
 │   │   ├── IntroScene.tsx
-│   │   ├── QuestionScene.tsx      三段式：呈现 → 倒计时 → 揭晓
+│   │   ├── QuestionScene.tsx      选择题三段式：呈现 → 倒计时 → 揭晓
+│   │   ├── CrosswordScene.tsx     诗词填字纵横两阶段：展示 → 揭晓
 │   │   └── OutroScene.tsx
 │   ├── LiteratureQuiz.tsx         主合成
 │   ├── Root.tsx                   注册合成（总帧数自动计算）
@@ -181,7 +183,81 @@ npx remotion render LiteratureQuiz out/literature-quiz-ep02.mp4
 
 ---
 
-## 八、常见问题
+## 九、诗词填字纵横（crossword）题型
+
+除了选择题，题库还支持「诗词填字纵横」：从多首诗里各抽一句，摆成**横（从左往右）/ 纵（从上往下）交叉的填字网格**，交叉点共用同一个字（比如「床前明月光」的「月」正好接上「月落乌啼霜满天」的开头）。整张网格是**一题**，观众看着编号把缺的字补上，约 45 秒后翻到答案页：留白补全高亮 + 每条线索的出处（横/纵、《诗名》作者）+ 赏析。选择题与诗词填字纵横可在同一期题库里混排。
+
+### 题型数据
+
+```jsonc
+{
+  "type": "crossword",              // ★ 必须，区分于选择题
+  "id": "p1",
+  "title": "月字相连",               // 谜面标题（可选，答案页上方显示）
+  "hint": "五句诗纵横交织，把缺的字补上",  // 展示阶段提示（可选）
+  "clues": [                        // ★ 线索集合：每条 = 从某首诗抽的一句
+    {
+      "id": "A1", "dir": "across", "row": 2, "col": 1,  // 横，起始格(行,列)
+      "text": "床前明月光",
+      "source": { "title": "静夜思", "author": "李白", "dynasty": "唐" },
+      "blanks": [0]                 // 下标 0（即「床」）留白待填
+    },
+    {
+      "id": "D1", "dir": "down", "row": 2, "col": 4,   // 纵，与 A1 在第 2 行第 4 列交叉
+      "text": "月落乌啼霜满天",
+      "source": { "title": "枫桥夜泊", "author": "张继", "dynasty": "唐" },
+      "blanks": [1]                 // 「落」留白
+    }
+    // …… 更多线索，整体为一题
+  ],
+  "explanation": "这张填字以「月」为眼……"  // 答案页赏析（可选）
+}
+```
+
+- **坐标即摆位**：`row/col` 是这条线索起始格（0-based）；`dir: "across"` 向右、`"down"` 向下。`buildGrid` 会自动算出网格尺寸、交叉点，并按阅读顺序给留白编号 ①②③。
+- **交叉点必须共用同一字**：两条线索交叉的那格，两边的字符必须一致（组件会校验，不一致会控制台告警）。这正是「纵横」的玩法——交叉点就是连起两句诗的那一个字。
+- **留白 = 待填空格**：`blanks` 给字符在该线索里的下标（0-based）。某格若被多条线索共用且其中一条标了留白，则该格按留白处理。其余字默认给出（作为线索提示）。
+- 想要更难，就把更多字标进 `blanks`；想保留交叉点作为「已给的连字」，就别标它。
+
+### 节奏
+
+诗词填字纵横的节奏独立于选择题，全局在 `timing.crossword`：
+
+```jsonc
+"timing": {
+  "perQuestion": { "presentSeconds": 2, "countdownSeconds": 5, "revealSeconds": 5.5 },
+  "crossword": { "displaySeconds": 45, "answerSeconds": 7 }   // 题目展示 45s + 答案页 7s
+}
+```
+
+- `displaySeconds`：纵横网格 + 倒计时展示时长（即「题目展示时间」，默认 45s）。
+- `answerSeconds`：答案页（补字高亮 + 线索出处图例 + 赏析）时长，默认 7s。
+- 单题单独改时长：在该题对象里加 `"timingOverride": { "displaySeconds": 30 }`。
+
+### 两个合成
+
+- `LiteratureQuiz`：沿用 `src/data/questions.json`（当前为选择题）。
+- `CrosswordQuiz`：诗词填字纵横混排示例，数据源 `src/data/questions-crossword-demo.json`。
+
+渲染示例（诗词填字纵横这一期）：
+
+```bash
+npx remotion render CrosswordQuiz out/crossword-ep01.mp4
+```
+
+### 示例文件
+
+`src/data/questions-crossword-demo.json` 是**单题**示例：一期只出**一道**诗词填字纵横（5 条线索：以纵向主干「月落乌啼霜满天」串起横 A1 床前明月光 / A2 霜叶红于二月花 / A3 碧海青天夜夜心，并在 A2 末端的「月」处垂下纵 D2 月涌大江流），交叉点共用「月 / 霜 / 天」，共 5 首唐诗交织，五条线**正交相连成一张连通的网**（不会拆成两半）。只在 4 个交叉点给出字符当线索，其余 23 格全部留白——观众看着线索区（只显示少数字、不剧透出处）把缺的字补上。可直接 `npm run dev`，在预览台右上角切换合成 `CrosswordQuiz` 查看效果。
+
+> - 想要「只给几个字」的硬核玩法：把每条 `clues` 的 `blanks` 写成「除交叉点外全标」，如上例。
+> - 想要更简单：少标几个 `blanks`（多给些字当提示）即可。
+> - 校验摆位：改完 `clues` 后跑 `node scripts/validate-crossword.mjs src/data/questions-crossword-demo.json`，会报告网格尺寸、留白数、交叉点是否一致（不一致标 ✗），并额外检查整张网格是否**连通成一张网**——若被拆成多个互不相连的部分（看起来像多道题），会告警 ⚠，提醒你调整摆位让线索全部连起来。
+
+选择题与诗词填字纵横仍可在同一期题库里混排（`questions` 数组里同时放 `type:"choice"` 与 `type:"crossword"` 即可）；上面只是把演示默认成「单题」形态。
+
+---
+
+## 十、常见问题
 
 - **中文显示成方块**：`THEME.fonts` 里的字体在本机不存在，改成本机有的字体名即可（Windows 一定有 `Microsoft YaHei` / `SimSun` / `KaiTi`）。
 - **选项文字换行溢出**：单个选项建议不超过 12 个汉字；超长时组件会自动降字号，仍不够就缩短文案。

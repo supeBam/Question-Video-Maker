@@ -107,7 +107,7 @@ export const OptionItem: React.FC<OptionItemProps> = ({
           fontFamily: fonts.serif,
           fontSize: size,
           fontWeight: 600,
-          color: isCorrect ? "#E8FFF4" : colors.light,
+          color: isCorrect ? colors.ink : colors.light,
           letterSpacing: 1,
         }}
       >

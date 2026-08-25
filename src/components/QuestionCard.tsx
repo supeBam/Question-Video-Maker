@@ -46,7 +46,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         height,
         borderRadius: 28,
         backgroundColor: colors.paper,
-        boxShadow: "0 22px 60px rgba(0,0,0,0.42)",
+        boxShadow: "0 12px 32px rgba(46,36,24,0.16)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

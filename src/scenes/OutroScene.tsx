@@ -49,7 +49,7 @@ export const OutroScene: React.FC<OutroSceneProps> = ({
           letterSpacing: 4,
           color: colors.light,
           textAlign: "center",
-          textShadow: "0 10px 34px rgba(0,0,0,0.5)",
+          textShadow: "0 2px 16px rgba(46,36,24,0.12)",
           ...fadeSlideUp(frame, 4, 18, 34),
         }}
       >
@@ -124,7 +124,6 @@ export const OutroScene: React.FC<OutroSceneProps> = ({
           fontFamily: fonts.serif,
           fontSize: 34,
           color: colors.light,
-          opacity: 0.85,
           textAlign: "center",
           ...fadeSlideUp(frame, 62, 18, 20),
         }}

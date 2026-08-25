@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "series": "中国历史冷知识",
+    "episode": 1,
+    "episodeLabel": "第 01 期",
+    "hostTag": "@每日历史小测"
+  },
+  "timing": {
+    "fps": 30,
+    "introSeconds": 5,
+    "outroSeconds": 5,
+    "perQuestion": {
+      "presentSeconds": 6.5,
+      "countdownSeconds": 5,
+      "revealSeconds": 5.5
+    }
+  },
+  "intro": {
+    "kicker": "中国历史冷知识",
+    "title": "五道题\n看看你能答对几道",
+    "subtitle": "第 3 题最容易被常识带偏，敢不敢挑战？",
+    "hint": "每题 5 秒作答"
+  },
+  "outro": {
+    "headline": "你答对了几题？",
+    "scoreHints": [
+      "1-2 题 · 历史刚入门",
+      "3-4 题 · 冷知识达人",
+      "5 题 · 史学隐藏高手"
+    ],
+    "cta": "点赞 + 关注",
+    "ctaSub": "每天 5 道历史题，评论区见真章"
+  },
+  "bgm": {
+    "enabled": true,
+    "file": "assets/bg-audio/bgm_guzheng_liqiu.mp3",
+    "volume": 0.15
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "stem": "郑和第一次下西洋，发生在哪一年？",
+      "options": ["1405 年（永乐三年）", "1421 年（永乐十九年）", "1368 年（洪武元年）", "1453 年（景泰四年）"],
+      "answerIndex": 0,
+      "explanation": "郑和第一次下西洋始于 1405 年，即明成祖永乐三年，此后又率船队多次远航。"
+    },
+    {
+      "id": "q2",
+      "stem": "传统上被认为改进造纸术、让纸张更易推广的人是？",
+      "options": ["张衡", "蔡伦", "祖冲之", "毕昇"],
+      "answerIndex": 1,
+      "explanation": "东汉蔡伦在前人基础上改进造纸术，使用树皮、麻头、破布等材料，史称“蔡侯纸”。"
+    },
+    {
+      "id": "q3",
+      "stem": "《清明上河图》主要描绘的是哪座城市的繁华景象？",
+      "options": ["唐代长安", "北宋汴京", "南宋临安", "元代大都"],
+      "answerIndex": 1,
+      "explanation": "张择端的《清明上河图》描绘北宋都城汴京（今开封）清明时节的城市生活与商贸景象。"
+    },
+    {
+      "id": "q4",
+      "stem": "“开元盛世”对应的唐朝皇帝是？",
+      "options": ["唐太宗李世民", "唐高宗李治", "唐玄宗李隆基", "唐肃宗李亨"],
+      "answerIndex": 2,
+      "explanation": "唐玄宗李隆基统治前期年号为开元，政治清明、经济繁荣，史称“开元盛世”。"
+    },
+    {
+      "id": "q5",
+      "stem": "中国古代“活字印刷术”的发明者毕昇，生活在？",
+      "options": ["唐朝", "北宋", "元朝", "明朝"],
+      "answerIndex": 1,
+      "explanation": "北宋庆历年间，毕昇发明泥活字印刷术，比雕版印刷更便于排版和重复使用。"
+    }
+  ]
+}

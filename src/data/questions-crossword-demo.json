@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "series": "中国诗词填字",
+    "episode": 1,
+    "episodeLabel": "第 01 期",
+    "hostTag": "@每日诗词小测"
+  },
+  "timing": {
+    "fps": 30,
+    "introSeconds": 5,
+    "outroSeconds": 5,
+    "perQuestion": {
+      "presentSeconds": 2,
+      "countdownSeconds": 5,
+      "revealSeconds": 5.5
+    },
+    "crossword": {
+      "displaySeconds": 45,
+      "answerSeconds": 8
+    }
+  },
+  "intro": {
+    "kicker": "中国诗词填字",
+    "title": "纵横交织\n考考你的诗词功底",
+    "subtitle": "只给几个字，剩下的你填",
+    "hint": "每道题约 45 秒作答"
+  },
+  "outro": {
+    "headline": "你补全了几句？",
+    "scoreHints": [
+      "填对半数 · 回去再背背",
+      "填对八成 · 底子不错",
+      "全部填对 · 诗词小能手"
+    ],
+    "cta": "点赞 + 关注",
+    "ctaSub": "每天一道诗词填字，明天见"
+  },
+  "voiceOver": {
+    "enabled": false
+  },
+  "bgm": {
+    "enabled": true,
+    "file": "assets/bg-audio/bgm_guzheng_liqiu.mp3",
+    "volume": 0.15
+  },
+  "questions": [
+    {
+      "type": "crossword",
+      "id": "p1",
+      "title": "诗海纵横",
+      "hint": "五句唐诗纵横交织成一张网，只给几个交叉点的字当线索，剩下的全靠你填",
+      "clues": [
+        { "id": "D1", "dir": "down", "row": 1, "col": 5, "text": "月落乌啼霜满天", "source": { "title": "枫桥夜泊", "author": "张继", "dynasty": "唐" }, "blanks": [1, 2, 3, 5] },
+        { "id": "A1", "dir": "across", "row": 1, "col": 2, "text": "床前明月光", "source": { "title": "静夜思", "author": "李白", "dynasty": "唐" }, "blanks": [0, 1, 2, 4] },
+        { "id": "A2", "dir": "across", "row": 5, "col": 5, "text": "霜叶红于二月花", "source": { "title": "山行", "author": "杜牧", "dynasty": "唐" }, "blanks": [1, 2, 3, 4, 6] },
+        { "id": "A3", "dir": "across", "row": 7, "col": 2, "text": "碧海青天夜夜心", "source": { "title": "嫦娥", "author": "李商隐", "dynasty": "唐" }, "blanks": [0, 1, 2, 4, 5, 6] },
+        { "id": "D2", "dir": "down", "row": 5, "col": 10, "text": "月涌大江流", "source": { "title": "旅夜书怀", "author": "杜甫", "dynasty": "唐" }, "blanks": [1, 2, 3, 4] }
+      ],
+      "explanation": "五句唐诗被纵向主干「月落乌啼霜满天」串成一张连通的网：顶上横接「床前明月光」（共「月」），中段横挑「霜叶红于二月花」（共「霜」），底部横展「碧海青天夜夜心」（共「天」），而「霜叶」末端的「月」又垂下「月涌大江流」。整张只用交叉点的「月 / 霜 / 天」几个字当引子，其余 22 格全靠你填——补全之后，这张诗的网便一气连成。"
+    }
+  ]
+}

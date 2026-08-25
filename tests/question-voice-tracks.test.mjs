@@ -11,6 +11,7 @@ test("题目音轨路径根据栏目和期数生成", () => {
     {
       question: "assets/tts/中国历史冷知识-第01期/q3-question.mp3",
       answer: "assets/tts/中国历史冷知识-第01期/q3-answer.mp3",
+      punchline: "assets/tts/中国历史冷知识-第01期/q3-punchline.mp3",
       volume: 4,
     }
   );

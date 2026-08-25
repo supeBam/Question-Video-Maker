@@ -38,7 +38,7 @@ export const CountdownRing: React.FC<CountdownRingProps> = ({
   color = THEME.colors.gold,
   warnColor = THEME.colors.vermilion,
   warnAt = 2,
-  trackColor = "rgba(243, 234, 216, 0.16)",
+  trackColor = "rgba(46, 36, 24, 0.12)",
   brushSrc = "assets/ring-brush.svg",
   caption = "作答中",
   keepAfterEnd = false,
@@ -62,6 +62,12 @@ export const CountdownRing: React.FC<CountdownRingProps> = ({
 
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
+
+  /** 数字字号随圆环尺寸缩放，确保两位数（如剩余 45 秒）也不会撑破圆环 */
+  const digitFontSize = Math.min(
+    THEME.fontSize.countdown,
+    Math.round(size * 0.56)
+  );
 
   /** 每秒数字弹一下 */
   const secTick = clamped % fps;
@@ -150,7 +156,7 @@ export const CountdownRing: React.FC<CountdownRingProps> = ({
         <span
           style={{
             fontFamily: THEME.fonts.number,
-            fontSize: THEME.fontSize.countdown,
+            fontSize: digitFontSize,
             lineHeight: 1,
             fontWeight: 700,
             color: activeColor,

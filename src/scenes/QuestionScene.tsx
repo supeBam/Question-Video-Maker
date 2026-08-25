@@ -9,7 +9,7 @@ import { AnswerReveal } from "../components/AnswerReveal";
 import { QuestionSoundEffects } from "../components/QuestionSoundEffects";
 import { QuestionVoiceTracks } from "../components/QuestionVoiceTracks";
 import { stagger } from "../animations";
-import type { QuestionSlot, QuizData } from "../types";
+import type { ChoiceQuestion, QuestionSlot, QuizData } from "../types";
 
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
 
@@ -35,7 +35,8 @@ export const QuestionScene: React.FC<QuestionSceneProps> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { colors, layout } = THEME;
-  const { question, index, presentFrames, countdownFrames, durationInFrames } = slot;
+  const question = slot.question as ChoiceQuestion;
+  const { index, presentFrames, countdownFrames, durationInFrames } = slot;
 
   const countdownStart = presentFrames;
   const revealStart = presentFrames + countdownFrames;
@@ -64,6 +65,7 @@ export const QuestionScene: React.FC<QuestionSceneProps> = ({
           meta={meta}
           questionId={question.id}
           answerStartFrame={revealStart}
+          hasPunchline={Boolean(question.punchline)}
         />
       )}
 
@@ -150,7 +152,7 @@ export const QuestionScene: React.FC<QuestionSceneProps> = ({
           answerLabel={LETTERS[question.answerIndex]}
           explanation={question.explanation}
           startFrame={revealStart}
-          height={290}
+          minHeight={290}
         />
       </div>
 

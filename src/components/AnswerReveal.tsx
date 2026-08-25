@@ -12,7 +12,8 @@ export type AnswerRevealProps = {
   startFrame: number;
   /** 前缀文案 */
   prefix?: string;
-  height?: number;
+  /** 面板最小高度（解析文字超长时自动向上撑高） */
+  minHeight?: number;
   /** 印章静态资源，传 null 关闭 */
   sealSrc?: string | null;
 };
@@ -23,7 +24,7 @@ export const AnswerReveal: React.FC<AnswerRevealProps> = ({
   explanation,
   startFrame,
   prefix = "正确答案",
-  height = 290,
+  minHeight = 290,
   sealSrc = "assets/seal-mark.svg",
 }) => {
   const frame = useCurrentFrame();
@@ -40,10 +41,11 @@ export const AnswerReveal: React.FC<AnswerRevealProps> = ({
   return (
     <div
       style={{
-        height,
+        minHeight,
         borderRadius: 26,
-        backgroundColor: "rgba(8, 20, 28, 0.62)",
-        border: `2px solid rgba(229,185,107,0.30)`,
+        backgroundColor: colors.paper,
+        border: `2px solid ${colors.glassBorder}`,
+        boxShadow: "0 12px 40px rgba(46,36,24,0.16)",
         padding: "30px 34px",
         display: "flex",
         flexDirection: "column",
@@ -105,7 +107,6 @@ export const AnswerReveal: React.FC<AnswerRevealProps> = ({
           fontSize: fontSize.explain,
           lineHeight: 1.6,
           color: colors.light,
-          opacity: 0.92,
           ...explainAnim,
         }}
       >

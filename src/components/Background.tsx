@@ -13,11 +13,11 @@ export type BackgroundProps = {
 };
 
 /**
- * 全片统一背景：水墨夜空 + 缓慢推镜 + 顶部祥云横移。
+ * 全片统一背景：宣纸米黄底 + 缓慢推镜 + 顶部祥云横移。
  * 放在合成最外层（不放进 Sequence），保证整支片子背景连续不重置。
  */
 export const Background: React.FC<BackgroundProps> = ({
-  src = "assets/bg-ink.svg",
+  src = "assets/bg-paper.svg",
   cloudSrc = "assets/cloud-pattern.svg",
   drift = 0.05,
 }) => {

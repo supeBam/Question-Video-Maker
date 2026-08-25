@@ -3,6 +3,7 @@ import type { QuizData } from "./types";
 export type QuestionVoiceTracks = {
   question: string;
   answer: string;
+  punchline: string;
   volume: number;
 };
 
@@ -26,6 +27,7 @@ export const getQuestionVoiceTracks = (
   return {
     question: `${seriesDirectory}/${normalizedQuestionId}-question.mp3`,
     answer: `${seriesDirectory}/${normalizedQuestionId}-answer.mp3`,
+    punchline: `${seriesDirectory}/${normalizedQuestionId}-punchline.mp3`,
     volume: VOICE_VOLUME,
   };
 };

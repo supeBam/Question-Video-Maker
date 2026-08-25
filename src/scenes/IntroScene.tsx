@@ -75,7 +75,7 @@ export const IntroScene: React.FC<IntroSceneProps> = ({
           color: colors.light,
           textAlign: "center",
           whiteSpace: "pre-line",
-          textShadow: "0 12px 40px rgba(0,0,0,0.5)",
+          textShadow: "0 2px 18px rgba(46,36,24,0.12)",
           ...fadeSlideUp(frame, 16, 20, 40),
         }}
       >
@@ -101,7 +101,6 @@ export const IntroScene: React.FC<IntroSceneProps> = ({
           fontFamily: fonts.serif,
           fontSize: fontSize.heroSub,
           color: colors.light,
-          opacity: 0.86,
           textAlign: "center",
           lineHeight: 1.6,
           ...fadeSlideUp(frame, 34, 18, 26),

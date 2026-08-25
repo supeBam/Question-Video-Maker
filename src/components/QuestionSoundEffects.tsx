@@ -21,10 +21,10 @@ export const QuestionSoundEffects: React.FC<QuestionSoundEffectsProps> = ({
         durationInFrames={timing.countdownDurationInFrames}
         name="三秒倒计时音效"
       >
-        <Audio src={staticFile("assets/audio/开始三秒倒计时.mp3")} />
+        <Audio src={staticFile("assets/audio/开始三秒倒计时.mp3")} volume={0.6} />
       </Sequence>
       <Sequence from={timing.answerStartFrame} name="正确答案音效">
-        <Audio src={staticFile("assets/audio/出正确答案的音频.mp3")} />
+        <Audio src={staticFile("assets/audio/出正确答案的音频.mp3")} volume={0.6} />
       </Sequence>
     </>
   );

@@ -21,7 +21,7 @@
 - **4 道中国文学常识选择题**（含选项、正解、解析）
 - BGM 开关（默认关闭）
 
-### 3. 可复用组件（6 个）
+### 3. 可复用组件（8 个）
 | 组件 | 文件 | 可配置参数 |
 |---|---|---|
 | Background | `components/Background.tsx` | 背景图、祥云、推镜幅度 |
@@ -29,6 +29,7 @@
 | CountdownRing | `components/CountdownRing.tsx` | 秒数、尺寸、颜色、警戒色、文案 |
 | QuestionCard | `components/QuestionCard.tsx` | 题干、题号、字号、高度 |
 | OptionItem | `components/OptionItem.tsx` | 标签、文案、状态、字号 |
+| PoemGrid | `components/PoemGrid.tsx` | 诗阵、留白编号、补字高亮 |
 | AnswerReveal | `components/AnswerReveal.tsx` | 答案字母、解析、印章 |
 
 ### 4. 静态视觉资源（5 个 SVG）

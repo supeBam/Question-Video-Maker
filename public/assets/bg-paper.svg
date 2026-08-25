@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0.15" y2="1">
+      <stop offset="0%" stop-color="#F7EDDA"/>
+      <stop offset="45%" stop-color="#F3E6CF"/>
+      <stop offset="100%" stop-color="#EBDDC0"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="0.5" cy="0.26" r="0.7">
+      <stop offset="0%" stop-color="#FFF7E6" stop-opacity="0.9"/>
+      <stop offset="55%" stop-color="#F6E7C6" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#F3E6CF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mtnFar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#CDBD9E" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#C3B290" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="mtnMid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C4B18D" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#B8A583" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="mtnNear" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#B7A37E" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#AA956E" stop-opacity="0.32"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#paper)"/>
+  <rect width="1080" height="1920" fill="url(#sunGlow)"/>
+
+  <!-- 淡墨远山 -->
+  <path d="M0 1268 L92 1200 L188 1246 L286 1160 L392 1236 L500 1148 L604 1230 L712 1152 L822 1234 L930 1176 L1030 1240 L1080 1208 L1080 1920 L0 1920 Z"
+        fill="url(#mtnFar)"/>
+  <path d="M0 1420 L120 1330 L232 1398 L352 1288 L470 1392 L586 1300 L706 1400 L830 1312 L950 1404 L1080 1338 L1080 1920 L0 1920 Z"
+        fill="url(#mtnMid)"/>
+  <path d="M0 1620 L146 1520 L296 1596 L438 1494 L584 1600 L730 1512 L880 1608 L1010 1540 L1080 1584 L1080 1920 L0 1920 Z"
+        fill="url(#mtnNear)"/>
+
+  <!-- 水面留白横线 -->
+  <g stroke="#B7A37E" stroke-linecap="round" opacity="0.25">
+    <line x1="120" y1="1712" x2="430" y2="1712" stroke-width="3"/>
+    <line x1="640" y1="1758" x2="962" y2="1758" stroke-width="3"/>
+    <line x1="240" y1="1804" x2="700" y2="1804" stroke-width="2"/>
+  </g>
+
+  <!-- 朱砂印章点缀（右上角，暖色呼应） -->
+  <g opacity="0.85">
+    <rect x="872" y="200" width="66" height="66" rx="10" fill="#B63A28"/>
+    <rect x="884" y="212" width="42" height="42" rx="6" fill="none" stroke="#F7EDDA" stroke-width="2.5" opacity="0.8"/>
+  </g>
+</svg>

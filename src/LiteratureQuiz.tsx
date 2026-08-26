@@ -4,8 +4,9 @@ import { Background } from "./components/Background";
 import { IntroScene } from "./scenes/IntroScene";
 import { QuestionScene } from "./scenes/QuestionScene";
 import { CrosswordScene } from "./scenes/CrosswordScene";
+import { FillScene } from "./scenes/FillScene";
 import { OutroScene } from "./scenes/OutroScene";
-import { buildTimeline, isCrossword, type QuizData } from "./types";
+import { buildTimeline, type QuizData } from "./types";
 
 export type LiteratureQuizProps = {
   data: QuizData;
@@ -22,7 +23,11 @@ export const LiteratureQuiz: React.FC<LiteratureQuizProps> = ({ data }) => {
   return (
     <AbsoluteFill>
       {/* 背景放在 Sequence 之外，保证整片连续 */}
-      <Background />
+      <Background
+        src={data.background?.src ?? "assets/bg-paper.svg"}
+        cloudSrc={data.background?.cloudSrc}
+        drift={data.background?.drift ?? 0.05}
+      />
 
       {data.bgm.enabled ? (
         <Audio src={staticFile(data.bgm.file)} volume={data.bgm.volume} loop />
@@ -43,8 +48,10 @@ export const LiteratureQuiz: React.FC<LiteratureQuizProps> = ({ data }) => {
           durationInFrames={slot.durationInFrames}
           name={`第${slot.index + 1}题`}
         >
-          {isCrossword(slot.question) ? (
+          {slot.kind === "crossword" ? (
             <CrosswordScene slot={slot} total={slots.length} meta={data.meta} voiceOverEnabled={data.voiceOver.enabled} />
+          ) : slot.kind === "fill" ? (
+            <FillScene slot={slot} total={slots.length} meta={data.meta} voiceOverEnabled={data.voiceOver.enabled} />
           ) : (
             <QuestionScene slot={slot} total={slots.length} meta={data.meta} voiceOverEnabled={data.voiceOver.enabled} />
           )}

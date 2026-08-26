@@ -5,6 +5,7 @@ import { buildTimeline, type QuizData } from "./types";
 import { THEME } from "./theme";
 import quizData from "./data/questions.json";
 import crosswordData from "./data/questions-crossword-demo.json";
+import wanwuData from "./data/questions-wanwu-yacheng.json";
 
 const data = quizData as QuizData;
 const timeline = buildTimeline(data);
@@ -12,6 +13,10 @@ const timeline = buildTimeline(data);
 // 诗词填字纵横示例（选择题 + 诗词填字混排）
 const crossData = crosswordData as QuizData;
 const crossTimeline = buildTimeline(crossData);
+
+// 万物雅称（填空题专题）
+const wanwu = wanwuData as QuizData;
+const wanwuTimeline = buildTimeline(wanwu);
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -33,6 +38,15 @@ export const RemotionRoot: React.FC = () => {
         width={THEME.layout.width}
         height={THEME.layout.height}
         defaultProps={{ data: crossData }}
+      />
+      <Composition
+        id="WanwuYacheng"
+        component={LiteratureQuiz}
+        durationInFrames={wanwuTimeline.totalFrames}
+        fps={wanwuTimeline.fps}
+        width={THEME.layout.width}
+        height={THEME.layout.height}
+        defaultProps={{ data: wanwu }}
       />
     </>
   );

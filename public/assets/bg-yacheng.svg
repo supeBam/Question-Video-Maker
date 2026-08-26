@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.12" y2="1">
+      <stop offset="0%" stop-color="#EDF3F5"/>
+      <stop offset="45%" stop-color="#E6EDF0"/>
+      <stop offset="100%" stop-color="#D9E3E8"/>
+    </linearGradient>
+    <radialGradient id="moonGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#F3EBD3" stop-opacity="0.95"/>
+      <stop offset="42%" stop-color="#EAE0C0" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#EAE0C0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.28" r="0.7">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.7"/>
+      <stop offset="60%" stop-color="#FFFFFF" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mtnFar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C7D4DA" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#BACAD1" stop-opacity="0.32"/>
+    </linearGradient>
+    <linearGradient id="mtnMid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#B6C6CE" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#A8BAC3" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="mtnNear" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#A7B8C1" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#9AAEBA" stop-opacity="0.24"/>
+    </linearGradient>
+    <linearGradient id="vignetteTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="vignetteBottom" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#C3D2D8" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#C3D2D8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#sky)"/>
+  <rect width="1080" height="1920" fill="url(#halo)"/>
+
+  <!-- 月（望舒） -->
+  <circle cx="820" cy="300" r="200" fill="url(#moonGlow)"/>
+  <circle cx="820" cy="300" r="78" fill="#EFE7CC" opacity="0.55"/>
+  <circle cx="798" cy="278" r="12" fill="#E4DAB8" opacity="0.5"/>
+  <circle cx="842" cy="318" r="9" fill="#E4DAB8" opacity="0.45"/>
+  <circle cx="812" cy="330" r="6" fill="#E4DAB8" opacity="0.4"/>
+
+  <!-- 淡墨远山 -->
+  <path d="M0 1288 L96 1220 L194 1266 L292 1180 L398 1256 L506 1168 L610 1250 L718 1172 L828 1254 L936 1196 L1036 1260 L1080 1228 L1080 1920 L0 1920 Z"
+        fill="url(#mtnFar)"/>
+  <path d="M0 1436 L124 1346 L238 1414 L360 1304 L478 1408 L596 1316 L716 1416 L842 1328 L958 1420 L1080 1354 L1080 1920 L0 1920 Z"
+        fill="url(#mtnMid)"/>
+  <path d="M0 1636 L150 1536 L300 1612 L444 1510 L590 1616 L736 1528 L886 1624 L1014 1556 L1080 1600 L1080 1920 L0 1920 Z"
+        fill="url(#mtnNear)"/>
+
+  <!-- 云霭 -->
+  <g fill="#FFFFFF" opacity="0.55">
+    <ellipse cx="220" cy="620" rx="210" ry="42"/>
+    <ellipse cx="420" cy="600" rx="150" ry="30"/>
+    <ellipse cx="150" cy="650" rx="120" ry="24"/>
+  </g>
+  <g fill="#FFFFFF" opacity="0.4">
+    <ellipse cx="840" cy="760" rx="230" ry="46"/>
+    <ellipse cx="660" cy="742" rx="140" ry="28"/>
+    <ellipse cx="300" cy="1010" rx="200" ry="38"/>
+  </g>
+
+  <!-- 星点 -->
+  <g fill="#8FA6AE">
+    <circle cx="150" cy="210" r="2.6" opacity="0.4"/>
+    <circle cx="286" cy="140" r="2" opacity="0.3"/>
+    <circle cx="420" cy="262" r="2.4" opacity="0.35"/>
+    <circle cx="196" cy="392" r="1.8" opacity="0.28"/>
+    <circle cx="962" cy="128" r="2.2" opacity="0.32"/>
+    <circle cx="1024" cy="468" r="2" opacity="0.26"/>
+    <circle cx="92" cy="620" r="2" opacity="0.22"/>
+    <circle cx="330" cy="84" r="1.6" opacity="0.24"/>
+  </g>
+
+  <rect width="1080" height="420" fill="url(#vignetteTop)"/>
+  <rect y="1500" width="1080" height="420" fill="url(#vignetteBottom)"/>
+</svg>

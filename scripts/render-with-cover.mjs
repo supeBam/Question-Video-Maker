@@ -42,6 +42,13 @@ const runRemotion = (args) => {
 
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
 
+const DEFAULT_CROSSWORD_TIMING = { displaySeconds: 45, answerSeconds: 7 };
+const DEFAULT_FILL_TIMING = {
+  presentSeconds: 3.5,
+  countdownSeconds: 6,
+  revealSeconds: 7,
+};
+
 const formatSrtTime = (seconds) => {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -57,6 +64,8 @@ const generateSrt = (data, srtPath) => {
   const countdownSec = perQuestion.countdownSeconds;
   const revealSec = perQuestion.revealSeconds;
   const perQ = presentSec + countdownSec + revealSec;
+  const crosswordTiming = timing.crossword ?? DEFAULT_CROSSWORD_TIMING;
+  const fillTiming = timing.fill ?? DEFAULT_FILL_TIMING;
 
   let cursor = introSeconds;
   const blocks = [];
@@ -76,15 +85,21 @@ const generateSrt = (data, srtPath) => {
 
   for (const q of questions) {
     const isCw = q.type === "crossword";
+    const isFill = q.type === "fill";
 
     // 该题型单题总时长（秒）
     let qDur;
     if (isCw) {
-      const cw = data.timing?.crossword ?? { displaySeconds: 45, answerSeconds: 7 };
       const ov = q.timingOverride ?? {};
       qDur =
-        (ov.displaySeconds ?? cw.displaySeconds) +
-        (ov.answerSeconds ?? cw.answerSeconds);
+        (ov.displaySeconds ?? crosswordTiming.displaySeconds) +
+        (ov.answerSeconds ?? crosswordTiming.answerSeconds);
+    } else if (isFill) {
+      const ov = q.timingOverride ?? {};
+      const fPresent = ov.presentSeconds ?? fillTiming.presentSeconds;
+      const fCountdown = ov.countdownSeconds ?? fillTiming.countdownSeconds;
+      const fReveal = ov.revealSeconds ?? fillTiming.revealSeconds;
+      qDur = fPresent + fCountdown + fReveal;
     } else {
       qDur = perQ;
     }
@@ -102,6 +117,30 @@ const generateSrt = (data, srtPath) => {
         `${idx}`,
         `${formatSrtTime(qStart)} --> ${formatSrtTime(qEnd)}`,
         `诗词填字：共 ${lineCount} 句诗纵横交织，补全 ${blanks.length} 个字：${blanks.join(" ")}`,
+        ""
+      );
+      idx++;
+    } else if (isFill) {
+      // 填空题：题干字幕（呈现 + 思考）+ 答案字幕（揭晓）
+      const ov = q.timingOverride ?? {};
+      const fPresent = ov.presentSeconds ?? fillTiming.presentSeconds;
+      const fCountdown = ov.countdownSeconds ?? fillTiming.countdownSeconds;
+      const stem = q.stem.replace(/\n/g, " ");
+
+      const qEnd = cursor + fPresent + fCountdown;
+      blocks.push(
+        `${idx}`,
+        `${formatSrtTime(qStart)} --> ${formatSrtTime(qEnd)}`,
+        stem,
+        ""
+      );
+      idx++;
+
+      const aEnd = cursor + qDur;
+      blocks.push(
+        `${idx}`,
+        `${formatSrtTime(qEnd)} --> ${formatSrtTime(aEnd)}`,
+        q.answer,
         ""
       );
       idx++;
@@ -160,6 +199,7 @@ const SERIES_TAGS = {
   中国文学常识: ["#文学", "#传统文化"],
   中国历史冷知识: ["#历史", "#冷知识", "#传统文化"],
   中国朝代历史: ["#历史", "#中国历史"],
+  万物雅称: ["#万物雅称", "#传统文化", "#古诗词", "#中国文化"],
 };
 
 const FALLBACK_TAGS = ["#传统文化"];
@@ -224,27 +264,42 @@ export const generatePublishText = (data, publishTextPath, platform) => {
 
 // ── main ──────────────────────────────────────────────────
 
-export const renderVideoWithCover = (videoPath = "out/literature-quiz.mp4") => {
+export const renderVideoWithCover = (
+  videoPath = "out/literature-quiz.mp4",
+  options = {}
+) => {
+  const {
+    compositionId = "LiteratureQuiz",
+    dataPath = "src/data/questions.json",
+    srtOnly = false,
+  } = options;
+
   const coverPath = getCoverPath(videoPath);
   const srtPath = getSrtPath(videoPath);
   const publishDouyinPath = getPublishTextPath(videoPath, "douyin");
   const publishWechatPath = getPublishTextPath(videoPath, "wechat");
 
-  // 1. 渲染视频
-  runRemotion(["remotion", "render", "LiteratureQuiz", videoPath, "--log=error"]);
-  console.log(`视频      →  ${videoPath}`);
+  if (!srtOnly) {
+    // 1. 渲染视频
+    runRemotion([
+      "remotion",
+      "render",
+      compositionId,
+      videoPath,
+      "--log=error",
+    ]);
+    console.log(`视频      →  ${videoPath}`);
 
-  // 2. 渲染封面
-  runRemotion(["remotion", "still", "LiteratureQuiz", coverPath, "--frame=90"]);
-  console.log(`封面      →  ${coverPath}`);
+    // 2. 渲染封面
+    runRemotion(["remotion", "still", compositionId, coverPath, "--frame=90"]);
+    console.log(`封面      →  ${coverPath}`);
+  }
 
   // 3. 生成字幕 + 发布文案
   const questionsPath = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     "..",
-    "src",
-    "data",
-    "questions.json"
+    dataPath
   );
   const data = JSON.parse(fs.readFileSync(questionsPath, "utf-8"));
   generateSrt(data, srtPath);
@@ -264,9 +319,31 @@ export const isDirectExecution = (argvPath, moduleUrl) => {
   return Boolean(argvPath) && path.resolve(argvPath) === path.resolve(fileURLToPath(moduleUrl));
 };
 
+const parseCliArgs = (argv) => {
+  const opts = {
+    videoPath: "out/literature-quiz.mp4",
+    compositionId: "LiteratureQuiz",
+    dataPath: "src/data/questions.json",
+    srtOnly: false,
+  };
+  for (const arg of argv.slice(2)) {
+    if (arg.startsWith("--composition=")) {
+      opts.compositionId = arg.slice("--composition=".length);
+    } else if (arg.startsWith("--data=")) {
+      opts.dataPath = arg.slice("--data=".length);
+    } else if (arg === "--srt-only") {
+      opts.srtOnly = true;
+    } else if (arg && !arg.startsWith("--")) {
+      opts.videoPath = arg;
+    }
+  }
+  return opts;
+};
+
 if (isDirectExecution(process.argv[1], import.meta.url)) {
   try {
-    const result = renderVideoWithCover(process.argv[2]);
+    const { videoPath, compositionId, dataPath, srtOnly } = parseCliArgs(process.argv);
+    const result = renderVideoWithCover(videoPath, { compositionId, dataPath, srtOnly });
     console.log("\n✅ 全部完成：");
     console.log(`  视频: ${result.videoPath}`);
     console.log(`  封面: ${result.coverPath}`);

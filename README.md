@@ -11,6 +11,7 @@
 remotion-quiz-video/
 ├── public/assets/                 ← 静态视觉资源（可直接替换）
 │   ├── bg-ink.svg                 水墨夜空背景（1080×1920）
+│   ├── bg-yacheng.svg             万物雅称背景（云霭·望舒月，浅色护眼）
 │   ├── cloud-pattern.svg          顶部祥云纹样
 │   ├── ring-brush.svg             倒计时外圈毛笔飞白环
 │   ├── seal-mark.svg              朱砂印章
@@ -32,6 +33,7 @@ remotion-quiz-video/
 │   │   ├── IntroScene.tsx
 │   │   ├── QuestionScene.tsx      选择题三段式：呈现 → 倒计时 → 揭晓
 │   │   ├── CrosswordScene.tsx     诗词填字纵横两阶段：展示 → 揭晓
+│   │   ├── FillScene.tsx          填空题三段式（万物雅称）：提问 → 思考 → 揭晓雅称
 │   │   └── OutroScene.tsx
 │   ├── LiteratureQuiz.tsx         主合成
 │   ├── Root.tsx                   注册合成（总帧数自动计算）
@@ -257,7 +259,67 @@ npx remotion render CrosswordQuiz out/crossword-ep01.mp4
 
 ---
 
-## 十、常见问题
+## 十、填空题（万物雅称）题型
+
+除了选择题、诗词填字纵横，题库还支持「填空题」——专为《万物雅称》这类专题设计：**问「X 的雅称是什么」→ 揭晓雅称大字 → 底部给出解释**。三段式节奏（呈现 → 思考 → 揭晓），无选项，观众心里默答。
+
+### 题型数据
+
+```jsonc
+{
+  "type": "fill",                    // ★ 必须，区分于选择题
+  "id": "f1",
+  "tag": "星月",                     // 题干上方的小标签（可选）
+  "stem": "古人给「月亮」的雅称\n叫什么？",  // 问句，支持 \n 换行
+  "hint": "两个字的雅称",             // 思考阶段的提示（可选）
+  "answer": "望舒",                  // ★ 雅称（揭晓时大字亮出）
+  "explanation": "《楚辞》有「前望舒使先驱兮」……"  // 底部解释
+}
+```
+
+### 节奏
+
+```jsonc
+"timing": {
+  "perQuestion": { "presentSeconds": 2, "countdownSeconds": 5, "revealSeconds": 5.5 },
+  "fill": { "presentSeconds": 3.5, "countdownSeconds": 6, "revealSeconds": 7 }
+}
+```
+
+- `presentSeconds`：题干入场时间；`countdownSeconds`：思考倒计时；`revealSeconds`：雅称大字 + 解释时长。
+- 单题单独改时长：在该题对象里加 `"timingOverride": { "countdownSeconds": 8 }`。
+
+### 换背景板（换专题皮肤）
+
+在题库顶层加 `background`：
+
+```jsonc
+"background": { "src": "assets/bg-yacheng.svg", "cloudSrc": null, "drift": 0.04 }
+```
+
+- `src`：背景图（缺省 `assets/bg-paper.svg`）；`cloudSrc`：顶部祥云纹样（传 `null` 关闭）；`drift`：缓慢推镜幅度。
+
+### 合成与渲染
+
+- `WanwuYacheng`：万物雅称填空题专题，数据源 `src/data/questions-wanwu-yacheng.json`。
+
+```bash
+npx remotion render WanwuYacheng out/wanwu-yacheng-ep01.mp4
+```
+
+用脚本一次出片（含封面 / 字幕 / 发布文案）：
+
+```bash
+node scripts/render-with-cover.mjs out/wanwu-yacheng-ep01.mp4 \
+  --composition=WanwuYacheng \
+  --data=src/data/questions-wanwu-yacheng.json
+```
+
+> 三种题型可在同一期混排：`questions` 数组里同时放 `type:"choice"` / `"crossword"` / `"fill"` 即可。
+
+---
+
+## 十一、常见问题
 
 - **中文显示成方块**：`THEME.fonts` 里的字体在本机不存在，改成本机有的字体名即可（Windows 一定有 `Microsoft YaHei` / `SimSun` / `KaiTi`）。
 - **选项文字换行溢出**：单个选项建议不超过 12 个汉字；超长时组件会自动降字号，仍不够就缩短文案。

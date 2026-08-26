@@ -1,8 +1,9 @@
 /* ============================================================
  * 题库类型 + 时间轴推导
- * 支持两种题型共存于同一题库（判别联合）：
+ * 支持三种题型共存于同一题库（判别联合）：
  *   - choice     选择题（原有）
  *   - crossword  诗词填字纵横（多句诗纵横交叉，交叉点共用同一字）
+ *   - fill       填空题（万物雅称：问「X 的雅称是什么」→ 揭晓雅称 + 解释）
  * ============================================================ */
 
 /** 选择题三段式节奏 */
@@ -22,6 +23,9 @@ export type CrosswordTiming = {
   /** 答案页（点亮补全 + 图例 + 赏析）时长 */
   answerSeconds: number;
 };
+
+/** 填空题节奏（三段式：呈现 → 思考 → 揭晓） */
+export type FillTiming = PerQuestionTiming;
 
 /* ---------------- 选择题 ---------------- */
 
@@ -95,12 +99,44 @@ export type CrosswordQuestion = {
   timingOverride?: Partial<CrosswordTiming>;
 };
 
+/* ---------------- 填空题（万物雅称） ---------------- */
+
+export type FillQuestion = {
+  type: "fill";
+  id: string;
+  /** 题干（问句），如「你知道『天上的云』古人怎么雅称吗？」，支持 \n 换行 */
+  stem: string;
+  /** 揭晓前的提示，如「两个字的雅称」 */
+  hint?: string;
+  /** 答案（雅称），如「纤凝」「望舒」 */
+  answer: string;
+  /** 答案页底部解释（出处 / 含义 / 相关别称） */
+  explanation: string;
+  /** 可选：题干上方的小标签，如「云」「月」「风」 */
+  tag?: string;
+  /** 可选：单题覆盖全局填空节奏 */
+  timingOverride?: Partial<FillTiming>;
+};
+
 /** 题库中的任一题型 */
-export type AnyQuestion = ChoiceQuestion | CrosswordQuestion;
+export type AnyQuestion = ChoiceQuestion | CrosswordQuestion | FillQuestion;
 
 /** 题型判别 */
 export const isCrossword = (q: AnyQuestion): q is CrosswordQuestion =>
   q.type === "crossword";
+
+export const isFill = (q: AnyQuestion): q is FillQuestion => q.type === "fill";
+
+/* ---------------- 背景板 ---------------- */
+
+export type QuizBackground = {
+  /** 背景静态资源（public/assets 下），缺省 "assets/bg-paper.svg" */
+  src?: string;
+  /** 顶部祥云纹样，传 null 关闭，缺省 "assets/cloud-pattern.svg" */
+  cloudSrc?: string | null;
+  /** 缓慢推进幅度（Ken Burns），0 表示静止，缺省 0.05 */
+  drift?: number;
+};
 
 /* ---------------- 整份题库 ---------------- */
 
@@ -118,6 +154,8 @@ export type QuizData = {
     perQuestion: PerQuestionTiming;
     /** 诗词填字纵横全局节奏（缺省时由 buildTimeline 兜底为 45s / 7s） */
     crossword?: CrosswordTiming;
+    /** 填空题全局节奏（缺省时由 buildTimeline 兜底） */
+    fill?: FillTiming;
   };
   intro: {
     kicker: string;
@@ -151,6 +189,8 @@ export type QuizData = {
     /** 视频号专属覆盖 */
     wechat?: { title?: string; hashtags?: string[] };
   };
+  /** 可选：背景板配置（换专题皮肤）。缺省用宣纸米黄底。 */
+  background?: QuizBackground;
   questions: AnyQuestion[];
 };
 
@@ -158,11 +198,11 @@ export type QuizData = {
 
 export type QuestionSlot = {
   /** 题型，用于场景路由 */
-  kind: "choice" | "crossword";
+  kind: "choice" | "crossword" | "fill";
   index: number;
   from: number;
   durationInFrames: number;
-  /** —— 选择题三段式 —— */
+  /** —— 选择题 / 填空题三段式 —— */
   presentFrames: number;
   countdownFrames: number;
   revealFrames: number;
@@ -186,11 +226,22 @@ export const DEFAULT_CROSSWORD_TIMING: CrosswordTiming = {
   answerSeconds: 7,
 };
 
+/** 填空题节奏兜底值（呈现 → 思考 → 揭晓） */
+export const DEFAULT_FILL_TIMING: FillTiming = {
+  presentSeconds: 3.5,
+  countdownSeconds: 6,
+  revealSeconds: 7,
+};
+
 export const buildTimeline = (data: QuizData): Timeline => {
   const { fps, introSeconds, outroSeconds, perQuestion } = data.timing;
   const crosswordTiming = {
     ...DEFAULT_CROSSWORD_TIMING,
     ...(data.timing.crossword ?? {}),
+  };
+  const fillTiming = {
+    ...DEFAULT_FILL_TIMING,
+    ...(data.timing.fill ?? {}),
   };
   const sec = (s: number) => Math.round(s * fps);
 
@@ -214,6 +265,28 @@ export const buildTimeline = (data: QuizData): Timeline => {
         revealFrames: 0,
         displayFrames,
         answerFrames,
+        question,
+      };
+      cursor += durationInFrames;
+      return slot;
+    }
+
+    if (isFill(question)) {
+      const t = { ...fillTiming, ...(question.timingOverride ?? {}) };
+      const presentFrames = sec(t.presentSeconds);
+      const countdownFrames = sec(t.countdownSeconds);
+      const revealFrames = sec(t.revealSeconds);
+      const durationInFrames = presentFrames + countdownFrames + revealFrames;
+      const slot: QuestionSlot = {
+        kind: "fill",
+        index,
+        from: cursor,
+        durationInFrames,
+        presentFrames,
+        countdownFrames,
+        revealFrames,
+        displayFrames: 0,
+        answerFrames: 0,
         question,
       };
       cursor += durationInFrames;

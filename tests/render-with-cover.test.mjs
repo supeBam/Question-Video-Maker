@@ -72,6 +72,17 @@ test("publish 可按平台覆盖标题与话题", () => {
   assert.deepEqual(derivePublish(data, "wechat").hashtags, ["#视频号"]);
 });
 
+test("万物雅称栏目映射专属话题", () => {
+  const data = {
+    meta: { series: "万物雅称" },
+    intro: { title: "古人的诗意外号\n美到可以直接当名字" },
+  };
+  const { title, hashtags } = derivePublish(data, "douyin");
+  assert.equal(title, "古人的诗意外号");
+  assert.ok(hashtags.includes("#万物雅称"));
+  assert.ok(hashtags.includes("#涨知识"));
+});
+
 test("Windows 文件 URL 能识别为直接执行", () => {
   const scriptPath = path.resolve("scripts/render-with-cover.mjs");
   assert.equal(isDirectExecution(scriptPath, pathToFileURL(scriptPath).href), true);

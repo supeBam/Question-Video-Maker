@@ -7,12 +7,12 @@
   },
   "timing": {
     "fps": 30,
-    "introSeconds": 5,
+    "introSeconds": 4,
     "outroSeconds": 6,
     "perQuestion": {
       "presentSeconds": 6.5,
       "countdownSeconds": 5,
-      "revealSeconds": 7
+      "revealSeconds": 9.5
     }
   },
   "intro": {

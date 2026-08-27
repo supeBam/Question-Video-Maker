@@ -311,7 +311,6 @@ npx remotion render WanwuYacheng out/wanwu-yacheng-ep01.mp4
 
 ```bash
 node scripts/render-with-cover.mjs out/wanwu-yacheng-ep01.mp4 \
-  --composition=WanwuYacheng \
   --data=src/data/questions-wanwu-yacheng.json
 ```
 

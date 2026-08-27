@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "series": "万物雅称",
+    "episode": 3,
+    "episodeLabel": "第 03 期",
+    "hostTag": "@每日文化小测"
+  },
+  "timing": {
+    "fps": 30,
+    "introSeconds": 5,
+    "outroSeconds": 6,
+    "perQuestion": {
+      "presentSeconds": 2,
+      "countdownSeconds": 5,
+      "revealSeconds": 5.5
+    },
+    "fill": {
+      "presentSeconds": 3.5,
+      "countdownSeconds": 6,
+      "revealSeconds": 7
+    }
+  },
+  "intro": {
+    "kicker": "万物雅称",
+    "title": "古人给十二个月\n起的雅称有多美",
+    "subtitle": "每一个月，都藏着一个诗意的名字",
+    "hint": "每题 6 秒思考"
+  },
+  "outro": {
+    "headline": "你记住了几个雅称？",
+    "scoreHints": [
+      "记住 2 个 · 已经能背两句了",
+      "记住 4 个 · 月份都被你叫美了",
+      "6 个全记住 · 你就是行走的万年历"
+    ],
+    "cta": "点赞 + 关注",
+    "ctaSub": "每天一个雅称，让名字也变美",
+    "hook": "杏月、桃月、桂月……你最喜欢哪个月的名字？评论区告诉我。点赞关注，每天一个雅称。"
+  },
+  "voiceOver": {
+    "enabled": false
+  },
+  "bgm": {
+    "enabled": true,
+    "file": "assets/bg-audio/bgm_guzheng_liqiu.mp3",
+    "volume": 0.28
+  },
+  "publish": {
+    "title": "古人给十二个月起的雅称，美到可以当名字",
+    "hashtags": ["万物雅称", "涨知识", "冷知识", "传统文化", "二十四节气", "古诗词"]
+  },
+  "background": {
+    "src": "assets/bg-yacheng.svg",
+    "cloudSrc": null,
+    "drift": 0.04
+  },
+  "questions": [
+    {
+      "type": "fill",
+      "id": "f1",
+      "tag": "岁令",
+      "stem": "农历二月也叫「仲春」\n它还有个以花命名的雅称，是？",
+      "hint": "两个字",
+      "answer": "杏月",
+      "explanation": "二月杏花初绽，故称「杏月」，也叫「花月」「仲春」「如月」。古人以当月之花命名月份，二月便是杏花做主的时节。"
+    },
+    {
+      "type": "fill",
+      "id": "f2",
+      "tag": "岁令",
+      "stem": "农历三月也叫「季春」\n它还有个以花命名的雅称，是？",
+      "hint": "两个字",
+      "answer": "桃月",
+      "explanation": "三月桃花盛开，故称「桃月」，也叫「季春」「桐月」「蚕月」。《诗经》「桃之夭夭，灼灼其华」写的正是这三月的盛景。"
+    },
+    {
+      "type": "fill",
+      "id": "f3",
+      "tag": "岁令",
+      "stem": "农历五月也叫「仲夏」\n它还有个以花命名的雅称，是？",
+      "hint": "两个字",
+      "answer": "榴月",
+      "explanation": "五月石榴花红似火，故称「榴月」，也叫「蒲月」「仲夏」「皋月」。农历五月菖蒲、榴花并茂，正是入夏的时节。"
+    },
+    {
+      "type": "fill",
+      "id": "f4",
+      "tag": "岁令",
+      "stem": "农历六月也叫「季夏」\n它还有个以花命名的雅称，是？",
+      "hint": "两个字",
+      "answer": "荷月",
+      "explanation": "六月荷花映日，故称「荷月」，也叫「伏月」「季夏」「暑月」。杨万里「接天莲叶无穷碧，映日荷花别样红」写的就是荷月。"
+    },
+    {
+      "type": "fill",
+      "id": "f5",
+      "tag": "岁令",
+      "stem": "农历八月也叫「仲秋」\n它还有个以花命名的雅称，是？",
+      "hint": "两个字",
+      "answer": "桂月",
+      "explanation": "八月桂花香，故称「桂月」，也叫「仲秋」「壮月」。古时八月十五中秋赏月、饮桂花酒，正是桂月里的头等盛事。"
+    },
+    {
+      "type": "fill",
+      "id": "f6",
+      "tag": "岁令",
+      "stem": "农历九月也叫「季秋」\n它还有个以花命名的雅称，是？",
+      "hint": "两个字",
+      "answer": "菊月",
+      "explanation": "九月菊花盛开，故称「菊月」，也叫「霜月」「季秋」「戌月」。九月九重阳赏菊，陶渊明「采菊东篱下」便是菊月的风雅。"
+    }
+  ]
+}

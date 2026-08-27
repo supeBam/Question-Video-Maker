@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { buildTimeline } from "../src/types.ts";
 
 // ── helpers ───────────────────────────────────────────────
 
@@ -16,16 +17,14 @@ export const getSrtPath = (videoPath) => {
   return videoPath.slice(0, -4) + ".srt";
 };
 
-// 发布平台：对应两个平台的发布文案文件
+// 发布平台：用于在单个文案文件里分段标注「视频号 / 抖音」
 export const PUBLISH_PLATFORMS = {
   douyin: "抖音",
   wechat: "视频号",
 };
 
-export const getPublishTextPath = (videoPath, platform) => {
-  const label = PUBLISH_PLATFORMS[platform];
-  if (!label) throw new Error(`未知发布平台：${platform}`);
-  return videoPath.slice(0, -4) + `.${label}.txt`;
+export const getPublishTextPath = (videoPath) => {
+  return videoPath.slice(0, -4) + ".txt";
 };
 
 const runRemotion = (args) => {
@@ -42,13 +41,6 @@ const runRemotion = (args) => {
 
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
 
-const DEFAULT_CROSSWORD_TIMING = { displaySeconds: 45, answerSeconds: 7 };
-const DEFAULT_FILL_TIMING = {
-  presentSeconds: 3.5,
-  countdownSeconds: 6,
-  revealSeconds: 7,
-};
-
 const formatSrtTime = (seconds) => {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -58,16 +50,11 @@ const formatSrtTime = (seconds) => {
 };
 
 const generateSrt = (data, srtPath) => {
-  const { timing, questions } = data;
-  const { fps, introSeconds, outroSeconds, perQuestion } = timing;
-  const presentSec = perQuestion.presentSeconds;
-  const countdownSec = perQuestion.countdownSeconds;
-  const revealSec = perQuestion.revealSeconds;
-  const perQ = presentSec + countdownSec + revealSec;
-  const crosswordTiming = timing.crossword ?? DEFAULT_CROSSWORD_TIMING;
-  const fillTiming = timing.fill ?? DEFAULT_FILL_TIMING;
+  // 用与视频渲染完全一致的 buildTimeline 推导时间轴，保证字幕与画面逐帧对齐
+  const timeline = buildTimeline(data);
+  const { fps, introFrames, outroFrames, slots, totalFrames } = timeline;
+  const sec = (frames) => frames / fps;
 
-  let cursor = introSeconds;
   const blocks = [];
   let idx = 1;
 
@@ -76,38 +63,20 @@ const generateSrt = (data, srtPath) => {
   if (introTitle) {
     blocks.push(
       `${idx}`,
-      `00:00:00,000 --> ${formatSrtTime(introSeconds)}`,
+      `00:00:00,000 --> ${formatSrtTime(sec(introFrames))}`,
       introTitle,
       ""
     );
     idx++;
   }
 
-  for (const q of questions) {
-    const isCw = q.type === "crossword";
-    const isFill = q.type === "fill";
+  for (const slot of slots) {
+    const q = slot.question;
+    const start = sec(slot.from);
+    const end = sec(slot.from + slot.durationInFrames);
 
-    // 该题型单题总时长（秒）
-    let qDur;
-    if (isCw) {
-      const ov = q.timingOverride ?? {};
-      qDur =
-        (ov.displaySeconds ?? crosswordTiming.displaySeconds) +
-        (ov.answerSeconds ?? crosswordTiming.answerSeconds);
-    } else if (isFill) {
-      const ov = q.timingOverride ?? {};
-      const fPresent = ov.presentSeconds ?? fillTiming.presentSeconds;
-      const fCountdown = ov.countdownSeconds ?? fillTiming.countdownSeconds;
-      const fReveal = ov.revealSeconds ?? fillTiming.revealSeconds;
-      qDur = fPresent + fCountdown + fReveal;
-    } else {
-      qDur = perQ;
-    }
-    const qStart = cursor;
-
-    if (isCw) {
+    if (slot.kind === "crossword") {
       // 诗词填字纵横：整段一条字幕（展示 + 答案页合并）
-      const qEnd = cursor + qDur;
       const blanks = [];
       for (const clue of q.clues) {
         for (const bi of clue.blanks ?? []) blanks.push(clue.text[bi]);
@@ -115,63 +84,72 @@ const generateSrt = (data, srtPath) => {
       const lineCount = q.clues.length;
       blocks.push(
         `${idx}`,
-        `${formatSrtTime(qStart)} --> ${formatSrtTime(qEnd)}`,
+        `${formatSrtTime(start)} --> ${formatSrtTime(end)}`,
         `诗词填字：共 ${lineCount} 句诗纵横交织，补全 ${blanks.length} 个字：${blanks.join(" ")}`,
         ""
       );
       idx++;
-    } else if (isFill) {
+    } else if (slot.kind === "fill") {
       // 填空题：题干字幕（呈现 + 思考）+ 答案字幕（揭晓）
-      const ov = q.timingOverride ?? {};
-      const fPresent = ov.presentSeconds ?? fillTiming.presentSeconds;
-      const fCountdown = ov.countdownSeconds ?? fillTiming.countdownSeconds;
-      const stem = q.stem.replace(/\n/g, " ");
-
-      const qEnd = cursor + fPresent + fCountdown;
+      const stemEnd = sec(slot.from + slot.presentFrames + slot.countdownFrames);
       blocks.push(
         `${idx}`,
-        `${formatSrtTime(qStart)} --> ${formatSrtTime(qEnd)}`,
-        stem,
+        `${formatSrtTime(start)} --> ${formatSrtTime(stemEnd)}`,
+        q.stem.replace(/\n/g, " "),
         ""
       );
       idx++;
-
-      const aEnd = cursor + qDur;
       blocks.push(
         `${idx}`,
-        `${formatSrtTime(qEnd)} --> ${formatSrtTime(aEnd)}`,
+        `${formatSrtTime(stemEnd)} --> ${formatSrtTime(end)}`,
         q.answer,
         ""
       );
       idx++;
     } else {
-      // 选择题：题干字幕（呈现 + 倒计时）+ 答案字幕（揭晓）
-      const stem = q.stem.replace(/\n/g, " ");
-      const letter = LETTERS[q.answerIndex];
-      const answerText = q.options[q.answerIndex];
-
-      const qEnd = cursor + presentSec + countdownSec;
+      // 选择题：题干字幕（呈现 + 倒计时）+ 答案字幕（揭晓，含「一句话真相」口播）
+      const stemEnd = sec(slot.from + slot.presentFrames + slot.countdownFrames);
       blocks.push(
         `${idx}`,
-        `${formatSrtTime(qStart)} --> ${formatSrtTime(qEnd)}`,
-        stem,
+        `${formatSrtTime(start)} --> ${formatSrtTime(stemEnd)}`,
+        q.stem.replace(/\n/g, " "),
         ""
       );
       idx++;
 
-      const aStart = qEnd;
-      const aEnd = cursor + qDur;
-      const punchline = q.punchline ? `。${q.punchline}` : "";
-      blocks.push(
-        `${idx}`,
-        `${formatSrtTime(aStart)} --> ${formatSrtTime(aEnd)}`,
-        `正确答案：${letter}. ${answerText}${punchline}`,
-        ""
-      );
-      idx++;
+      const answerLine = `正确答案：${LETTERS[q.answerIndex]}. ${q.options[q.answerIndex]}`;
+      const punchline = q.punchline ?? "";
+      const revealDur = end - stemEnd;
+
+      if (punchline) {
+        // 按字数比例拆分揭晓时长：答案与真相各占一段，避免一条长文本朗读溢出压到下一题
+        const total = answerLine.length + punchline.length;
+        const answerDur = revealDur * (answerLine.length / total);
+        const punchStart = stemEnd + answerDur;
+        blocks.push(
+          `${idx}`,
+          `${formatSrtTime(stemEnd)} --> ${formatSrtTime(punchStart)}`,
+          answerLine,
+          ""
+        );
+        idx++;
+        blocks.push(
+          `${idx}`,
+          `${formatSrtTime(punchStart)} --> ${formatSrtTime(end)}`,
+          punchline,
+          ""
+        );
+        idx++;
+      } else {
+        blocks.push(
+          `${idx}`,
+          `${formatSrtTime(stemEnd)} --> ${formatSrtTime(end)}`,
+          answerLine,
+          ""
+        );
+        idx++;
+      }
     }
-
-    cursor += qDur;
   }
 
   // 片尾钩子字幕（可选：有 outro.hook 才输出，供后期 TTS 口播）
@@ -179,7 +157,7 @@ const generateSrt = (data, srtPath) => {
   if (hook) {
     blocks.push(
       `${idx}`,
-      `${formatSrtTime(cursor)} --> ${formatSrtTime(cursor + outroSeconds)}`,
+      `${formatSrtTime(sec(totalFrames - outroFrames))} --> ${formatSrtTime(sec(totalFrames))}`,
       hook,
       ""
     );
@@ -248,18 +226,22 @@ export const derivePublish = (data, platform) => {
   return { title, hashtags };
 };
 
-export const generatePublishText = (data, publishTextPath, platform) => {
-  const { title, hashtags } = derivePublish(data, platform);
-  const content = [
-    "【标题】",
-    title,
-    "",
-    "【话题】",
-    hashtags.join(" "),
-    "",
-  ].join("\n");
+export const generatePublishText = (data, publishTextPath) => {
+  // 视频号在前、抖音在后，合并写进同一个 txt
+  const content = ["wechat", "douyin"]
+    .map((platform) => {
+      const { title, hashtags } = derivePublish(data, platform);
+      return [
+        `【${PUBLISH_PLATFORMS[platform]}】`,
+        `标题：${title}`,
+        "",
+        `话题：${hashtags.join(" ")}`,
+        "",
+      ].join("\n");
+    })
+    .join("\n");
   fs.writeFileSync(publishTextPath, content, "utf-8");
-  console.log(`发布文案(${PUBLISH_PLATFORMS[platform]}) →  ${publishTextPath}`);
+  console.log(`发布文案 →  ${publishTextPath}  (视频号 + 抖音)`);
 };
 
 // ── main ──────────────────────────────────────────────────
@@ -268,50 +250,77 @@ export const renderVideoWithCover = (
   videoPath = "out/literature-quiz.mp4",
   options = {}
 ) => {
-  const {
-    compositionId = "LiteratureQuiz",
-    dataPath = "src/data/questions.json",
-    srtOnly = false,
-  } = options;
+  const { dataPath = "src/data/questions.json", srtOnly = false } = options;
+  // 渲染一律走 LiteratureQuiz 合成（支持三种题型混排），题库内容由 --data 决定
+  const compositionId = "LiteratureQuiz";
+
+  // 统一以项目根目录为工作目录：remotion 配置、src/、out/ 都相对它解析
+  const projectRoot = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    ".."
+  );
+  if (process.cwd() !== projectRoot) {
+    process.chdir(projectRoot);
+  }
 
   const coverPath = getCoverPath(videoPath);
   const srtPath = getSrtPath(videoPath);
-  const publishDouyinPath = getPublishTextPath(videoPath, "douyin");
-  const publishWechatPath = getPublishTextPath(videoPath, "wechat");
+  const publishTextPath = getPublishTextPath(videoPath);
+
+  // 读取题库数据：视频渲染、字幕、发布文案共用同一份数据
+  const questionsPath = path.resolve(projectRoot, dataPath);
+  const data = JSON.parse(fs.readFileSync(questionsPath, "utf-8"));
+
+  // 把题库包成 props 写入临时 JSON 文件，让 remotion render/still 按这份数据出片。
+  // Remotion 的 --props 同时支持内联 JSON 或一个 JSON 文件路径，这里用文件路径，
+  // 避免把含中文与引号的大 JSON 直接拼进命令行（Windows shell 转义极易出错）。
+  // props 路径用「相对项目根 + 正斜杠」（out/.remotion-props.json），
+  // 避免 Windows shell / npx.cmd 对反斜杠绝对路径（D:\...）的转义问题。
+  const propsPath = path.join("out", ".remotion-props.json").replace(/\\/g, "/");
 
   if (!srtOnly) {
-    // 1. 渲染视频
-    runRemotion([
-      "remotion",
-      "render",
-      compositionId,
-      videoPath,
-      "--log=error",
-    ]);
-    console.log(`视频      →  ${videoPath}`);
+    fs.mkdirSync(path.dirname(propsPath), { recursive: true });
+    fs.writeFileSync(propsPath, JSON.stringify({ data }), "utf-8");
+    if (!fs.existsSync(propsPath)) {
+      throw new Error(`props 临时文件写入失败：${path.resolve(propsPath)}`);
+    }
+    console.log(`临时 props → ${propsPath}`);
+    try {
+      // 1. 渲染视频
+      runRemotion([
+        "remotion",
+        "render",
+        compositionId,
+        videoPath,
+        `--props=${propsPath}`,
+        "--log=error",
+      ]);
+      console.log(`视频      →  ${videoPath}`);
 
-    // 2. 渲染封面
-    runRemotion(["remotion", "still", compositionId, coverPath, "--frame=90"]);
-    console.log(`封面      →  ${coverPath}`);
+      // 2. 渲染封面
+      runRemotion([
+        "remotion",
+        "still",
+        compositionId,
+        coverPath,
+        `--props=${propsPath}`,
+        "--frame=90",
+      ]);
+      console.log(`封面      →  ${coverPath}`);
+    } finally {
+      fs.rmSync(propsPath, { force: true });
+    }
   }
 
   // 3. 生成字幕 + 发布文案
-  const questionsPath = path.resolve(
-    path.dirname(fileURLToPath(import.meta.url)),
-    "..",
-    dataPath
-  );
-  const data = JSON.parse(fs.readFileSync(questionsPath, "utf-8"));
   generateSrt(data, srtPath);
-  generatePublishText(data, publishDouyinPath, "douyin");
-  generatePublishText(data, publishWechatPath, "wechat");
+  generatePublishText(data, publishTextPath);
 
   return {
     videoPath,
     coverPath,
     srtPath,
-    publishDouyinPath,
-    publishWechatPath,
+    publishTextPath,
   };
 };
 
@@ -322,14 +331,11 @@ export const isDirectExecution = (argvPath, moduleUrl) => {
 const parseCliArgs = (argv) => {
   const opts = {
     videoPath: "out/literature-quiz.mp4",
-    compositionId: "LiteratureQuiz",
     dataPath: "src/data/questions.json",
     srtOnly: false,
   };
   for (const arg of argv.slice(2)) {
-    if (arg.startsWith("--composition=")) {
-      opts.compositionId = arg.slice("--composition=".length);
-    } else if (arg.startsWith("--data=")) {
+    if (arg.startsWith("--data=")) {
       opts.dataPath = arg.slice("--data=".length);
     } else if (arg === "--srt-only") {
       opts.srtOnly = true;
@@ -342,14 +348,13 @@ const parseCliArgs = (argv) => {
 
 if (isDirectExecution(process.argv[1], import.meta.url)) {
   try {
-    const { videoPath, compositionId, dataPath, srtOnly } = parseCliArgs(process.argv);
-    const result = renderVideoWithCover(videoPath, { compositionId, dataPath, srtOnly });
+    const { videoPath, dataPath, srtOnly } = parseCliArgs(process.argv);
+    const result = renderVideoWithCover(videoPath, { dataPath, srtOnly });
     console.log("\n✅ 全部完成：");
     console.log(`  视频: ${result.videoPath}`);
     console.log(`  封面: ${result.coverPath}`);
     console.log(`  字幕: ${result.srtPath}`);
-    console.log(`  发布文案(抖音): ${result.publishDouyinPath}`);
-    console.log(`  发布文案(视频号): ${result.publishWechatPath}`);
+    console.log(`  发布文案: ${result.publishTextPath}  (视频号 + 抖音)`);
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);

@@ -1,0 +1,244 @@
+# 抖音作品列表 top20（OpenCLI douyin videos --limit 20 抓取）
+# 抓取时间: 2026-08-27 · 来源: opencli douyin videos
+# 字段: aweme_id / title / status / play_count / digg_count / comment_count / collect_count / share_count / duration(ms) / create_time
+- aweme_id: '7673671406344850734'
+  title: |-
+    一碗一筷 中国人为什么不用刀叉？一双筷子里藏着五千年的脾气  
+    #中国文化  #国学智慧  #老祖宗的智慧  #餐桌礼仪  
+    #筷子
+  status: published
+  play_count: 275
+  digg_count: 7
+  comment_count: 1
+  collect_count: 1
+  share_count: 4
+  duration: 396482
+  create_time: 2026/8/14 09:04:19
+- aweme_id: '7678490955414064394'
+  title: |-
+    你知道文具的名字吗？ 古人给文具起的「人名」，美到可以当名字 
+    #万物雅称  #涨知识  #冷知识  #传统文化  #文房四宝
+  status: published
+  play_count: 19
+  digg_count: 2
+  comment_count: 0
+  collect_count: 1
+  share_count: 0
+  duration: 87284
+  create_time: 2026/8/27 08:46:38
+- aweme_id: '7677969717721566527'
+  title: |-
+    认识国宝！ 这4件国宝的名字，99%的人从小就叫错了 
+    #中国文化  #涨知识  #文物  #故宫  #知识分享
+  status: published
+  play_count: 246
+  digg_count: 5
+  comment_count: 0
+  collect_count: 3
+  share_count: 1
+  duration: 85543
+  create_time: 2026/8/26 19:00:00
+- aweme_id: '7678122661016374564'
+  title: |-
+    你知道这些的雅称吗？ 古人的诗意外号，美到可以直接当名字 
+    #万物雅称  #涨知识  #冷知识  #传统文化  #中国文化
+  status: published
+  play_count: 970
+  digg_count: 27
+  comment_count: 1
+  collect_count: 7
+  share_count: 3
+  duration: 110017
+  create_time: 2026/8/26 08:57:28
+- aweme_id: '7677602526505536777'
+  title: |-
+    你能答对几题 这4句话你天天说，来历99%的人不知道 
+    #中国文化  #涨知识  #成语   #答题  #知识分享
+  status: published
+  play_count: 602
+  digg_count: 12
+  comment_count: 0
+  collect_count: 7
+  share_count: 2
+  duration: 78020
+  create_time: 2026/8/25 19:00:00
+- aweme_id: '7676473820531297571'
+  title: |-
+    冷知识！ 这4个词的最初含义，99%的人都不知道 
+    #中国文化  #涨知识  #冷知识  #成语  #传统文化
+  status: published
+  play_count: 1187
+  digg_count: 21
+  comment_count: 6
+  collect_count: 4
+  share_count: 21
+  duration: 94018
+  create_time: 2026/8/22 19:00:00
+- aweme_id: '7676121639007882522'
+  title: |-
+    离了婚再遇前任是什么体验？ 陆游写成了千古名篇 
+    #情感  #婚姻  #陆游  #钗头凤
+  status: published
+  play_count: 38
+  digg_count: 0
+  comment_count: 0
+  collect_count: 0
+  share_count: 0
+  duration: 118051
+  create_time: 2026/8/21 19:30:00
+- aweme_id: '7675764967022333194'
+  title: |-
+    人生如逆旅，我读错了十年 苏轼安慰人，从来不说「加油」 
+    #苏轼  #人生如逆旅  #国学经典  #中国传统文化  #治愈
+  status: published
+  play_count: 166
+  digg_count: 4
+  comment_count: 0
+  collect_count: 1
+  share_count: 0
+  duration: 113941
+  create_time: 2026/8/20 19:30:00
+- aweme_id: '7675361736714767635'
+  title: |-
+    你真的知道吗？ 4个从小听到大的历史故事，99%的人都记错了 
+    #中国文化  #历史  #涨知识  #三国
+  status: published
+  play_count: 456
+  digg_count: 8
+  comment_count: 0
+  collect_count: 2
+  share_count: 0
+  duration: 94111
+  create_time: 2026/8/19 19:00:00
+- aweme_id: '7675371637344111908'
+  title: |-
+    中国的数字 90%的人都不知道数字的玄机 
+    #中国文化 #冷知识 #数字 #传统文化
+  status: published
+  play_count: 168
+  digg_count: 1
+  comment_count: 0
+  collect_count: 1
+  share_count: 0
+  duration: 130102
+  create_time: 2026/8/19 08:00:00
+- aweme_id: '7675004025594498323'
+  title: |-
+    这4个词，99%的人用错了 
+    #中国文化  #涨知识  #成语  #亲子教育
+  status: published
+  play_count: 142
+  digg_count: 0
+  comment_count: 0
+  collect_count: 0
+  share_count: 0
+  duration: 94111
+  create_time: 2026/8/18 18:30:00
+- aweme_id: '7675009017177066804'
+  title: |-
+    吃醋 你知道吃醋的故事吗? 
+    #历史故事  #中国文化  #亲子教育  #冷知识
+  status: published
+  play_count: 253
+  digg_count: 2
+  comment_count: 0
+  collect_count: 1
+  share_count: 0
+  duration: 121975
+  create_time: 2026/8/18 13:00:00
+- aweme_id: '7675001097043332402'
+  title: |-
+    这4句诗，99%的人理解错了 
+    #中国文化  #古诗词  #冷知识  #答题  #知识分享
+  status: published
+  play_count: 516
+  digg_count: 4
+  comment_count: 0
+  collect_count: 3
+  share_count: 2
+  duration: 94111
+  create_time: 2026/8/18 08:00:00
+- aweme_id: '7674643771371392282'
+  title: |-
+    东西南北 原来东西南北都藏着老祖宗的智慧 
+    #传统文化  #东西南北 #文化常识
+  status: published
+  play_count: 255
+  digg_count: 7
+  comment_count: 0
+  collect_count: 5
+  share_count: 0
+  duration: 119282
+  create_time: 2026/8/17 12:00:00
+- aweme_id: '7674571961061756210'
+  title: |-
+    真实意思你真的懂吗？ 这4句浪漫情话你天天念 
+     #传统文化  #古诗词  #中国文化  #涨知识  #知识分享
+  status: published
+  play_count: 69
+  digg_count: 1
+  comment_count: 0
+  collect_count: 1
+  share_count: 0
+  duration: 78113
+  create_time: 2026/8/17 07:30:00
+- aweme_id: '7674199399358139700'
+  title: |-
+    你知道这些成语吗？ 几个成语贯穿了中国千年的生活方式 
+    #中国文化 #亲子教育 #成语
+  status: published
+  play_count: 150
+  digg_count: 1
+  comment_count: 0
+  collect_count: 0
+  share_count: 0
+  duration: 70705
+  create_time: 2026/8/16 07:30:00
+- aweme_id: '7674183397081697576'
+  title: |-
+    成语故事 你真的知道半斤八两的由来吗？ 
+    #传统文化 #成语 #知识分享
+  status: published
+  play_count: 237
+  digg_count: 2
+  comment_count: 0
+  collect_count: 2
+  share_count: 0
+  duration: 42075
+  create_time: 2026/8/15 20:10:04
+- aweme_id: '7673515286313717001'
+  title: |-
+    90%的人都误解了 这句话根本不是你以为的意思 
+    #中国文化 #答题 #诗句
+  status: published
+  play_count: 375
+  digg_count: 6
+  comment_count: 0
+  collect_count: 1
+  share_count: 1
+  duration: 78113
+  create_time: 2026/8/15 08:00:00
+- aweme_id: '7673511048875380003'
+  title: |-
+    成语你真的会用吗？ 我用了半辈子居然用反了 
+    #答题 #中国文化  #知识分享
+  status: published
+  play_count: 445
+  digg_count: 8
+  comment_count: 0
+  collect_count: 2
+  share_count: 1
+  duration: 78113
+  create_time: 2026/8/14 13:00:00
+- aweme_id: '7673506120446577963'
+  title: |-
+    能全对的人只有10% 天天挂在嘴边却理解错误 
+    #中国文化 #趣味答题 #俗语
+  status: published
+  play_count: 283
+  digg_count: 2
+  comment_count: 0
+  collect_count: 1
+  share_count: 0
+  duration: 77509
+  create_time: 2026/8/14 08:00:00

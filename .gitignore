@@ -41,12 +41,14 @@ coverage/
 .nyc_output/
 test-results/
 
-# 本地工具状态
+# 本地工具状态（不提交）
 .agent/**/.cache/
 .agent/**/node_modules/
 .agent/**/__pycache__/
 .agents/**/__pycache__/
 .listenhub/
+.dsh/
+.agent-teams/
 
 # tts
 tts/

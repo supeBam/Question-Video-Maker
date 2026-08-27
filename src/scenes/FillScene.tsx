@@ -135,8 +135,8 @@ export const FillScene: React.FC<FillSceneProps> = ({
         />
       </div>
 
-      {/* 思考阶段：倒计时环 + 留白提示 */}
-      {!revealed ? (
+      {/* 思考阶段：倒计时环 + 留白提示（呈现阶段结束后才出现） */}
+      {!revealed && frame >= countdownStart ? (
         <div
           style={{
             position: "absolute",
@@ -168,7 +168,7 @@ export const FillScene: React.FC<FillSceneProps> = ({
               alignItems: "center",
               justifyContent: "center",
               gap: 10,
-              ...fadeSlideUp(frame, 16, 18, 20),
+              ...fadeSlideUp(frame, countdownStart, 18, 20),
             }}
           >
             <span

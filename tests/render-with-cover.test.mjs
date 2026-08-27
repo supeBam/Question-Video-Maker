@@ -20,19 +20,11 @@ test("拒绝非 MP4 输出路径", () => {
   assert.throws(() => getCoverPath("out/video.mov"), /\.mp4/);
 });
 
-test("抖音/视频号发布文案路径", () => {
+test("发布文案为单个 txt 文件", () => {
   assert.equal(
-    getPublishTextPath("out/中国朝代历史-第02期.mp4", "douyin"),
-    "out/中国朝代历史-第02期.抖音.txt"
+    getPublishTextPath("out/中国朝代历史-第02期.mp4"),
+    "out/中国朝代历史-第02期.txt"
   );
-  assert.equal(
-    getPublishTextPath("out/中国朝代历史-第02期.mp4", "wechat"),
-    "out/中国朝代历史-第02期.视频号.txt"
-  );
-});
-
-test("未知发布平台报错", () => {
-  assert.throws(() => getPublishTextPath("out/v.mp4", "xiaohongshu"), /平台/);
 });
 
 test("抖音标题取首行短钩子，并追加流量标签", () => {

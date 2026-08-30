@@ -163,12 +163,28 @@ const generateSrt = (data, srtPath, opts = {}) => {
   // 不需要口播钩子时用 --no-outro-hook 关闭（有 outro.hook 才输出）
   const hook = opts.outroHookSrt ? data.outro?.hook : undefined;
   if (hook) {
-    blocks.push(
-      `${idx}`,
-      `${formatSrtTime(sec(totalFrames - outroFrames))} --> ${formatSrtTime(sec(totalFrames))}`,
-      hook,
-      ""
-    );
+    const minimalOutro =
+      data.timing?.pacing === "burst" && data.timing.minimalOutro !== false;
+    const hookStartSec = sec(totalFrames - outroFrames);
+    if (minimalOutro) {
+      // 极简片尾（无片尾帧）：钩子口播从视频结束点开始（约 4.5 字/秒 + 缓冲），
+      // 用户在剪映里延长视频（接钩子图/答案图）时自然对齐
+      const hookDur = Math.max(2, Math.ceil(hook.length / 4.5 + 0.8));
+      blocks.push(
+        `${idx}`,
+        `${formatSrtTime(hookStartSec)} --> ${formatSrtTime(hookStartSec + hookDur)}`,
+        hook,
+        ""
+      );
+    } else {
+      // 文字版片尾：钩子口播落在片尾段内
+      blocks.push(
+        `${idx}`,
+        `${formatSrtTime(hookStartSec)} --> ${formatSrtTime(sec(totalFrames))}`,
+        hook,
+        ""
+      );
+    }
     idx++;
   }
 

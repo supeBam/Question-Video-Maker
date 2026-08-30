@@ -119,8 +119,9 @@ export type QuizData = {
      */
     ttsWordsPerSecond?: number;
     /**
-     * 极简片尾（burst 模式专属）：缺省 true —— 片尾画面零文字（仅背景+BGM），
-     * 用户自行导入钩子图/答案图；设 false 恢复「全对=学霸 + CTA」文字版片尾。
+     * 极简片尾（burst 模式专属）：缺省 true —— 视频在最后一题结束后直接结束，
+     * 不含片尾帧（outroFrames=0），钩子图/答案图由用户发布时自行导入；
+     * 设 false 恢复 3 秒「全对=学霸 + CTA」文字版片尾。
      */
     minimalOutro?: boolean;
     /**
@@ -315,7 +316,10 @@ export const buildTimeline = (data: QuizData): Timeline => {
   const introFrames = burst ? 0 : sec(introSeconds);
   // 快闪模板钩子开场（缺省 2 秒；hookSeconds: 0 零片头直接进题）
   const hookFrames = burst ? sec(data.timing.hookSeconds ?? 2) : 0;
-  const outroFrames = sec(outroSeconds);
+  // 极简片尾（burst 缺省开启）：连片尾帧都不要，视频在最后一题结束，
+  // 钩子图/答案图由用户发布时自行导入（剪映里接在视频末尾）
+  const minimalOutro = burst && data.timing.minimalOutro !== false;
+  const outroFrames = minimalOutro ? 0 : sec(outroSeconds);
   // 快闪模板片尾答案回顾（缺省 12 秒；summarySeconds: 0 关闭；classic 恒为 0）
   const summaryFrames = burst ? sec(data.timing.summarySeconds ?? 12) : 0;
 

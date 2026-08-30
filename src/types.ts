@@ -119,6 +119,11 @@ export type QuizData = {
      */
     ttsWordsPerSecond?: number;
     /**
+     * 极简片尾（burst 模式专属）：缺省 true —— 片尾画面零文字（仅背景+BGM），
+     * 用户自行导入钩子图/答案图；设 false 恢复「全对=学霸 + CTA」文字版片尾。
+     */
+    minimalOutro?: boolean;
+    /**
      * 快闪模板片尾「本期答案」回顾时长（秒）：在片尾 CTA 之前逐题展示
      * 题干→答案→解释（仅画面，不进字幕）。缺省 12 秒；设 0 关闭。
      * classic 模式忽略此字段。

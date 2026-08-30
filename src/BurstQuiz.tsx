@@ -39,6 +39,9 @@ export const BurstQuiz: React.FC<BurstQuizProps> = ({ data }) => {
   // 音效开关：缺省开启（答案音效 + 有倒计时时的倒计时音效），
   // 设 timing.soundEffects = false 可切纯快闪（完全对标无音效）
   const soundEffects = data.timing.soundEffects !== false;
+  // 极简片尾：缺省开启（画面零文字，仅背景+BGM，用户自行导入钩子图/答案图）；
+  // 设 timing.minimalOutro = false 恢复「全对=学霸 + CTA」文字版片尾
+  const minimalOutro = data.timing.minimalOutro !== false;
 
   return (
     <AbsoluteFill>
@@ -114,6 +117,7 @@ export const BurstQuiz: React.FC<BurstQuizProps> = ({ data }) => {
           meta={data.meta}
           badge={badge}
           durationInFrames={outroFrames}
+          minimal={minimalOutro}
         />
       </Sequence>
     </AbsoluteFill>

@@ -9,22 +9,33 @@ export type BurstOutroSceneProps = {
   meta: QuizData["meta"];
   badge: string;
   durationInFrames: number;
+  /** 极简片尾：不渲染任何文字（全对=学霸 / CTA / 落款），只留背景 + BGM，
+   *  供用户在剪映自行导入钩子图/答案图；缺省 false 渲染完整文字版 */
+  minimal?: boolean;
 };
 
 /**
  * 爆款快闪片尾（约 3 秒，对标系列视频片尾几乎无停留）：
  * 大字结果承诺（「全对 = 学霸」）+ 一行 CTA（点赞·收藏·关注）。
  * 收藏指令在这里收口——对标把「收藏」写进标题，我们把「收藏」收在片尾 + 底部常驻条。
+ * minimal 模式（timing.minimalOutro 缺省 true 时启用）：画面零文字，仅背景+BGM，
+ * 用于发布时自行导入钩子图/答案图到结尾。
  */
 export const BurstOutroScene: React.FC<BurstOutroSceneProps> = ({
   outro,
   meta,
   badge,
   durationInFrames,
+  minimal = false,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { colors, fonts, fontSize, layout } = THEME;
+
+  // 极简片尾：整段静场，画面只有背景（背景在合成外层 Sequence 之外），无需渲染任何元素
+  if (minimal) {
+    return <AbsoluteFill />;
+  }
 
   const ctaPop = popIn(frame, fps, 16, 11, 190);
   const breathe = 1 + 0.02 * Math.sin((frame - 16) / 7);

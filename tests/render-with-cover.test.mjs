@@ -6,6 +6,7 @@ import {
   getCoverPath,
   getPublishTextPath,
   getHookImagePath,
+  getAnswerSheetPath,
   derivePublish,
   isDirectExecution,
 } from "../scripts/render-with-cover.mjs";
@@ -21,6 +22,17 @@ test("片尾钩子图为 -钩子.png 后缀", () => {
   assert.equal(
     getHookImagePath("out/成语-第01期.mp4"),
     "out/成语-第01期-钩子.png"
+  );
+});
+
+test("答案解释图按页码命名", () => {
+  assert.equal(
+    getAnswerSheetPath("out/成语-第01期.mp4", 1),
+    "out/成语-第01期-答案-第1页.png"
+  );
+  assert.equal(
+    getAnswerSheetPath("out/成语-第01期.mp4", 3),
+    "out/成语-第01期-答案-第3页.png"
   );
 });
 

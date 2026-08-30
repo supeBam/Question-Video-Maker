@@ -3,6 +3,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { buildTimeline } from "../src/types.ts";
+import { computeAnswerPages } from "../src/answerSheet.ts";
 
 // ── helpers ───────────────────────────────────────────────
 
@@ -19,6 +20,14 @@ export const getHookImagePath = (videoPath) => {
     throw new Error("视频输出路径必须使用 .mp4 扩展名");
   }
   return videoPath.slice(0, -4) + "-钩子.png";
+};
+
+/** 答案解释图路径（视频结尾答案解释，多页自动分张）：out/<期号>-答案-第N页.png */
+export const getAnswerSheetPath = (videoPath, page) => {
+  if (path.extname(videoPath).toLowerCase() !== ".mp4") {
+    throw new Error("视频输出路径必须使用 .mp4 扩展名");
+  }
+  return videoPath.slice(0, -4) + `-答案-第${page}页.png`;
 };
 
 export const getSrtPath = (videoPath) => {
@@ -253,6 +262,7 @@ export const renderVideoWithCover = (
     srtOnly = false,
     composition = "LiteratureQuiz",
     hookImage = true,
+    answerSheet = true,
   } = options;
   // 渲染合成可切换：经典模板 LiteratureQuiz / 爆款快闪模板 BurstQuiz
   const compositionId = composition;
@@ -333,12 +343,39 @@ export const renderVideoWithCover = (
         ]);
         console.log(`钩子图    →  ${hookImagePath}`);
       }
+
+      // 4. 渲染答案解释图（题号+题干+答案+解释，自动分页，每页一张）
+      if (answerSheet) {
+        const answerPages = computeAnswerPages(data.questions);
+        for (let i = 0; i < answerPages.length; i++) {
+          const pagePropsPath = propsPath.replace(
+            ".json",
+            `-answer-${i}.json`
+          );
+          fs.writeFileSync(
+            pagePropsPath,
+            JSON.stringify({ data, pageIndex: i }),
+            "utf-8"
+          );
+          const sheetPath = getAnswerSheetPath(videoPath, i + 1);
+          runRemotion([
+            "remotion",
+            "still",
+            "AnswerSheet",
+            sheetPath,
+            `--props=${pagePropsPath}`,
+            "--frame=0",
+          ]);
+          console.log(`答案图    →  ${sheetPath}`);
+          fs.rmSync(pagePropsPath, { force: true });
+        }
+      }
     } finally {
       fs.rmSync(propsPath, { force: true });
     }
   }
 
-  // 4. 生成字幕 + 发布文案
+  // 5. 生成字幕 + 发布文案
   generateSrt(data, srtPath);
   generatePublishText(data, publishTextPath);
 
@@ -348,6 +385,11 @@ export const renderVideoWithCover = (
     srtPath,
     publishTextPath,
     hookImagePath,
+    answerSheetPaths: answerSheet
+      ? computeAnswerPages(data.questions).map((_, i) =>
+          getAnswerSheetPath(videoPath, i + 1)
+        )
+      : [],
   };
 };
 
@@ -362,6 +404,7 @@ const parseCliArgs = (argv) => {
     srtOnly: false,
     composition: "LiteratureQuiz",
     hookImage: true,
+    answerSheet: true,
   };
   for (const arg of argv.slice(2)) {
     if (arg.startsWith("--data=")) {
@@ -372,6 +415,8 @@ const parseCliArgs = (argv) => {
       opts.srtOnly = true;
     } else if (arg === "--no-hook-image") {
       opts.hookImage = false;
+    } else if (arg === "--no-answer-sheet") {
+      opts.answerSheet = false;
     } else if (arg && !arg.startsWith("--")) {
       opts.videoPath = arg;
     }
@@ -381,14 +426,22 @@ const parseCliArgs = (argv) => {
 
 if (isDirectExecution(process.argv[1], import.meta.url)) {
   try {
-    const { videoPath, dataPath, srtOnly, composition, hookImage } = parseCliArgs(process.argv);
-    const result = renderVideoWithCover(videoPath, { dataPath, srtOnly, composition, hookImage });
+    const { videoPath, dataPath, srtOnly, composition, hookImage, answerSheet } =
+      parseCliArgs(process.argv);
+    const result = renderVideoWithCover(videoPath, {
+      dataPath,
+      srtOnly,
+      composition,
+      hookImage,
+      answerSheet,
+    });
     console.log("\n✅ 全部完成：");
     console.log(`  视频: ${result.videoPath}`);
     console.log(`  封面: ${result.coverPath}`);
     console.log(`  字幕: ${result.srtPath}`);
     console.log(`  发布文案: ${result.publishTextPath}  (视频号 + 抖音)`);
     if (hookImage) console.log(`  钩子图: ${result.hookImagePath}`);
+    for (const p of result.answerSheetPaths) console.log(`  答案图: ${p}`);
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);

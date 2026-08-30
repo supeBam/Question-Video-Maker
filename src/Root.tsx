@@ -4,6 +4,7 @@ import type { CalculateMetadataFunction } from "remotion";
 import { LiteratureQuiz } from "./LiteratureQuiz";
 import { BurstQuiz } from "./BurstQuiz";
 import { OutroHookImage } from "./scenes/OutroHookImage";
+import { AnswerSheetImage } from "./scenes/AnswerSheetImage";
 import { buildTimeline, type QuizData } from "./types";
 import { THEME } from "./theme";
 import quizData from "./data/questions.json";
@@ -78,6 +79,16 @@ export const RemotionRoot: React.FC = () => {
         width={THEME.layout.width}
         height={THEME.layout.height}
         defaultProps={{ data: burstDemo }}
+      />
+      {/* 答案解释图：仅用于 still 渲染成 PNG（视频结尾答案解释，多页自动分张），不进视频 */}
+      <Composition
+        id="AnswerSheet"
+        component={AnswerSheetImage}
+        durationInFrames={1}
+        fps={30}
+        width={THEME.layout.width}
+        height={THEME.layout.height}
+        defaultProps={{ data: burstDemo, pageIndex: 0 }}
       />
     </>
   );

@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "series": "雅称挑战",
+    "episode": 1,
+    "episodeLabel": "快闪版",
+    "hostTag": "@每日文化小测"
+  },
+  "timing": {
+    "fps": 30,
+    "introSeconds": 0,
+    "outroSeconds": 3,
+    "pacing": "burst"
+  },
+  "intro": {
+    "kicker": "万物雅称",
+    "title": "古人的诗意外号\n全对算你厉害",
+    "subtitle": "天地万物，皆有雅称",
+    "hint": "每题 5 秒快问快答"
+  },
+  "outro": {
+    "headline": "全对 = 学霸",
+    "scoreHints": [],
+    "cta": "点赞 · 收藏 · 关注",
+    "ctaSub": "考考孩子，评论区见真章",
+    "hook": "你全对了吗？评论区告诉我。点赞收藏，考考孩子。"
+  },
+  "voiceOver": {
+    "enabled": false
+  },
+  "bgm": {
+    "enabled": true,
+    "file": "assets/bg-audio/bgm_guzheng_liqiu.mp3",
+    "volume": 0.28
+  },
+  "publish": {
+    "title": "古人的诗意外号，全对算你厉害",
+    "douyin": {
+      "title": "月亮的雅称是什么？答对三个算你牛"
+    },
+    "hashtags": ["万物雅称", "涨知识", "冷知识", "传统文化", "古诗词", "中国文化"]
+  },
+  "background": {
+    "src": "assets/bg-yacheng.svg",
+    "cloudSrc": null,
+    "drift": 0.04
+  },
+  "questions": [
+    {
+      "type": "fill",
+      "id": "f1",
+      "tag": "天象",
+      "stem": "天上的「云」\n古人给的雅称叫什么？",
+      "hint": "两个字的雅称",
+      "answer": "纤凝",
+      "punchline": "轻盈之气，凝成天上的云",
+      "explanation": "云在古人口中叫「纤凝」——纤，是细；凝，是聚。轻盈之气凝成的，便是天上那朵云。它也叫「雯华」「卿云」。"
+    },
+    {
+      "type": "fill",
+      "id": "f2",
+      "tag": "星月",
+      "stem": "传说中为月亮驾车的神\n后来成了月亮的雅称，是？",
+      "hint": "两个字的雅称",
+      "answer": "望舒",
+      "punchline": "本是给月亮驾车的神",
+      "explanation": "《楚辞·离骚》有「前望舒使先驱兮」，望舒本是神话里为月亮驾车的神，后来便成了月亮的雅称。月亮也叫「婵娟」「冰轮」「玉盘」。"
+    },
+    {
+      "type": "fill",
+      "id": "f3",
+      "tag": "星月",
+      "stem": "太阳里住着三足神鸟\n它的雅称叫什么？",
+      "hint": "两个字的雅称",
+      "answer": "金乌",
+      "punchline": "太阳里的三足乌鸦",
+      "explanation": "传说日中有三足乌鸦，所以太阳雅称「金乌」，也作「羲和」「东君」「扶光」。李白有「金乌初起」写日出。"
+    },
+    {
+      "type": "fill",
+      "id": "f4",
+      "tag": "气象",
+      "stem": "《庄子》里大鹏乘风直上\n古人给「风」的雅称是？",
+      "hint": "两个字的雅称",
+      "answer": "扶摇",
+      "punchline": "盘旋而上的大风",
+      "explanation": "「扶摇」本指盘旋而上的大风。《庄子·逍遥游》写大鹏「抟扶摇而上者九万里」，后来扶摇便成了风的雅称。风也作「灵籁」「金风」「朔风」。"
+    },
+    {
+      "type": "fill",
+      "id": "f5",
+      "tag": "气象",
+      "stem": "古人把「雪」比作酥糖\n这个雅称叫什么？",
+      "hint": "两个字的雅称",
+      "answer": "寒酥",
+      "punchline": "像酥糖一样松软的雪",
+      "explanation": "「寒酥」——寒冬里如酥糖般洁白松软，正应了那句「点点扬花，片片鹅毛」。雪也作「六出」「玉尘」「琼芳」。"
+    },
+    {
+      "type": "fill",
+      "id": "f6",
+      "tag": "星月",
+      "stem": "曹操《观沧海》里的\n「银河」雅称是哪两个？",
+      "hint": "两个字的雅称",
+      "answer": "星汉",
+      "punchline": "星汉灿烂，若出其里",
+      "explanation": "「星汉」出自曹操《观沧海》「星汉灿烂，若出其里」。星汉、银汉、天河，都是古人对银河的雅称。古诗十九首也有「迢迢牵牛星，皎皎河汉女」。"
+    }
+  ]
+}

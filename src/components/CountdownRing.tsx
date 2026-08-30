@@ -24,6 +24,8 @@ export type CountdownRingProps = {
   caption?: string;
   /** 走完后是否继续显示 0 状态（false 则整体淡出） */
   keepAfterEnd?: boolean;
+  /** 数字字号占圆环直径的比例（默认 0.56；小环用更小值避免数字超出边框） */
+  digitRatio?: number;
 };
 
 /**
@@ -42,6 +44,7 @@ export const CountdownRing: React.FC<CountdownRingProps> = ({
   brushSrc = "assets/ring-brush.svg",
   caption = "作答中",
   keepAfterEnd = false,
+  digitRatio = 0.56,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -66,7 +69,7 @@ export const CountdownRing: React.FC<CountdownRingProps> = ({
   /** 数字字号随圆环尺寸缩放，确保两位数（如剩余 45 秒）也不会撑破圆环 */
   const digitFontSize = Math.min(
     THEME.fontSize.countdown,
-    Math.round(size * 0.56)
+    Math.round(size * digitRatio)
   );
 
   /** 每秒数字弹一下 */

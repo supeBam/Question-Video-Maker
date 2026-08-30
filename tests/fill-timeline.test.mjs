@@ -54,8 +54,4 @@ test("isFill 判别填空题与选择题", () => {
     isFill({ id: "q1", stem: "?", options: [], answerIndex: 0, explanation: "b" }),
     false
   );
-  assert.equal(
-    isFill({ type: "crossword", id: "c", clues: [] }),
-    false
-  );
 });

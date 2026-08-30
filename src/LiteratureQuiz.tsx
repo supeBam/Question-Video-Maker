@@ -3,7 +3,6 @@ import { AbsoluteFill, Audio, Sequence, staticFile } from "remotion";
 import { Background } from "./components/Background";
 import { IntroScene } from "./scenes/IntroScene";
 import { QuestionScene } from "./scenes/QuestionScene";
-import { CrosswordScene } from "./scenes/CrosswordScene";
 import { FillScene } from "./scenes/FillScene";
 import { OutroScene } from "./scenes/OutroScene";
 import { buildTimeline, type QuizData } from "./types";
@@ -48,9 +47,7 @@ export const LiteratureQuiz: React.FC<LiteratureQuizProps> = ({ data }) => {
           durationInFrames={slot.durationInFrames}
           name={`第${slot.index + 1}题`}
         >
-          {slot.kind === "crossword" ? (
-            <CrosswordScene slot={slot} total={slots.length} meta={data.meta} voiceOverEnabled={data.voiceOver.enabled} />
-          ) : slot.kind === "fill" ? (
+          {slot.kind === "fill" ? (
             <FillScene slot={slot} total={slots.length} meta={data.meta} voiceOverEnabled={data.voiceOver.enabled} />
           ) : (
             <QuestionScene slot={slot} total={slots.length} meta={data.meta} voiceOverEnabled={data.voiceOver.enabled} />

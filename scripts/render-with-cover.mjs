@@ -13,6 +13,14 @@ export const getCoverPath = (videoPath) => {
   return videoPath.slice(0, -4) + ".png";
 };
 
+/** 片尾钩子图路径（发布配图 / 评论区置顶图）：out/<期号>-钩子.png */
+export const getHookImagePath = (videoPath) => {
+  if (path.extname(videoPath).toLowerCase() !== ".mp4") {
+    throw new Error("视频输出路径必须使用 .mp4 扩展名");
+  }
+  return videoPath.slice(0, -4) + "-钩子.png";
+};
+
 export const getSrtPath = (videoPath) => {
   return videoPath.slice(0, -4) + ".srt";
 };
@@ -52,18 +60,19 @@ const formatSrtTime = (seconds) => {
 const generateSrt = (data, srtPath) => {
   // 用与视频渲染完全一致的 buildTimeline 推导时间轴，保证字幕与画面逐帧对齐
   const timeline = buildTimeline(data);
-  const { fps, introFrames, outroFrames, slots, totalFrames } = timeline;
+  const { fps, introFrames, hookFrames, outroFrames, slots, totalFrames } = timeline;
   const sec = (frames) => frames / fps;
 
   const blocks = [];
   let idx = 1;
 
-  // 标题字幕（开场阶段）
+  // 开场标题字幕：经典模板取片头段，快闪模板取钩子开场段（零片头/零钩子时不生成空字幕块）
   const introTitle = data.intro?.title?.replace(/\n/g, "，") ?? "";
-  if (introTitle) {
+  const leadFrames = hookFrames > 0 ? hookFrames : introFrames;
+  if (introTitle && leadFrames > 0) {
     blocks.push(
       `${idx}`,
-      `00:00:00,000 --> ${formatSrtTime(sec(introFrames))}`,
+      `00:00:00,000 --> ${formatSrtTime(sec(leadFrames))}`,
       introTitle,
       ""
     );
@@ -75,21 +84,7 @@ const generateSrt = (data, srtPath) => {
     const start = sec(slot.from);
     const end = sec(slot.from + slot.durationInFrames);
 
-    if (slot.kind === "crossword") {
-      // 诗词填字纵横：整段一条字幕（展示 + 答案页合并）
-      const blanks = [];
-      for (const clue of q.clues) {
-        for (const bi of clue.blanks ?? []) blanks.push(clue.text[bi]);
-      }
-      const lineCount = q.clues.length;
-      blocks.push(
-        `${idx}`,
-        `${formatSrtTime(start)} --> ${formatSrtTime(end)}`,
-        `诗词填字：共 ${lineCount} 句诗纵横交织，补全 ${blanks.length} 个字：${blanks.join(" ")}`,
-        ""
-      );
-      idx++;
-    } else if (slot.kind === "fill") {
+    if (slot.kind === "fill") {
       // 填空题：题干字幕（呈现 + 思考）+ 答案字幕（揭晓）
       const stemEnd = sec(slot.from + slot.presentFrames + slot.countdownFrames);
       blocks.push(
@@ -107,7 +102,7 @@ const generateSrt = (data, srtPath) => {
       );
       idx++;
     } else {
-      // 选择题：题干字幕（呈现 + 倒计时）+ 答案字幕（揭晓，含「一句话真相」口播）
+      // 选择题：题干字幕（呈现 + 倒计时）+ 答案字幕（揭晓）
       const stemEnd = sec(slot.from + slot.presentFrames + slot.countdownFrames);
       blocks.push(
         `${idx}`,
@@ -120,9 +115,12 @@ const generateSrt = (data, srtPath) => {
       const answerLine = `正确答案：${LETTERS[q.answerIndex]}. ${q.options[q.answerIndex]}`;
       const punchline = q.punchline ?? "";
       const revealDur = end - stemEnd;
+      // 爆款快闪模式：每题只出 2 条字幕（题干 / 正确答案），
+      // 真相一句只出现在画面、不进字幕（字幕条数与题数成对，且与画面严格对齐）
+      const burst = data.timing?.pacing === "burst";
 
-      if (punchline) {
-        // 按字数比例拆分揭晓时长：答案与真相各占一段，避免一条长文本朗读溢出压到下一题
+      if (punchline && !burst) {
+        // 经典模式：按字数比例拆分揭晓时长：答案与真相各占一段，避免一条长文本朗读溢出压到下一题
         const total = answerLine.length + punchline.length;
         const answerDur = revealDur * (answerLine.length / total);
         const punchStart = stemEnd + answerDur;
@@ -250,9 +248,14 @@ export const renderVideoWithCover = (
   videoPath = "out/literature-quiz.mp4",
   options = {}
 ) => {
-  const { dataPath = "src/data/questions.json", srtOnly = false } = options;
-  // 渲染一律走 LiteratureQuiz 合成（支持三种题型混排），题库内容由 --data 决定
-  const compositionId = "LiteratureQuiz";
+  const {
+    dataPath = "src/data/questions.json",
+    srtOnly = false,
+    composition = "LiteratureQuiz",
+    hookImage = true,
+  } = options;
+  // 渲染合成可切换：经典模板 LiteratureQuiz / 爆款快闪模板 BurstQuiz
+  const compositionId = composition;
 
   // 统一以项目根目录为工作目录：remotion 配置、src/、out/ 都相对它解析
   const projectRoot = path.resolve(
@@ -266,6 +269,7 @@ export const renderVideoWithCover = (
   const coverPath = getCoverPath(videoPath);
   const srtPath = getSrtPath(videoPath);
   const publishTextPath = getPublishTextPath(videoPath);
+  const hookImagePath = getHookImagePath(videoPath);
 
   // 读取题库数据：视频渲染、字幕、发布文案共用同一份数据
   const questionsPath = path.resolve(projectRoot, dataPath);
@@ -297,22 +301,44 @@ export const renderVideoWithCover = (
       ]);
       console.log(`视频      →  ${videoPath}`);
 
-      // 2. 渲染封面
+      // 2. 渲染封面：快闪模板有钩子开场时取钩子画面（中点帧），
+      //    零片头时取第 1 秒（题目呈现中，对标封面=首帧题目）；
+      //    经典模板取第 3 秒（片头标题处）
+      const coverTimeline = buildTimeline(data);
+      const coverFrame =
+        compositionId === "BurstQuiz"
+          ? coverTimeline.hookFrames > 0
+            ? Math.round(coverTimeline.hookFrames / 2)
+            : 30
+          : 90;
       runRemotion([
         "remotion",
         "still",
         compositionId,
         coverPath,
         `--props=${propsPath}`,
-        "--frame=90",
+        `--frame=${coverFrame}`,
       ]);
       console.log(`封面      →  ${coverPath}`);
+
+      // 3. 渲染片尾钩子图（outro.hook 文案大字图，发布配图/评论区置顶图）
+      if (hookImage) {
+        runRemotion([
+          "remotion",
+          "still",
+          "OutroHook",
+          hookImagePath,
+          `--props=${propsPath}`,
+          "--frame=0",
+        ]);
+        console.log(`钩子图    →  ${hookImagePath}`);
+      }
     } finally {
       fs.rmSync(propsPath, { force: true });
     }
   }
 
-  // 3. 生成字幕 + 发布文案
+  // 4. 生成字幕 + 发布文案
   generateSrt(data, srtPath);
   generatePublishText(data, publishTextPath);
 
@@ -321,6 +347,7 @@ export const renderVideoWithCover = (
     coverPath,
     srtPath,
     publishTextPath,
+    hookImagePath,
   };
 };
 
@@ -333,12 +360,18 @@ const parseCliArgs = (argv) => {
     videoPath: "out/literature-quiz.mp4",
     dataPath: "src/data/questions.json",
     srtOnly: false,
+    composition: "LiteratureQuiz",
+    hookImage: true,
   };
   for (const arg of argv.slice(2)) {
     if (arg.startsWith("--data=")) {
       opts.dataPath = arg.slice("--data=".length);
+    } else if (arg.startsWith("--composition=")) {
+      opts.composition = arg.slice("--composition=".length);
     } else if (arg === "--srt-only") {
       opts.srtOnly = true;
+    } else if (arg === "--no-hook-image") {
+      opts.hookImage = false;
     } else if (arg && !arg.startsWith("--")) {
       opts.videoPath = arg;
     }
@@ -348,13 +381,14 @@ const parseCliArgs = (argv) => {
 
 if (isDirectExecution(process.argv[1], import.meta.url)) {
   try {
-    const { videoPath, dataPath, srtOnly } = parseCliArgs(process.argv);
-    const result = renderVideoWithCover(videoPath, { dataPath, srtOnly });
+    const { videoPath, dataPath, srtOnly, composition, hookImage } = parseCliArgs(process.argv);
+    const result = renderVideoWithCover(videoPath, { dataPath, srtOnly, composition, hookImage });
     console.log("\n✅ 全部完成：");
     console.log(`  视频: ${result.videoPath}`);
     console.log(`  封面: ${result.coverPath}`);
     console.log(`  字幕: ${result.srtPath}`);
     console.log(`  发布文案: ${result.publishTextPath}  (视频号 + 抖音)`);
+    if (hookImage) console.log(`  钩子图: ${result.hookImagePath}`);
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);

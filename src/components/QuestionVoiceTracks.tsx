@@ -9,6 +9,8 @@ export type QuestionVoiceTracksProps = {
   answerStartFrame: number;
   /** 该题是否带「一句真相」口播（有 punchline 才播 punchline 音轨） */
   hasPunchline?: boolean;
+  /** 答案语音后到「一句真相」语音的间隔秒数（快闪模板节奏紧，用更短间隔） */
+  punchlineDelaySeconds?: number;
 };
 
 /** 正确答案语音后，隔多久开始播「一句真相」语音（答案语音通常只念一个字母，约 1 秒） */
@@ -19,11 +21,12 @@ export const QuestionVoiceTracks: React.FC<QuestionVoiceTracksProps> = ({
   questionId,
   answerStartFrame,
   hasPunchline = false,
+  punchlineDelaySeconds = ANSWER_TO_PUNCHLINE_SECONDS,
 }) => {
   const tracks = getQuestionVoiceTracks(meta, questionId);
   const { fps } = useVideoConfig();
   const punchlineStartFrame =
-    answerStartFrame + Math.round(ANSWER_TO_PUNCHLINE_SECONDS * fps);
+    answerStartFrame + Math.round(punchlineDelaySeconds * fps);
 
   return (
     <>

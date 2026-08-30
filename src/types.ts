@@ -1,8 +1,7 @@
 /* ============================================================
  * 题库类型 + 时间轴推导
- * 支持三种题型共存于同一题库（判别联合）：
- *   - choice     选择题（原有）
- *   - crossword  诗词填字纵横（多句诗纵横交叉，交叉点共用同一字）
+ * 支持两种题型共存于同一题库（判别联合）：
+ *   - choice     选择题
  *   - fill       填空题（万物雅称：问「X 的雅称是什么」→ 揭晓雅称 + 解释）
  * ============================================================ */
 
@@ -14,14 +13,8 @@ export type PerQuestionTiming = {
   countdownSeconds: number;
   /** 揭晓答案+解析的时间 */
   revealSeconds: number;
-};
-
-/** 诗词填字纵横节奏 */
-export type CrosswordTiming = {
-  /** 题目（纵横填字网格）展示 + 倒计时时长 */
-  displaySeconds: number;
-  /** 答案页（点亮补全 + 图例 + 赏析）时长 */
-  answerSeconds: number;
+  /** 揭晓后、下一题前的停顿秒数（仅 burst 模式生效，缺省 1s；classic 忽略） */
+  pauseSeconds?: number;
 };
 
 /** 填空题节奏（三段式：呈现 → 思考 → 揭晓） */
@@ -47,58 +40,6 @@ export type ChoiceQuestion = {
   timingOverride?: Partial<PerQuestionTiming>;
 };
 
-/* ---------------- 诗词填字纵横 ---------------- */
-
-/** 单条线索的出处（哪首诗 / 哪位诗人） */
-export type CrosswordSource = {
-  /** 诗名，如「静夜思」 */
-  title: string;
-  /** 作者，如「李白」 */
-  author?: string;
-  /** 朝代，如「唐」 */
-  dynasty?: string;
-};
-
-/**
- * 一条线索 = 从某首诗里抽出的「一句」，沿 横/纵 方向摆放。
- * 多条线索纵横交叉，交叉点必须是同一个字（由作者摆位保证，
- * 构建网格时会校验；不一致会在控制台告警）。
- */
-export type CrosswordClue = {
-  /** 线索标识，如 "A1" / "D1" 或 "横1" / "纵1" */
-  id: string;
-  /** 方向：across 横（从左向右）/ down 纵（从上向下） */
-  dir: "across" | "down";
-  /** 起始格行号（从 0 开始） */
-  row: number;
-  /** 起始格列号（从 0 开始） */
-  col: number;
-  /** 该线索的完整诗句（答案），如「床前明月光」 */
-  text: string;
-  /** 出处（答案页图例显示） */
-  source?: CrosswordSource;
-  /**
-   * 留空待填的字下标（0-based）。缺省表示这条线索整句给出、无可填。
-   * 交叉点若被某条线索标为留白，则该格按留白处理（两向共用同一字）。
-   */
-  blanks?: number[];
-};
-
-export type CrosswordQuestion = {
-  type: "crossword";
-  id: string;
-  /** 可选谜面标题，如「月字相连」 */
-  title?: string;
-  /** 展示阶段提示，如「六句诗纵横交织，把缺的字补上」 */
-  hint?: string;
-  /** 线索集合（多条诗句，纵横交叉，整体为一题） */
-  clues: CrosswordClue[];
-  /** 答案页赏析文案 */
-  explanation?: string;
-  /** 可选：单题覆盖全局诗词填字节奏 */
-  timingOverride?: Partial<CrosswordTiming>;
-};
-
 /* ---------------- 填空题（万物雅称） ---------------- */
 
 export type FillQuestion = {
@@ -112,6 +53,8 @@ export type FillQuestion = {
   answer: string;
   /** 答案页底部解释（出处 / 含义 / 相关别称） */
   explanation: string;
+  /** 可选：揭晓时的一行短真相（快闪模板优先显示它；比 explanation 短，适合口播） */
+  punchline?: string;
   /** 可选：题干上方的小标签，如「云」「月」「风」 */
   tag?: string;
   /** 可选：单题覆盖全局填空节奏 */
@@ -119,12 +62,9 @@ export type FillQuestion = {
 };
 
 /** 题库中的任一题型 */
-export type AnyQuestion = ChoiceQuestion | CrosswordQuestion | FillQuestion;
+export type AnyQuestion = ChoiceQuestion | FillQuestion;
 
 /** 题型判别 */
-export const isCrossword = (q: AnyQuestion): q is CrosswordQuestion =>
-  q.type === "crossword";
-
 export const isFill = (q: AnyQuestion): q is FillQuestion => q.type === "fill";
 
 /* ---------------- 背景板 ---------------- */
@@ -151,11 +91,46 @@ export type QuizData = {
     fps: number;
     introSeconds: number;
     outroSeconds: number;
-    perQuestion: PerQuestionTiming;
-    /** 诗词填字纵横全局节奏（缺省时由 buildTimeline 兜底为 45s / 7s） */
-    crossword?: CrosswordTiming;
+    /** 选择题三段式节奏（classic 模式缺省时由 buildTimeline 兜底；burst 模式可省略） */
+    perQuestion?: PerQuestionTiming;
     /** 填空题全局节奏（缺省时由 buildTimeline 兜底） */
     fill?: FillTiming;
+    /**
+     * 节奏模式：
+     *   - "classic"（缺省）三段式：呈现 → 倒计时作答 → 揭晓解析
+     *   - "burst"   爆款快闪（对标「学霸都考哭了」系列）：零片头、
+     *     每题约 5 秒两段式（题干快速呈现 → 答案立即揭晓），无倒计时。
+     *     题库里显式给出的 perQuestion / fill 值仍然优先于 burst 默认值。
+     */
+    pacing?: "classic" | "burst";
+    /**
+     * 快闪模板音效开关（classic 模式忽略此字段）：
+     *   - 缺省或 true：揭晓时播「正确答案音效」；若 perQuestion 显式给了
+     *     countdownSeconds > 0，则作答阶段还会播倒计时音效并显示倒计时环
+     *   - false：纯快闪无音效（完全对标「学霸都考哭了」系列）
+     */
+    soundEffects?: boolean;
+    /**
+     * 剪映「字幕转音频」朗读语速（字/秒），仅 burst 模式生效：
+     * 每题字幕区间按此自动兜底——题干段（present+countdown）至少覆盖
+     * 题干朗读时长 + 0.5s，答案段（reveal+pause）至少覆盖答案朗读时长 + 0.6s，
+     * 防止上一段音频没读完就叠进下一段（听感重复/重叠）。
+     * 缺省 4.5 字/秒；设 0 关闭自动兜底。
+     */
+    ttsWordsPerSecond?: number;
+    /**
+     * 快闪模板片尾「本期答案」回顾时长（秒）：在片尾 CTA 之前逐题展示
+     * 题干→答案→解释（仅画面，不进字幕）。缺省 12 秒；设 0 关闭。
+     * classic 模式忽略此字段。
+     */
+    summarySeconds?: number;
+    /**
+     * 快闪模板钩子开场时长（秒）：题目开始前先播放挑战标题画面
+     * （栏目 + 大标题 + 挑战词，如「10 题 · 答对 8 个算你牛」）。
+     * 缺省 2 秒；设 0 则零片头直接进第一题（完全对标）。
+     * classic 模式忽略此字段（用 introSeconds 片头）。
+     */
+    hookSeconds?: number;
   };
   intro: {
     kicker: string;
@@ -188,6 +163,14 @@ export type QuizData = {
     douyin?: { title?: string; hashtags?: string[] };
     /** 视频号专属覆盖 */
     wechat?: { title?: string; hashtags?: string[] };
+    /** 爆款快闪模板：顶部激励角标文案（缺省「全对 = 学霸」） */
+    badge?: string;
+    /** 爆款快闪模板：底部收藏指令文案（缺省「❤ 收藏 · 考考孩子」） */
+    saveText?: string;
+    /** 爆款快闪模板：底部免责声明（缺省「内容来源于公开资料」） */
+    disclaimer?: string;
+    /** 爆款快闪模板：钩子开场的挑战词（缺省自动生成「共 N 题 · 全对算你厉害」） */
+    challenge?: string;
   };
   /** 可选：背景板配置（换专题皮肤）。缺省用宣纸米黄底。 */
   background?: QuizBackground;
@@ -198,7 +181,7 @@ export type QuizData = {
 
 export type QuestionSlot = {
   /** 题型，用于场景路由 */
-  kind: "choice" | "crossword" | "fill";
+  kind: "choice" | "fill";
   index: number;
   from: number;
   durationInFrames: number;
@@ -206,24 +189,21 @@ export type QuestionSlot = {
   presentFrames: number;
   countdownFrames: number;
   revealFrames: number;
-  /** —— 诗词填字纵横两阶段 —— */
-  displayFrames: number;
-  answerFrames: number;
+  /** 揭晓后、下一题前的停顿帧数（burst 模式 ≥0；classic 恒为 0） */
+  pauseFrames: number;
   question: AnyQuestion;
 };
 
 export type Timeline = {
   fps: number;
   introFrames: number;
+  /** 快闪模板钩子开场时长（classic 模式恒为 0） */
+  hookFrames: number;
   outroFrames: number;
+  /** 快闪模板片尾答案回顾时长（classic 模式恒为 0） */
+  summaryFrames: number;
   slots: QuestionSlot[];
   totalFrames: number;
-};
-
-/** 诗词填字纵横节奏兜底值 */
-export const DEFAULT_CROSSWORD_TIMING: CrosswordTiming = {
-  displaySeconds: 45,
-  answerSeconds: 7,
 };
 
 /** 填空题节奏兜底值（呈现 → 思考 → 揭晓） */
@@ -233,93 +213,133 @@ export const DEFAULT_FILL_TIMING: FillTiming = {
   revealSeconds: 7,
 };
 
+/** 经典模式选择题节奏兜底值（老题库缺省 perQuestion 时的安全值） */
+export const DEFAULT_CLASSIC_TIMING: PerQuestionTiming = {
+  presentSeconds: 3.5,
+  countdownSeconds: 5,
+  revealSeconds: 7,
+};
+
+/**
+ * 爆款快闪节奏兜底（对标「学霸都考哭了」系列实测：平均每题 4.6~6.5 秒）。
+ * 呈现 2.2s（题干+选项入场）→ 揭晓 2.8s（答案高亮 + 一句真相），无倒计时；
+ * 揭晓后再留 1s 题间停顿，给 TTS 朗读缓冲，避免「答案一出立刻读下一题」。
+ */
+export const DEFAULT_BURST_TIMING: PerQuestionTiming = {
+  presentSeconds: 2.2,
+  countdownSeconds: 0,
+  revealSeconds: 2.8,
+  pauseSeconds: 1,
+};
+
+/** 剪映「字幕转音频」缺省朗读语速（字/秒），用于 burst 模式每题时长兜底 */
+export const DEFAULT_TTS_WORDS_PER_SECOND = 4.5;
+/** 题干段（present+countdown）在朗读时长外额外留的缓冲秒数 */
+const SPEAK_BUFFER_LEAD = 0.5;
+/** 答案段（reveal+pause）在朗读时长外额外留的缓冲秒数 */
+const SPEAK_BUFFER_ANSWER = 0.6;
+
+/** 估算剪映 TTS 朗读某段文本所需秒数（wps ≤ 0 时返回 0，关闭兜底） */
+const speakSeconds = (text: string, wps: number) =>
+  wps > 0 && text ? text.length / wps : 0;
+
+/** 揭晓段朗读文本（与 SRT 答案字幕一致） */
+const answerText = (q: AnyQuestion): string => {
+  if (isFill(q)) return q.answer;
+  return `正确答案：${String.fromCharCode(65 + q.answerIndex)}. ${q.options[q.answerIndex]}`;
+};
+
+/** 计算单题三段式 + 停顿帧数（burst 模式启用 pause 与 TTS 语速兜底） */
+const resolveSlotTiming = (
+  question: AnyQuestion,
+  baseTiming: PerQuestionTiming,
+  burst: boolean,
+  ttsWps: number,
+  fps: number
+) => {
+  const t = { ...baseTiming, ...(question.timingOverride ?? {}) };
+  let presentSeconds = t.presentSeconds;
+  let countdownSeconds = t.countdownSeconds;
+  let revealSeconds = t.revealSeconds;
+  const pauseSeconds = burst ? (t.pauseSeconds ?? DEFAULT_BURST_TIMING.pauseSeconds ?? 1) : 0;
+
+  if (burst && ttsWps > 0) {
+    // 题干段（present+countdown）至少覆盖题干朗读 + 缓冲
+    const leadNeed = speakSeconds(question.stem.replace(/\n/g, ""), ttsWps) + SPEAK_BUFFER_LEAD;
+    if (presentSeconds + countdownSeconds < leadNeed) {
+      presentSeconds += leadNeed - (presentSeconds + countdownSeconds);
+    }
+    // 答案段（reveal+pause）至少覆盖答案朗读 + 缓冲
+    const answerNeed = speakSeconds(answerText(question), ttsWps) + SPEAK_BUFFER_ANSWER;
+    if (revealSeconds + pauseSeconds < answerNeed) {
+      revealSeconds = answerNeed - pauseSeconds;
+    }
+  }
+
+  const sec = (s: number) => Math.round(s * fps);
+  const presentFrames = sec(presentSeconds);
+  const countdownFrames = sec(countdownSeconds);
+  const revealFrames = sec(revealSeconds);
+  const pauseFrames = sec(pauseSeconds);
+  return {
+    presentFrames,
+    countdownFrames,
+    revealFrames,
+    pauseFrames,
+    durationInFrames: presentFrames + countdownFrames + revealFrames + pauseFrames,
+  };
+};
+
 export const buildTimeline = (data: QuizData): Timeline => {
-  const { fps, introSeconds, outroSeconds, perQuestion } = data.timing;
-  const crosswordTiming = {
-    ...DEFAULT_CROSSWORD_TIMING,
-    ...(data.timing.crossword ?? {}),
-  };
-  const fillTiming = {
-    ...DEFAULT_FILL_TIMING,
-    ...(data.timing.fill ?? {}),
-  };
+  const { fps, introSeconds, outroSeconds } = data.timing;
+  const burst = data.timing.pacing === "burst";
+  // 剪映「字幕转音频」语速兜底（仅 burst；设 0 关闭）
+  const ttsWps = burst ? (data.timing.ttsWordsPerSecond ?? DEFAULT_TTS_WORDS_PER_SECOND) : 0;
+  const perQuestion = burst
+    ? { ...DEFAULT_BURST_TIMING, ...(data.timing.perQuestion ?? {}) }
+    : { ...DEFAULT_CLASSIC_TIMING, ...(data.timing.perQuestion ?? {}) };
+  const fillTiming = burst
+    ? { ...DEFAULT_BURST_TIMING, ...(data.timing.fill ?? {}) }
+    : {
+        ...DEFAULT_FILL_TIMING,
+        ...(data.timing.fill ?? {}),
+      };
   const sec = (s: number) => Math.round(s * fps);
 
-  const introFrames = sec(introSeconds);
+  // burst 模式强制零片头：对标爆款视频第一帧即第一题
+  const introFrames = burst ? 0 : sec(introSeconds);
+  // 快闪模板钩子开场（缺省 2 秒；hookSeconds: 0 零片头直接进题）
+  const hookFrames = burst ? sec(data.timing.hookSeconds ?? 2) : 0;
   const outroFrames = sec(outroSeconds);
+  // 快闪模板片尾答案回顾（缺省 12 秒；summarySeconds: 0 关闭；classic 恒为 0）
+  const summaryFrames = burst ? sec(data.timing.summarySeconds ?? 12) : 0;
 
-  let cursor = introFrames;
+  let cursor = burst ? hookFrames : introFrames;
   const slots: QuestionSlot[] = data.questions.map((question, index) => {
-    if (isCrossword(question)) {
-      const t = { ...crosswordTiming, ...(question.timingOverride ?? {}) };
-      const displayFrames = sec(t.displaySeconds);
-      const answerFrames = sec(t.answerSeconds);
-      const durationInFrames = displayFrames + answerFrames;
-      const slot: QuestionSlot = {
-        kind: "crossword",
-        index,
-        from: cursor,
-        durationInFrames,
-        presentFrames: 0,
-        countdownFrames: 0,
-        revealFrames: 0,
-        displayFrames,
-        answerFrames,
-        question,
-      };
-      cursor += durationInFrames;
-      return slot;
-    }
-
-    if (isFill(question)) {
-      const t = { ...fillTiming, ...(question.timingOverride ?? {}) };
-      const presentFrames = sec(t.presentSeconds);
-      const countdownFrames = sec(t.countdownSeconds);
-      const revealFrames = sec(t.revealSeconds);
-      const durationInFrames = presentFrames + countdownFrames + revealFrames;
-      const slot: QuestionSlot = {
-        kind: "fill",
-        index,
-        from: cursor,
-        durationInFrames,
-        presentFrames,
-        countdownFrames,
-        revealFrames,
-        displayFrames: 0,
-        answerFrames: 0,
-        question,
-      };
-      cursor += durationInFrames;
-      return slot;
-    }
-
-    // 选择题
-    const t = { ...perQuestion, ...(question.timingOverride ?? {}) };
-    const presentFrames = sec(t.presentSeconds);
-    const countdownFrames = sec(t.countdownSeconds);
-    const revealFrames = sec(t.revealSeconds);
-    const durationInFrames = presentFrames + countdownFrames + revealFrames;
+    const baseTiming = isFill(question) ? fillTiming : perQuestion;
+    const timing = resolveSlotTiming(question, baseTiming, burst, ttsWps, fps);
     const slot: QuestionSlot = {
-      kind: "choice",
+      kind: isFill(question) ? "fill" : "choice",
       index,
       from: cursor,
-      durationInFrames,
-      presentFrames,
-      countdownFrames,
-      revealFrames,
-      displayFrames: 0,
-      answerFrames: 0,
+      durationInFrames: timing.durationInFrames,
+      presentFrames: timing.presentFrames,
+      countdownFrames: timing.countdownFrames,
+      revealFrames: timing.revealFrames,
+      pauseFrames: timing.pauseFrames,
       question,
     };
-    cursor += durationInFrames;
+    cursor += timing.durationInFrames;
     return slot;
   });
 
   return {
     fps,
     introFrames,
+    hookFrames,
     outroFrames,
+    summaryFrames,
     slots,
-    totalFrames: cursor + outroFrames,
+    totalFrames: cursor + summaryFrames + outroFrames,
   };
 };

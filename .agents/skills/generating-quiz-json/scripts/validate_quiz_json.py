@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Validate a Question-Video-Maker QuizData JSON file.
 
-支持三种题型：
+支持两种题型：
   - choice     选择题（type 缺省或 "choice"）
   - fill       填空题（万物雅称）
-  - crossword  诗词填字纵横
 """
 
 import json
@@ -13,7 +12,7 @@ from pathlib import Path
 
 
 TOP_LEVEL = {"meta", "timing", "intro", "outro", "bgm", "questions"}
-VALID_TYPES = {"choice", "fill", "crossword"}
+VALID_TYPES = {"choice", "fill"}
 
 
 def validate(data):
@@ -50,29 +49,7 @@ def validate(data):
 
         qtype = question.get("type") or "choice"
         if qtype not in VALID_TYPES:
-            errors.append(f"{prefix}.type 必须是 choice / fill / crossword 之一，得到: {qtype!r}")
-            continue
-
-        if qtype == "crossword":
-            clues = question.get("clues")
-            if not isinstance(clues, list) or not clues:
-                errors.append(f"{prefix}.clues 必须是非空数组")
-                continue
-            for ci, clue in enumerate(clues, 1):
-                cp = f"{prefix}.clues[{ci}]"
-                if not isinstance(clue, dict):
-                    errors.append(f"{cp} 必须是对象")
-                    continue
-                if not isinstance(clue.get("id"), str) or not clue["id"].strip():
-                    errors.append(f"{cp}.id 必须是非空字符串")
-                if clue.get("dir") not in ("across", "down"):
-                    errors.append(f"{cp}.dir 必须是 across 或 down")
-                for field in ("row", "col"):
-                    value = clue.get(field)
-                    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
-                        errors.append(f"{cp}.{field} 必须是非负整数")
-                if not isinstance(clue.get("text"), str) or not clue["text"].strip():
-                    errors.append(f"{cp}.text 必须是非空字符串")
+            errors.append(f"{prefix}.type 必须是 choice / fill 之一，得到: {qtype!r}")
             continue
 
         # choice / fill 共用：stem + explanation
@@ -100,17 +77,44 @@ def validate(data):
 
     timing = data.get("timing")
     if isinstance(timing, dict):
-        for field in ("fps", "introSeconds", "outroSeconds", "perQuestion"):
-            if field not in timing:
-                errors.append(f"timing 缺少字段: {field}")
+        pacing = timing.get("pacing")
+        burst = pacing == "burst"
+        if pacing not in (None, "classic", "burst"):
+            errors.append(f"timing.pacing 必须是 classic 或 burst，得到: {pacing!r}")
         if not isinstance(timing.get("fps"), int) or timing.get("fps", 0) <= 0:
             errors.append("timing.fps 必须是正整数")
-        per_question = timing.get("perQuestion")
-        if isinstance(per_question, dict):
-            for field in ("presentSeconds", "countdownSeconds", "revealSeconds"):
-                value = per_question.get(field)
-                if not isinstance(value, (int, float)) or isinstance(value, bool) or value <= 0:
-                    errors.append(f"timing.perQuestion.{field} 必须是正数")
+        if not isinstance(timing.get("outroSeconds"), (int, float)) or isinstance(timing.get("outroSeconds"), bool) or timing.get("outroSeconds", 0) <= 0:
+            errors.append("timing.outroSeconds 必须是正数")
+        if burst:
+            # 爆款快闪模式：零片头、无倒计时、perQuestion 可省略
+            if not isinstance(timing.get("introSeconds"), (int, float)) or isinstance(timing.get("introSeconds"), bool) or timing.get("introSeconds", -1) < 0:
+                errors.append("timing.introSeconds 必须是非负数（burst 模式）")
+            for field in ("hookSeconds", "summarySeconds"):
+                if field in timing:
+                    value = timing.get(field)
+                    if not isinstance(value, (int, float)) or isinstance(value, bool) or value < 0:
+                        errors.append(f"timing.{field} 必须是非负数（burst 模式）")
+            per_question = timing.get("perQuestion")
+            if per_question is not None:
+                if not isinstance(per_question, dict):
+                    errors.append("timing.perQuestion 必须是对象")
+                else:
+                    for field in ("presentSeconds", "countdownSeconds", "revealSeconds"):
+                        value = per_question.get(field)
+                        if not isinstance(value, (int, float)) or isinstance(value, bool) or value < 0:
+                            errors.append(f"timing.perQuestion.{field} 必须是非负数（burst 模式）")
+        else:
+            for field in ("fps", "introSeconds", "outroSeconds", "perQuestion"):
+                if field not in timing:
+                    errors.append(f"timing 缺少字段: {field}")
+            if not isinstance(timing.get("introSeconds"), (int, float)) or timing.get("introSeconds", 0) <= 0:
+                errors.append("timing.introSeconds 必须是正数")
+            per_question = timing.get("perQuestion")
+            if isinstance(per_question, dict):
+                for field in ("presentSeconds", "countdownSeconds", "revealSeconds"):
+                    value = per_question.get(field)
+                    if not isinstance(value, (int, float)) or isinstance(value, bool) or value <= 0:
+                        errors.append(f"timing.perQuestion.{field} 必须是正数")
 
     bgm = data.get("bgm")
     if isinstance(bgm, dict):

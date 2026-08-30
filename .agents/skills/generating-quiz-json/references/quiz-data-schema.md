@@ -46,3 +46,9 @@
 ```
 
 生成或更新题库时，先列出该目录现有音频并选择合适文件；用户明确指定音频时可以使用用户指定路径。
+
+## 背景皮肤（background）
+
+- 选择题：黄色宣纸底 `assets/bg-paper.svg`（组件默认，可省略 `background` 字段）。
+- 填空题（万物雅称）：青灰白底 `assets/bg-yacheng.svg`。
+- 快闪模板：`{ "src": <按题型选>, "cloudSrc": null, "drift": 0.04 }`。

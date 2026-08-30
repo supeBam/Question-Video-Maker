@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import {
   getCoverPath,
   getPublishTextPath,
+  getHookImagePath,
   derivePublish,
   isDirectExecution,
 } from "../scripts/render-with-cover.mjs";
@@ -13,6 +14,13 @@ test("封面与 MP4 同路径同名", () => {
   assert.equal(
     getCoverPath("out/中国朝代历史-第02期.mp4"),
     "out/中国朝代历史-第02期.png"
+  );
+});
+
+test("片尾钩子图为 -钩子.png 后缀", () => {
+  assert.equal(
+    getHookImagePath("out/成语-第01期.mp4"),
+    "out/成语-第01期-钩子.png"
   );
 });
 

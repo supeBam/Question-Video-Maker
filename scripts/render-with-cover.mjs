@@ -66,7 +66,7 @@ const formatSrtTime = (seconds) => {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")},${String(ms).padStart(3, "0")}`;
 };
 
-const generateSrt = (data, srtPath) => {
+const generateSrt = (data, srtPath, opts = {}) => {
   // 用与视频渲染完全一致的 buildTimeline 推导时间轴，保证字幕与画面逐帧对齐
   const timeline = buildTimeline(data);
   const { fps, introFrames, hookFrames, outroFrames, slots, totalFrames } = timeline;
@@ -159,8 +159,9 @@ const generateSrt = (data, srtPath) => {
     }
   }
 
-  // 片尾钩子字幕（可选：有 outro.hook 才输出，供后期 TTS 口播）
-  const hook = data.outro?.hook;
+  // 片尾钩子字幕：默认去掉（钩子已有独立钩子图 PNG，发布时自行导入图片即可）；
+  // 需要口播钩子时用 --outro-hook 恢复（有 outro.hook 才输出）
+  const hook = opts.outroHookSrt ? data.outro?.hook : undefined;
   if (hook) {
     blocks.push(
       `${idx}`,
@@ -263,6 +264,8 @@ export const renderVideoWithCover = (
     composition = "LiteratureQuiz",
     hookImage = true,
     answerSheet = true,
+    /** 片尾钩子口播字幕：默认去掉（用钩子图代替）；true 时恢复 SRT 片尾钩子段 */
+    outroHookSrt = false,
   } = options;
   // 渲染合成可切换：经典模板 LiteratureQuiz / 爆款快闪模板 BurstQuiz
   const compositionId = composition;
@@ -376,7 +379,7 @@ export const renderVideoWithCover = (
   }
 
   // 5. 生成字幕 + 发布文案
-  generateSrt(data, srtPath);
+  generateSrt(data, srtPath, { outroHookSrt });
   generatePublishText(data, publishTextPath);
 
   return {
@@ -405,6 +408,7 @@ const parseCliArgs = (argv) => {
     composition: "LiteratureQuiz",
     hookImage: true,
     answerSheet: true,
+    outroHookSrt: false,
   };
   for (const arg of argv.slice(2)) {
     if (arg.startsWith("--data=")) {
@@ -417,6 +421,8 @@ const parseCliArgs = (argv) => {
       opts.hookImage = false;
     } else if (arg === "--no-answer-sheet") {
       opts.answerSheet = false;
+    } else if (arg === "--outro-hook") {
+      opts.outroHookSrt = true;
     } else if (arg && !arg.startsWith("--")) {
       opts.videoPath = arg;
     }
@@ -426,7 +432,7 @@ const parseCliArgs = (argv) => {
 
 if (isDirectExecution(process.argv[1], import.meta.url)) {
   try {
-    const { videoPath, dataPath, srtOnly, composition, hookImage, answerSheet } =
+    const { videoPath, dataPath, srtOnly, composition, hookImage, answerSheet, outroHookSrt } =
       parseCliArgs(process.argv);
     const result = renderVideoWithCover(videoPath, {
       dataPath,
@@ -434,6 +440,7 @@ if (isDirectExecution(process.argv[1], import.meta.url)) {
       composition,
       hookImage,
       answerSheet,
+      outroHookSrt,
     });
     console.log("\n✅ 全部完成：");
     console.log(`  视频: ${result.videoPath}`);

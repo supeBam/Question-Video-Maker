@@ -35,17 +35,17 @@
 
 ## 背景音乐
 
-项目背景音乐目录为 `public/assets/bg-audio/`。JSON 中的 `bgm.file` 使用相对 `public/` 的路径，例如：
+项目背景音乐目录为 `public/assets/bg-audio/`。**答题/快闪题库默认用 `assets/bg-audio/bgm_guzheng_liqiu.mp3`、音量 `0.2`**（音量调小，避免盖过音效与 TTS）。JSON 中的 `bgm.file` 使用相对 `public/` 的路径，例如：
 
 ```json
 {
   "enabled": true,
-  "file": "assets/bg-audio/bg-古箫吟风曲.mp3",
-  "volume": 0.22
+  "file": "assets/bg-audio/bgm_guzheng_liqiu.mp3",
+  "volume": 0.2
 }
 ```
 
-生成或更新题库时，先列出该目录现有音频并选择合适文件；用户明确指定音频时可以使用用户指定路径。
+生成或更新题库时，先列出该目录现有音频并选择合适文件；用户明确指定音频或音量时以用户指定为准。
 
 ## 背景皮肤（background）
 

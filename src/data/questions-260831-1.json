@@ -42,8 +42,8 @@
   },
   "bgm": {
     "enabled": true,
-    "file": "assets/bg-audio/bg-古箫吟风曲.mp3",
-    "volume": 0.3
+    "file": "assets/bg-audio/bgm_guzheng_liqiu.mp3",
+    "volume": 0.2
   },
   "publish": {
     "title": "成语故事第二弹，全对算你厉害",

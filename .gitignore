@@ -52,3 +52,6 @@ test-results/
 
 # tts
 tts/
+
+# local tool workspace (OCR/Whisper runtime deps, do not commit)
+work/

@@ -107,19 +107,22 @@ export const BurstQuiz: React.FC<BurstQuizProps> = ({ data }) => {
         </Sequence>
       ) : null}
 
-      <Sequence
-        from={totalFrames - outroFrames}
-        durationInFrames={outroFrames}
-        name="片尾"
-      >
-        <BurstOutroScene
-          outro={data.outro}
-          meta={data.meta}
-          badge={badge}
+      {/* 片尾（无片尾帧模式 outroFrames=0 时整段跳过；有帧时渲染，minimal 模式画面为纯背景） */}
+      {outroFrames > 0 ? (
+        <Sequence
+          from={totalFrames - outroFrames}
           durationInFrames={outroFrames}
-          minimal={minimalOutro}
-        />
-      </Sequence>
+          name="片尾"
+        >
+          <BurstOutroScene
+            outro={data.outro}
+            meta={data.meta}
+            badge={badge}
+            durationInFrames={outroFrames}
+            minimal={minimalOutro}
+          />
+        </Sequence>
+      ) : null}
     </AbsoluteFill>
   );
 };

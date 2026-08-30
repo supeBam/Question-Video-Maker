@@ -164,7 +164,7 @@ const generateSrt = (data, srtPath, opts = {}) => {
   const hook = opts.outroHookSrt ? data.outro?.hook : undefined;
   if (hook) {
     const minimalOutro =
-      data.timing?.pacing === "burst" && data.timing.minimalOutro !== false;
+      data.timing?.pacing === "burst" && data.timing.minimalOutro === true;
     const hookStartSec = sec(totalFrames - outroFrames);
     if (minimalOutro) {
       // 极简片尾（无片尾帧）：钩子口播从视频结束点开始（约 4.5 字/秒 + 缓冲），

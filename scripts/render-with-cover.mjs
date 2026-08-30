@@ -159,8 +159,8 @@ const generateSrt = (data, srtPath, opts = {}) => {
     }
   }
 
-  // 片尾钩子字幕：默认去掉（钩子已有独立钩子图 PNG，发布时自行导入图片即可）；
-  // 需要口播钩子时用 --outro-hook 恢复（有 outro.hook 才输出）
+  // 片尾钩子字幕：默认输出（供剪映 TTS 口播钩子；画面不渲染钩子，钩子图由用户自行导入）；
+  // 不需要口播钩子时用 --no-outro-hook 关闭（有 outro.hook 才输出）
   const hook = opts.outroHookSrt ? data.outro?.hook : undefined;
   if (hook) {
     blocks.push(
@@ -264,8 +264,8 @@ export const renderVideoWithCover = (
     composition = "LiteratureQuiz",
     hookImage = true,
     answerSheet = true,
-    /** 片尾钩子口播字幕：默认去掉（用钩子图代替）；true 时恢复 SRT 片尾钩子段 */
-    outroHookSrt = false,
+    /** 片尾钩子口播字幕：默认输出（画面不渲染钩子）；false 时去掉 SRT 片尾钩子段 */
+    outroHookSrt = true,
   } = options;
   // 渲染合成可切换：经典模板 LiteratureQuiz / 爆款快闪模板 BurstQuiz
   const compositionId = composition;
@@ -408,7 +408,7 @@ const parseCliArgs = (argv) => {
     composition: "LiteratureQuiz",
     hookImage: true,
     answerSheet: true,
-    outroHookSrt: false,
+    outroHookSrt: true,
   };
   for (const arg of argv.slice(2)) {
     if (arg.startsWith("--data=")) {
@@ -421,8 +421,8 @@ const parseCliArgs = (argv) => {
       opts.hookImage = false;
     } else if (arg === "--no-answer-sheet") {
       opts.answerSheet = false;
-    } else if (arg === "--outro-hook") {
-      opts.outroHookSrt = true;
+    } else if (arg === "--no-outro-hook") {
+      opts.outroHookSrt = false;
     } else if (arg && !arg.startsWith("--")) {
       opts.videoPath = arg;
     }

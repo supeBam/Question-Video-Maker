@@ -14,6 +14,9 @@ const LETTERS = ["A", "B", "C", "D", "E", "F"];
 
 /** 答案回顾每页可用高度（1920 - 顶部标题区 ~400 - 底部常驻条 ~170） */
 const SUMMARY_AVAILABLE = 1350;
+/** 老年观众大字标准：题干/解释字号与正片对齐（正片题干 56-66、解释 38） */
+const SUMMARY_STEM = 50;
+const SUMMARY_EXPLAIN = 36;
 
 /** 答案行文案（与字幕/答案图一致） */
 const answerOf = (slot: QuestionSlot): string => {
@@ -41,7 +44,12 @@ export const SummaryScene: React.FC<{
   const { colors, fonts, layout } = THEME;
 
   const questions = slots.map((s) => s.question);
-  const pages = computeAnswerPages(questions, SUMMARY_AVAILABLE);
+  const pages = computeAnswerPages(
+    questions,
+    SUMMARY_AVAILABLE,
+    SUMMARY_STEM,
+    SUMMARY_EXPLAIN
+  );
   const pageFrames = durationInFrames / pages.length;
   const pageIndex = Math.min(
     Math.floor(frame / pageFrames),
@@ -85,7 +93,7 @@ export const SummaryScene: React.FC<{
         <span
           style={{
             fontFamily: fonts.serif,
-            fontSize: 72,
+            fontSize: 80,
             fontWeight: 800,
             letterSpacing: 8,
             color: colors.light,
@@ -105,7 +113,7 @@ export const SummaryScene: React.FC<{
           <span
             style={{
               fontFamily: fonts.number,
-              fontSize: 26,
+              fontSize: 30,
               color: colors.muted,
               letterSpacing: 2,
             }}
@@ -158,14 +166,14 @@ export const SummaryScene: React.FC<{
                 <span
                   style={{
                     flexShrink: 0,
-                    width: 46,
-                    height: 46,
+                    width: 56,
+                    height: 56,
                     borderRadius: 999,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontFamily: fonts.number,
-                    fontSize: 26,
+                    fontSize: 32,
                     fontWeight: 700,
                     color: "#FFFFFF",
                     backgroundColor: colors.gold,
@@ -177,7 +185,7 @@ export const SummaryScene: React.FC<{
                 <span
                   style={{
                     fontFamily: fonts.serif,
-                    fontSize: 36,
+                    fontSize: SUMMARY_STEM,
                     fontWeight: 700,
                     lineHeight: 1.4,
                     color: colors.light,
@@ -202,7 +210,7 @@ export const SummaryScene: React.FC<{
                 <span
                   style={{
                     fontFamily: fonts.sans,
-                    fontSize: 24,
+                    fontSize: 30,
                     letterSpacing: 2,
                     color: colors.muted,
                   }}
@@ -212,7 +220,7 @@ export const SummaryScene: React.FC<{
                 <span
                   style={{
                     fontFamily: fonts.serif,
-                    fontSize: 38,
+                    fontSize: 50,
                     fontWeight: 800,
                     letterSpacing: 1,
                     color: colors.jade,
@@ -230,7 +238,7 @@ export const SummaryScene: React.FC<{
                 style={{
                   marginTop: 6,
                   fontFamily: fonts.sans,
-                  fontSize: 27,
+                  fontSize: SUMMARY_EXPLAIN,
                   lineHeight: 1.5,
                   color: colors.ink,
                   opacity: 0.86,
@@ -256,7 +264,7 @@ export const SummaryScene: React.FC<{
           right: 0,
           textAlign: "center",
           fontFamily: fonts.sans,
-          fontSize: 26,
+          fontSize: 32,
           letterSpacing: 4,
           color: colors.muted,
           opacity: interpolate(

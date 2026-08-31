@@ -16,7 +16,7 @@
       "pauseSeconds": 1
     },
     "pacing": "burst",
-    "summarySeconds": 28,
+    "summarySeconds": 12,
     "hookSeconds": 2,
     "ttsWordsPerSecond": 4.5
   },

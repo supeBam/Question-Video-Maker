@@ -50,12 +50,12 @@ export const SummaryScene: React.FC<{
   const local = frame - pageIndex * pageFrames;
   const page = pages[pageIndex];
 
-  // 页间过渡：每页开头 10 帧淡入、结尾 10 帧淡出
-  const pageIn = interpolate(local, [0, 10], [0, 1], {
+  // 页间过渡：每页开头 6 帧淡入、结尾 6 帧淡出（快闪节奏，切页利落）
+  const pageIn = interpolate(local, [0, 6], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const pageOut = interpolate(local, [pageFrames - 10, pageFrames], [1, 0], {
+  const pageOut = interpolate(local, [pageFrames - 6, pageFrames], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });

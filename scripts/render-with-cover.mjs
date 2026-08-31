@@ -307,16 +307,24 @@ export const renderVideoWithCover = (
   // 把题库包成 props 写入临时 JSON 文件，让 remotion render/still 按这份数据出片。
   // Remotion 的 --props 同时支持内联 JSON 或一个 JSON 文件路径，这里用文件路径，
   // 避免把含中文与引号的大 JSON 直接拼进命令行（Windows shell 转义极易出错）。
-  // props 路径用「相对项目根 + 正斜杠」（out/.remotion-props.json），
-  // 避免 Windows shell / npx.cmd 对反斜杠绝对路径（D:\...）的转义问题。
-  const propsPath = path.join("out", ".remotion-props.json").replace(/\\/g, "/");
+  // props 用「绝对路径 + 正斜杠」，规避 Windows shell / npx.cmd / Remotion 子命令
+  // 对相对路径（out/.remotion-props.json）解析不一致导致的「not a valid JSON file」。
+  const propsPath = path
+    .resolve(projectRoot, "out", ".remotion-props.json")
+    .replace(/\\/g, "/");
 
-  if (!srtOnly) {
+  // 每次 remotion 子命令前重写 props 并校验存在（防止前一步把文件删掉/锁住）
+  const ensureProps = () => {
     fs.mkdirSync(path.dirname(propsPath), { recursive: true });
     fs.writeFileSync(propsPath, JSON.stringify({ data }), "utf-8");
     if (!fs.existsSync(propsPath)) {
-      throw new Error(`props 临时文件写入失败：${path.resolve(propsPath)}`);
+      throw new Error(`props 临时文件写入失败：${propsPath}`);
     }
+    return propsPath;
+  };
+
+  if (!srtOnly) {
+    ensureProps();
     console.log(`临时 props → ${propsPath}`);
     try {
       // 1. 渲染视频
@@ -325,7 +333,7 @@ export const renderVideoWithCover = (
         "render",
         compositionId,
         videoPath,
-        `--props=${propsPath}`,
+        `--props=${ensureProps()}`,
         "--log=error",
       ]);
       console.log(`视频      →  ${videoPath}`);
@@ -345,7 +353,7 @@ export const renderVideoWithCover = (
         "still",
         compositionId,
         coverPath,
-        `--props=${propsPath}`,
+        `--props=${ensureProps()}`,
         `--frame=${coverFrame}`,
       ]);
       console.log(`封面      →  ${coverPath}`);
@@ -357,7 +365,7 @@ export const renderVideoWithCover = (
           "still",
           "OutroHook",
           hookImagePath,
-          `--props=${propsPath}`,
+          `--props=${ensureProps()}`,
           "--frame=0",
         ]);
         console.log(`钩子图    →  ${hookImagePath}`);
@@ -367,7 +375,7 @@ export const renderVideoWithCover = (
       if (answerSheet) {
         const answerPages = computeAnswerPages(data.questions);
         for (let i = 0; i < answerPages.length; i++) {
-          const pagePropsPath = propsPath.replace(
+          const pagePropsPath = ensureProps().replace(
             ".json",
             `-answer-${i}.json`
           );

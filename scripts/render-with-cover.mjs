@@ -279,7 +279,9 @@ export const renderVideoWithCover = (
     srtOnly = false,
     composition = "LiteratureQuiz",
     hookImage = true,
-    answerSheet = true,
+    /** 答案解释图：默认不产出（答案已由题库 summarySeconds 片尾回顾渲染进视频）；
+     *  需要单独答案图时用 --answer-sheet 开启 */
+    answerSheet = false,
     /** 片尾钩子口播字幕：默认输出（画面不渲染钩子）；false 时去掉 SRT 片尾钩子段 */
     outroHookSrt = true,
   } = options;
@@ -431,7 +433,7 @@ const parseCliArgs = (argv) => {
     srtOnly: false,
     composition: "LiteratureQuiz",
     hookImage: true,
-    answerSheet: true,
+    answerSheet: false,
     outroHookSrt: true,
   };
   for (const arg of argv.slice(2)) {
@@ -443,6 +445,8 @@ const parseCliArgs = (argv) => {
       opts.srtOnly = true;
     } else if (arg === "--no-hook-image") {
       opts.hookImage = false;
+    } else if (arg === "--answer-sheet") {
+      opts.answerSheet = true;
     } else if (arg === "--no-answer-sheet") {
       opts.answerSheet = false;
     } else if (arg === "--no-outro-hook") {

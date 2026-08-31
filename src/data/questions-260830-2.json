@@ -16,7 +16,7 @@
       "pauseSeconds": 1
     },
     "pacing": "burst",
-    "summarySeconds": 0,
+    "summarySeconds": 28,
     "hookSeconds": 2,
     "ttsWordsPerSecond": 4.5
   },
@@ -36,7 +36,7 @@
     "cta": "点赞 · 收藏 · 关注",
     "ctaSub": "考考孩子，评论区见真章",
     "hook": "你全对了吗？评论区告诉我。点赞收藏，考考孩子。",
-    "answerHint": "答案在后面\n别急着划走"
+    "answerHint": "都记住了吗\n评论区对答案"
   },
   "voiceOver": {
     "enabled": false

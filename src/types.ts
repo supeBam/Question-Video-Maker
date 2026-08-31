@@ -316,7 +316,14 @@ export const buildTimeline = (data: QuizData): Timeline => {
   // burst 模式强制零片头：对标爆款视频第一帧即第一题
   const introFrames = burst ? 0 : sec(introSeconds);
   // 快闪模板钩子开场（缺省 2 秒；hookSeconds: 0 零片头直接进题）
-  const hookFrames = burst ? sec(data.timing.hookSeconds ?? 2) : 0;
+  let hookFrames = burst ? sec(data.timing.hookSeconds ?? 2) : 0;
+  // TTS 语速兜底：钩子开场字幕（intro.title）至少覆盖朗读时长 + 缓冲，
+  // 避免钩子口播没读完就叠进第一题题干（剪映字幕转音频会重叠）
+  if (burst && ttsWps > 0) {
+    const hookText = (data.intro?.title ?? "").replace(/\n/g, "");
+    const hookNeed = speakSeconds(hookText, ttsWps) + 0.5;
+    hookFrames = Math.max(hookFrames, sec(hookNeed));
+  }
   // 极简片尾（burst 专属，缺省 false）：保留文字版片尾；显式 minimalOutro: true 时
   // 连片尾帧都不要，视频在最后一题结束，钩子图/答案图由用户发布时自行导入
   const minimalOutro = burst && data.timing.minimalOutro === true;

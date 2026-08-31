@@ -150,6 +150,8 @@ export type QuizData = {
     ctaSub: string;
     /** 可选：片尾口播钩子（用于配音/SRT），如「你答对了几题？评论区告诉我」 */
     hook?: string;
+    /** 可选：片尾「看答案」引导文案（burst 片尾画面显示，如「答案在后面，别划走」） */
+    answerHint?: string;
   };
   voiceOver: {
     enabled: boolean;

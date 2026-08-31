@@ -69,6 +69,24 @@ export const BurstOutroScene: React.FC<BurstOutroSceneProps> = ({
         {outro.headline || badge}
       </h2>
 
+      {/* 看答案引导（可选：有 answerHint 才显示，提示观众别错过结尾的答案图） */}
+      {outro.answerHint ? (
+        <div
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: 52,
+            fontWeight: 700,
+            letterSpacing: 5,
+            color: colors.vermilion,
+            textAlign: "center",
+            whiteSpace: "pre-line",
+            ...fadeSlideUp(frame, 8, 12, 26),
+          }}
+        >
+          {outro.answerHint}
+        </div>
+      ) : null}
+
       <div
         style={{
           display: "flex",

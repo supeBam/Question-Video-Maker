@@ -63,15 +63,19 @@ const estimateQuestionHeight = (q: AnyQuestion) => {
 /**
  * 贪心分页：按估算高度累加，超过可用高度就开新页；
  * 保证任何一页都不溢出安全区。页数 = 返回数组长度。
+ * availableHeight 可自定义（答案回顾场景的排版区比答案图略矮）。
  */
-export const computeAnswerPages = (questions: AnyQuestion[]): AnswerPage[] => {
+export const computeAnswerPages = (
+  questions: AnyQuestion[],
+  availableHeight: number = PAGE_AVAILABLE
+): AnswerPage[] => {
   const pages: AnswerPage[] = [];
   let current: number[] = [];
   let used = 0;
 
   for (let i = 0; i < questions.length; i++) {
     const h = estimateQuestionHeight(questions[i]);
-    if (current.length > 0 && used + h > PAGE_AVAILABLE) {
+    if (current.length > 0 && used + h > availableHeight) {
       pages.push({ indices: current });
       current = [];
       used = 0;

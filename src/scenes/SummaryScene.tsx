@@ -1,8 +1,8 @@
 import React from "react";
-import { AbsoluteFill, useCurrentFrame, interpolate } from "remotion";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
 import { THEME } from "../theme";
 import { BurstChrome } from "../components/BurstChrome";
-import { stagger } from "../animations";
+import { computeAnswerPages } from "../answerSheet";
 import type {
   ChoiceQuestion,
   FillQuestion,
@@ -12,22 +12,10 @@ import type {
 
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
 
-export type SummarySceneProps = {
-  slots: QuestionSlot[];
-  meta: QuizData["meta"];
-  badge: string;
-  saveText?: string;
-  disclaimer?: string;
-  durationInFrames: number;
-};
+/** 答案回顾每页可用高度（1920 - 顶部标题区 ~400 - 底部常驻条 ~170） */
+const SUMMARY_AVAILABLE = 1350;
 
-/** 题干压成一行（去掉换行，超长截断） */
-const oneLineStem = (stem: string) => {
-  const flat = stem.replace(/\n/g, " ");
-  return flat.length > 26 ? flat.slice(0, 26) + "…" : flat;
-};
-
-/** 答案（选择题显示字母+选项，填空题显示雅称） */
+/** 答案行文案（与字幕/答案图一致） */
 const answerOf = (slot: QuestionSlot): string => {
   if (slot.kind === "fill") {
     return (slot.question as FillQuestion).answer;
@@ -38,32 +26,42 @@ const answerOf = (slot: QuestionSlot): string => {
 
 /**
  * 片尾「本期答案」回顾（快闪模板专属，仅画面、不进字幕）：
- * 逐题展示 题干 → 答案（大字）→ 解释，字号为老年观众加大。
+ * 按估算高度自动分页（每页 2~4 题），页间淡入淡出；
+ * 卡片排版与答案解释图一致：题号徽章 + 题干 + 答案 + 解释，行数受控不溢出。
  */
-export const SummaryScene: React.FC<SummarySceneProps> = ({
-  slots,
-  meta,
-  badge,
-  saveText,
-  disclaimer,
-  durationInFrames,
-}) => {
+export const SummaryScene: React.FC<{
+  slots: QuestionSlot[];
+  meta: QuizData["meta"];
+  badge: string;
+  saveText?: string;
+  disclaimer?: string;
+  durationInFrames: number;
+}> = ({ slots, meta, badge, saveText, disclaimer, durationInFrames }) => {
   const frame = useCurrentFrame();
-  const { colors, fonts, fontSize, layout } = THEME;
+  const { colors, fonts, layout } = THEME;
 
-  const inFade = interpolate(frame, [0, 10], [0, 1], {
+  const questions = slots.map((s) => s.question);
+  const pages = computeAnswerPages(questions, SUMMARY_AVAILABLE);
+  const pageFrames = durationInFrames / pages.length;
+  const pageIndex = Math.min(
+    Math.floor(frame / pageFrames),
+    pages.length - 1
+  );
+  const local = frame - pageIndex * pageFrames;
+  const page = pages[pageIndex];
+
+  // 页间过渡：每页开头 10 帧淡入、结尾 10 帧淡出
+  const pageIn = interpolate(local, [0, 10], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const outFade = interpolate(
-    frame,
-    [durationInFrames - 10, durationInFrames],
-    [1, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-  );
+  const pageOut = interpolate(local, [pageFrames - 10, pageFrames], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
 
   return (
-    <AbsoluteFill style={{ opacity: inFade * outFade }}>
+    <AbsoluteFill style={{ opacity: pageIn * pageOut }}>
       <BurstChrome
         series={meta.series}
         badge={badge}
@@ -71,23 +69,23 @@ export const SummaryScene: React.FC<SummarySceneProps> = ({
         disclaimer={disclaimer}
       />
 
-      {/* 标题 */}
+      {/* 页头：标题 + 页码 */}
       <div
         style={{
           position: "absolute",
-          top: 240,
+          top: 210,
           left: 0,
           right: 0,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 18,
+          gap: 16,
         }}
       >
         <span
           style={{
             fontFamily: fonts.serif,
-            fontSize: 76,
+            fontSize: 72,
             fontWeight: 800,
             letterSpacing: 8,
             color: colors.light,
@@ -103,105 +101,173 @@ export const SummaryScene: React.FC<SummarySceneProps> = ({
               "linear-gradient(90deg, rgba(229,185,107,0), rgba(229,185,107,0.9), rgba(229,185,107,0))",
           }}
         />
+        {pages.length > 1 ? (
+          <span
+            style={{
+              fontFamily: fonts.number,
+              fontSize: 26,
+              color: colors.muted,
+              letterSpacing: 2,
+            }}
+          >
+            {pageIndex + 1} / {pages.length}
+          </span>
+        ) : null}
       </div>
 
-      {/* 逐题卡片 */}
+      {/* 逐题卡片（当前页，行数受控不溢出） */}
       <div
         style={{
           position: "absolute",
-          top: 400,
+          top: 420,
           left: layout.sideMargin,
           right: layout.sideMargin,
           display: "flex",
           flexDirection: "column",
-          gap: 22,
+          gap: 20,
         }}
       >
-        {slots.map((slot, i) => {
-          const enter = interpolate(
-            frame,
-            [stagger(i, 7, 4), stagger(i, 7, 4) + 10],
-            [0, 1],
-            { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-          );
-          const explanation =
-            slot.kind === "fill"
-              ? (slot.question as FillQuestion).explanation
-              : (slot.question as ChoiceQuestion).explanation;
-          const stem = slot.question.stem;
+        {page.indices.map((qi, idx) => {
+          const slot = slots[qi];
+          const q = slot.question;
+          const isFill = slot.kind === "fill";
+          const answerText = isFill
+            ? (q as FillQuestion).answer
+            : `${LETTERS[(q as ChoiceQuestion).answerIndex]}. ${
+                (q as ChoiceQuestion).options[(q as ChoiceQuestion).answerIndex]
+              }`;
+          const stem = (q.stem ?? "").replace(/\n/g, " ");
+          // 页内逐卡入场（错峰 4 帧）
+          const cardIn = interpolate(local, [idx * 4 + 2, idx * 4 + 12], [0, 1], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+          });
           return (
             <div
-              key={slot.question.id}
+              key={q.id}
               style={{
-                opacity: enter,
-                transform: `translateY(${interpolate(
-                  frame,
-                  [stagger(i, 7, 4), stagger(i, 7, 4) + 12],
-                  [18, 0],
-                  { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-                )}px)`,
-                borderRadius: 22,
-                backgroundColor: colors.paper,
+                opacity: cardIn,
+                borderRadius: 20,
                 border: `2px solid ${colors.glassBorder}`,
-                padding: "20px 28px",
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
+                backgroundColor: colors.glass,
+                padding: "20px 26px",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: 16,
-                }}
-              >
+              {/* 题号 + 题干（最多 2 行） */}
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
                 <span
                   style={{
+                    flexShrink: 0,
+                    width: 46,
+                    height: 46,
+                    borderRadius: 999,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     fontFamily: fonts.number,
-                    fontSize: 40,
-                    color: colors.gold,
+                    fontSize: 26,
                     fontWeight: 700,
+                    color: "#FFFFFF",
+                    backgroundColor: colors.gold,
+                    marginTop: 4,
                   }}
                 >
-                  {i + 1}
+                  {qi + 1}
                 </span>
                 <span
                   style={{
-                    flex: 1,
                     fontFamily: fonts.serif,
-                    fontSize: 44,
-                    fontWeight: 600,
-                    letterSpacing: 2,
+                    fontSize: 36,
+                    fontWeight: 700,
+                    lineHeight: 1.4,
                     color: colors.light,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
                   }}
                 >
-                  {oneLineStem(stem)}
-                </span>
-                <span
-                  style={{
-                    fontFamily: fonts.serif,
-                    fontSize: 52,
-                    fontWeight: 800,
-                    color: colors.jade,
-                  }}
-                >
-                  {answerOf(slot)}
+                  {stem}
                 </span>
               </div>
+              {/* 答案 */}
               <div
                 style={{
-                  fontFamily: fonts.serif,
-                  fontSize: 38,
-                  lineHeight: 1.5,
-                  color: colors.muted,
+                  marginTop: 8,
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 10,
                 }}
               >
-                {explanation}
+                <span
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: 24,
+                    letterSpacing: 2,
+                    color: colors.muted,
+                  }}
+                >
+                  答案
+                </span>
+                <span
+                  style={{
+                    fontFamily: fonts.serif,
+                    fontSize: 38,
+                    fontWeight: 800,
+                    letterSpacing: 1,
+                    color: colors.jade,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 1,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {answerText}
+                </span>
+              </div>
+              {/* 解释（最多 3 行） */}
+              <div
+                style={{
+                  marginTop: 6,
+                  fontFamily: fonts.sans,
+                  fontSize: 27,
+                  lineHeight: 1.5,
+                  color: colors.ink,
+                  opacity: 0.86,
+                  display: "-webkit-box",
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
+                {q.explanation ?? ""}
               </div>
             </div>
           );
         })}
+      </div>
+
+      {/* 底部提示（MIN_PAGE_SECONDS 保底说明页切换节奏） */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: layout.safeBottom - 20,
+          left: 0,
+          right: 0,
+          textAlign: "center",
+          fontFamily: fonts.sans,
+          fontSize: 26,
+          letterSpacing: 4,
+          color: colors.muted,
+          opacity: interpolate(
+            frame,
+            [durationInFrames - 30, durationInFrames - 10],
+            [0, 1],
+            { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+          ),
+        }}
+      >
+        记得截图保存 · 评论区对答案
       </div>
     </AbsoluteFill>
   );

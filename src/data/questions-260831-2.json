@@ -8,15 +8,15 @@
   "timing": {
     "fps": 30,
     "introSeconds": 0,
-    "outroSeconds": 3,
+    "outroSeconds": 8,
     "perQuestion": {
       "presentSeconds": 2.2,
       "countdownSeconds": 2,
       "revealSeconds": 2.8,
-      "pauseSeconds": 1
+      "pauseSeconds": 0.5
     },
     "pacing": "burst",
-    "summarySeconds": 12,
+    "summarySeconds": 10,
     "hookSeconds": 2,
     "ttsWordsPerSecond": 4.5
   },
@@ -27,11 +27,13 @@
     "hint": "每题 5 秒快问快答"
   },
   "outro": {
-    "headline": "全对 = 学霸",
+    "headline": "看看你的段位",
     "scoreHints": [
-      "答对 4 题 · 已经很有文化了",
-      "答对 7 题 · 出口成章",
-      "10 题全对 · 行走的成语词典"
+      "答对 2 题 · 初入文海",
+      "答对 4 题 · 小有才学",
+      "答对 6 题 · 腹有诗书",
+      "答对 8 题 · 出口成章",
+      "10 题全对 · 文曲星下凡"
     ],
     "cta": "点赞 · 收藏 · 关注",
     "ctaSub": "考考孩子，评论区见真章",

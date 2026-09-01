@@ -28,8 +28,9 @@ description: Use when the user asks to create, replace, or update this project's
 
 - 保持 `id` 在文件内唯一，通常使用 `q1`、`q2` 递增。
 - `answerIndex` 必须落在选项数组范围内；不要把 A/B/C/D 字母写入该字段。
+- **answerIndex 必须分散（硬性规则，生成后自查）**：正确答案不得集中在同一选项位置。≥6 题的题库：A/B/C/D 每个位置出现 2~3 次，且不得连续 3 题同位置；<6 题的题库：至少出现 3 种不同位置。生成后统计 answerIndex 分布，不满足则调整选项顺序重排后再交付。
 - 题干不得依赖图片、外部上下文或只有多个答案才成立的措辞。
-- 选项顺序应自然变化，避免正确答案总在同一位置。
+- 选项顺序应自然变化，干扰项与正确项混排，避免「正确答案总是第一个」的固定套路。
 - 不把 Markdown 代码围栏写进 JSON；使用 `json.dump(..., ensure_ascii=False, indent=2)` 或等价格式保存。
 - 需要覆盖已有文件时，先读取并保留用户未要求改变的字段，再运行校验器。
 - 背景音乐目录是 `public/assets/bg-audio/`；新增背景音乐文件应放在此目录，避免散落到其他资源目录。

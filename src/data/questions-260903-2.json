@@ -1,0 +1,147 @@
+{
+  "meta": {
+    "series": "中国文学常识",
+    "episode": 2,
+    "episodeLabel": "第 02 期",
+    "hostTag": "@每日文化小测"
+  },
+  "timing": {
+    "fps": 30,
+    "introSeconds": 0,
+    "outroSeconds": 8,
+    "perQuestion": {
+      "presentSeconds": 2.2,
+      "countdownSeconds": 2,
+      "revealSeconds": 2.8,
+      "pauseSeconds": 0.5
+    },
+    "pacing": "burst",
+    "summarySeconds": 10,
+    "hookSeconds": 2,
+    "ttsWordsPerSecond": 4.5
+  },
+  "intro": {
+    "kicker": "中国文学常识",
+    "title": "课本里的文学常识\n大人也答不全",
+    "subtitle": "小学课本，未必记得",
+    "hint": "每题 5 秒快问快答"
+  },
+  "outro": {
+    "headline": "看看你的段位",
+    "scoreHints": [
+      "答对 0~1 题 · 白丁之身",
+      "答对 2~3 题 · 初入文海",
+      "答对 4~5 题 · 小有才学",
+      "答对 6~7 题 · 腹有诗书",
+      "答对 8~9 题 · 出口成章",
+      "10 题全对 · 文曲星下凡"
+    ],
+    "cta": "点赞 · 收藏 · 关注",
+    "ctaSub": "考考孩子，评论区见真章",
+    "hook": "你全对了吗？评论区告诉我。点赞收藏，考考孩子。",
+    "answerHint": "都记住了吗\n评论区对答案"
+  },
+  "voiceOver": {
+    "enabled": false
+  },
+  "bgm": {
+    "enabled": true,
+    "file": "assets/bg-audio/bgm_guzheng_liqiu.mp3",
+    "volume": 0.2
+  },
+  "publish": {
+    "title": "小学课本的文学常识，大人也答不全，全对算你厉害",
+    "douyin": {
+      "title": "「唐宋八大家」宋代有几位？10 题答对 8 个算你牛"
+    },
+    "challenge": "10 题 · 答对 8 个算你牛",
+    "hashtags": ["文学常识", "涨知识", "传统文化", "国学", "读书", "中国文化"]
+  },
+  "background": {
+    "src": "assets/bg-paper.svg",
+    "cloudSrc": null,
+    "drift": 0.04
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "stem": "「唐宋八大家」中\n宋代有几位？",
+      "options": ["4 位", "5 位", "6 位", "7 位"],
+      "answerIndex": 2,
+      "explanation": "唐宋八大家是韩愈、柳宗元（唐）和欧阳修、苏洵、苏轼、苏辙、王安石、曾巩（宋）——宋代占了六位。",
+      "punchline": "八大家里，宋代占六位"
+    },
+    {
+      "id": "q2",
+      "stem": "「小李杜」指的是\n哪两位诗人？",
+      "options": ["李白和杜甫", "李商隐和杜牧", "李贺和杜牧", "李商隐和李贺"],
+      "answerIndex": 1,
+      "explanation": "「大李杜」指李白、杜甫；晚唐的李商隐、杜牧合称「小李杜」，诗风各有千秋。",
+      "punchline": "小李杜=李商隐和杜牧"
+    },
+    {
+      "id": "q3",
+      "stem": "下列哪位\n不属于初唐四杰？",
+      "options": ["王勃", "杨炯", "骆宾王", "陈子昂"],
+      "answerIndex": 3,
+      "explanation": "初唐四杰是王勃、杨炯、卢照邻、骆宾王。陈子昂是初唐后期的诗人，「前不见古人，后不见来者」出自他手。",
+      "punchline": "四杰没有陈子昂"
+    },
+    {
+      "id": "q4",
+      "stem": "「三曹」指的是\n哪三位？",
+      "options": ["曹操、曹丕、曹植", "曹操、曹植、曹冲", "曹丕、曹植、曹彰", "曹操、曹仁、曹洪"],
+      "answerIndex": 0,
+      "explanation": "「三曹」指曹操与其子曹丕、曹植，是建安文学的代表，父子三人撑起建安风骨。",
+      "punchline": "三曹=曹操父子仨"
+    },
+    {
+      "id": "q5",
+      "stem": "「乐府双璧」指的是\n哪两部作品？",
+      "options": ["陌上桑与长歌行", "孔雀东南飞与木兰诗", "短歌行与观沧海", "木兰诗与敕勒歌"],
+      "answerIndex": 1,
+      "explanation": "《孔雀东南飞》是我国最长叙事诗，《木兰诗》写花木兰代父从军，合称「乐府双璧」。",
+      "punchline": "乐府双璧=孔雀东南飞+木兰诗"
+    },
+    {
+      "id": "q6",
+      "stem": "「元曲四大家」\n不包括哪位？",
+      "options": ["王实甫", "关汉卿", "马致远", "郑光祖"],
+      "answerIndex": 0,
+      "explanation": "元曲四大家是关汉卿、白朴、马致远、郑光祖。王实甫写《西厢记》也很出名，但不在这四家之列。",
+      "punchline": "四大家没有王实甫"
+    },
+    {
+      "id": "q7",
+      "stem": "「岁寒三友」指\n哪三种植物？",
+      "options": ["松、竹、菊", "梅、兰、竹", "松、竹、梅", "松、梅、菊"],
+      "answerIndex": 2,
+      "explanation": "「岁寒三友」是松、竹、梅——松竹经冬不凋，梅花耐寒开放，古人以它们象征坚贞品格。",
+      "punchline": "岁寒三友=松竹梅"
+    },
+    {
+      "id": "q8",
+      "stem": "「花中四君子」指\n哪四种花？",
+      "options": ["梅、兰、竹、菊", "梅、竹、菊、荷", "兰、竹、菊、松", "梅、兰、菊、桂"],
+      "answerIndex": 0,
+      "explanation": "梅傲雪、兰幽香、竹虚心、菊隐逸，合称「花中四君子」，是文人画最常见的题材。",
+      "punchline": "四君子=梅兰竹菊"
+    },
+    {
+      "id": "q9",
+      "stem": "称李白为「谪仙人」\n的是哪位诗人？",
+      "options": ["杜甫", "贺知章", "孟浩然", "王维"],
+      "answerIndex": 1,
+      "explanation": "贺知章读了李白《蜀道难》，惊叹他是「天上谪仙人」。李白也因此名动长安。",
+      "punchline": "谪仙人是贺知章起的"
+    },
+    {
+      "id": "q10",
+      "stem": "《诗经》一共\n有多少篇？",
+      "options": ["300 篇", "320 篇", "311 篇", "305 篇"],
+      "answerIndex": 3,
+      "explanation": "《诗经》收诗 305 篇，又称「诗三百」。分风、雅、颂三部分，是第一部诗歌总集。",
+      "punchline": "诗三百，实际 305 篇"
+    }
+  ]
+}

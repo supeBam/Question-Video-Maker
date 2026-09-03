@@ -49,6 +49,7 @@ test-results/
 .listenhub/
 .dsh/
 .agent-teams/
+.workbuddy/
 
 # tts
 tts/

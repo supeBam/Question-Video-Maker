@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="t5IPlDBc7ucldoBH5tk1o6">
+<head data-page-node-id="L5Cf8fP3u6W2rGQiiaJ6al">
+<meta charset="UTF-8" data-page-node-id="TRidgtJODeD0rA4JYvZKB3">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="chciDDdQuHQIRy7DSb0i4N">
+<title>双平台运营数据看板 · 片刻中华</title>
+<!-- 本工作台为本地单文件方案：数据存 localStorage（键前缀 wb_video_dashboard_），无外部依赖 -->
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --ink:#1f2329; --sub:#646a73; --line:#e5e6eb;
+    --brand:#0f6d8c; --douyin:#d9480f; --wechat:#1971c2;
+    --warn:#c92a2a; --ok:#2b8a3e; --chip:#eef6f9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:14px;line-height:1.6;padding-bottom:env(safe-area-inset-bottom)}
+  .wrap{max-width:1080px;margin:0 auto;padding:16px}
+  header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:14px}
+  header h1{font-size:18px;display:flex;align-items:center;gap:8px}
+  header h1 svg{flex:none}
+  .meta{font-size:12px;color:var(--sub)}
+  .tools{display:flex;flex-wrap:wrap;gap:8px}
+  button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);
+    border-radius:8px;padding:8px 14px;cursor:pointer;min-height:36px}
+  button:hover{border-color:var(--brand);color:var(--brand)}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.primary:hover{opacity:.9;color:#fff}
+  button.danger:hover{border-color:var(--warn);color:var(--warn)}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--sub);
+    background:var(--chip);border-radius:999px;padding:3px 10px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+  section{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;margin-bottom:14px}
+  section>h2{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  section>h2 .hint{font-size:12px;color:var(--sub);font-weight:normal}
+  /* 本期关注 */
+  .focus-item{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;
+    padding:8px 10px;border-radius:8px;border:1px solid var(--line);margin-bottom:6px;font-size:13px}
+  .focus-item.warn{border-color:#ffc9c9;background:#fff5f5}
+  .focus-item .tag{font-size:11px;border-radius:4px;padding:1px 6px;background:var(--chip);color:var(--sub)}
+  .focus-item.warn .tag{background:#ffe3e3;color:var(--warn)}
+  .focus-item b.plat-dy{color:var(--douyin)} .focus-item b.plat-wc{color:var(--wechat)}
+  /* KPI 卡 */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+  .kpi{border:1px solid var(--line);border-radius:10px;padding:12px}
+  .kpi .k{font-size:12px;color:var(--sub)}
+  .kpi .v{font-size:22px;font-weight:600;margin-top:2px}
+  .kpi .s{font-size:12px;color:var(--sub);margin-top:2px}
+  .kpi .dy{color:var(--douyin)} .kpi .wc{color:var(--wechat)}
+  .up{color:var(--ok)} .down{color:var(--warn)}
+  /* 图表 */
+  .chart-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  svg text{font-family:inherit}
+  .legend{display:flex;gap:14px;font-size:12px;color:var(--sub);margin-top:6px;flex-wrap:wrap}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+  /* 筛选 */
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}
+  select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff;min-height:36px}
+  /* 表格 */
+  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:860px}
+  th,td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--sub);font-weight:500;cursor:pointer;user-select:none}
+  th:hover{color:var(--brand)}
+  th:first-child,td:first-child,th.tl,td.tl{text-align:left}
+  tr:hover td{background:#fafbfc}
+  .p-dy{color:var(--douyin);font-weight:600} .p-wc{color:var(--wechat);font-weight:600}
+  .issue{font-size:12px;color:var(--brand);background:var(--chip);border-radius:4px;padding:1px 6px}
+  .noissue{font-size:12px;color:var(--sub)}
+  .m-low{color:var(--warn)}
+  /* 主题条形图 */
+  .bar-row{display:grid;grid-template-columns:110px 1fr 70px;gap:8px;align-items:center;margin-bottom:8px;font-size:12px}
+  .bar-name{color:var(--sub);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bar-track{background:#f1f3f5;border-radius:5px;height:22px;position:relative}
+  .bar-fill{position:absolute;top:0;left:0;height:11px;border-radius:5px 5px 0 0}
+  .bar-fill.b2{top:11px;border-radius:0 0 5px 5px}
+  .bar-val{color:var(--sub)}
+  /* 说明 */
+  .note{font-size:12px;color:var(--sub);line-height:1.8}
+  .note code{background:var(--chip);border-radius:4px;padding:1px 5px;font-size:12px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1f2329;color:#fff;
+    border-radius:8px;padding:10px 18px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9}
+  .toast.show{opacity:.95}
+  @media (max-width:768px){
+    .wrap{padding:10px}
+    section{padding:12px}
+    .kpi .v{font-size:18px}
+    button{padding:8px 12px}
+  }
+</style>
+</head>
+<body data-page-node-id="fhzFf7AXfXGWJKYt2BJDrR">
+<div class="wrap" data-page-node-id="6JzBvJNOTr0blbKFQCSvBp">
+
+  <header data-page-node-id="a0BBzitW8vbWM8PEcH8VlO">
+    <div data-page-node-id="sN0A61BqawV7AOBf5kKFC5">
+      <h1 data-page-node-id="8XDPA8tu8uaCbtNXoH8O0v">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" data-page-node-id="V3U4ByxH65vVrBKfnyQUIu"><rect x="1.5" y="3" width="17" height="13" rx="2" stroke="#0f6d8c" stroke-width="1.6" data-page-node-id="mtVBsjvDTogy3azgtLJwfF"/><path d="M4 13l3.5-4 2.5 2.8L13 8l3.5 5" stroke="#0f6d8c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="Rszg2fxCTeb3gWSP3cjS4W"/><path d="M6.8 16.5h6.4" stroke="#0f6d8c" stroke-width="1.6" stroke-linecap="round" data-page-node-id="xc2EXH2YEeagBqTMBdrbxI"/></svg>
+        双平台运营数据看板 <span class="badge" data-page-node-id="2fBuOJ4xEHYKhEHNlOqOwa"><span class="dot" data-page-node-id="yYePrzb6p9Ib6yL6xNat2J"></span>本地存储</span>
+      </h1>
+      <div class="meta" id="metaInfo" data-page-node-id="MUXb1AL2lsUp6YbgKPhgX4">—</div>
+    </div>
+    <div class="tools" data-page-node-id="cHp4ydaDK5XcbUSmPF382W">
+      <button id="btnImport" class="primary" data-page-node-id="aAlCUNdYEYJCkWBJC2UYfm">导入新数据</button>
+      <button id="btnExport" data-page-node-id="wNyqdMtAzkBBhhSNUGqE3f">导出备份</button>
+      <button id="btnRestore" data-page-node-id="F5EHPFcL9jAqgbPBqAnV25">导入恢复</button>
+      <button id="btnReset" class="danger" data-page-node-id="VRUwXw7cClhYpQE1ejMByQ">恢复内置基线</button>
+      <input type="file" id="fileInput" accept=".json" hidden data-page-node-id="LSu84pHFXrB54mVHIMGZlC">
+    </div>
+  </header>
+
+  <section data-page-node-id="hR698lEIGF23KryEcs71Ka">
+    <h2 data-page-node-id="IlLaZOlN9IOAoGZoghcDjs">本期关注 <span class="hint" data-page-node-id="m1Lgd8twMHqKHQdcAjChyV">发布未满 7 天的作品数据未定型，排行榜仅供参考；告警项按指标字典阈值</span></h2>
+    <div id="focusList" data-page-node-id="1ViJDZPiRsdUtpKlle2kxX"></div>
+  </section>
+
+  <section data-page-node-id="UHMzZDipomyrLZTAo4wHBh">
+    <h2 data-page-node-id="qUREqtWXZMMFuAkV7d7C9V">双平台总览 <span class="hint" data-page-node-id="ZTiZBlLpGV3FE9574DmVID">作品明细累计口径，两平台不混算</span></h2>
+    <div class="kpis" id="kpiGrid" data-page-node-id="yoB4FPCnPWHvdFMkYX2KAF"></div>
+  </section>
+
+  <section data-page-node-id="W1IylN4AuQc007pw1IFlEV">
+    <h2 data-page-node-id="5LCDDA6EX5aqLFmB03HUKT">每日播放趋势 <span class="hint" data-page-node-id="GbAlTLrIdYc6IEWHJJuMH9">每日聚合 = 当日增量口径</span></h2>
+    <div class="chart-scroll" data-page-node-id="TMUIXDmYCSCmm2sqD8W0VN"><div id="trendChart" data-page-node-id="Ib2ZL5ygUEJFoPGI6PxiaJ"></div></div>
+    <div class="legend" data-page-node-id="Ebvmy8CzTNLexiDIUn4U7U">
+      <span data-page-node-id="rMUqdBtIcKCpIp7nxzHjPV"><i style="background:var(--douyin)" data-page-node-id="DnwGbCwdZGo0EwVN5Eb06G"></i>抖音</span>
+      <span data-page-node-id="HNEG6HjqLFNINNWRGGFAv1"><i style="background:var(--wechat)" data-page-node-id="nqg9E413J0GdemwTpDNja2"></i>视频号</span>
+      <span id="trendSummary" style="margin-left:auto" data-page-node-id="Y15OOH71YFje9VobQrYHfj"></span>
+    </div>
+  </section>
+
+  <section data-page-node-id="PXejyExhyFVSDLdyZjGJCC">
+    <h2 data-page-node-id="8WUDuwYn8sy1ORlXwu70eH">主题 × 平台表现 <span class="hint" data-page-node-id="1kGfCGPclpXkW476uuqrIf">按期号映射的作品，中位数播放（口径：可比性优先）</span></h2>
+    <div id="themeChart" data-page-node-id="sM6qeXEr4LbpWMN656BvTx"></div>
+  </section>
+
+  <section data-page-node-id="jxzljE1wheBbpJJVojyDQU">
+    <h2 data-page-node-id="amNMDwrjdGFGieXUHJp3NF">作品表现明细 <span class="hint" data-page-node-id="LqBy1vKpjROzMKtgqJ4Sqa">点击表头排序</span></h2>
+    <div class="filters" data-page-node-id="jlAAQWGv1HxANI0Aw3GSZL">
+      <select id="selPlatform" data-page-node-id="CR6zBhLDC3RvDQgMy2URby">
+        <option value="all" data-page-node-id="UopTIoHATEQqSCXDBN21lr">全部平台</option>
+        <option value="douyin" data-page-node-id="COzMcBHn3p0BQA3BcoltHk">仅抖音</option>
+        <option value="wechat" data-page-node-id="AIYqTKieI5AboarvleKzId">仅视频号</option>
+      </select>
+      <select id="selTheme" data-page-node-id="5rUVzbP5mlhBsJd9avGUuH"><option value="all" data-page-node-id="WBeJcgFwJCSjoHaCr8Jd4b">全部主题</option></select>
+      <select id="selIssue" data-page-node-id="HNcT8ACz6vymxpDvmgLdTM">
+        <option value="all" data-page-node-id="bd2q1vkwcDIXW85GO9eOEl">含未识别期号</option>
+        <option value="yes" data-page-node-id="AVxpJ1D3oGGJ3h5acj6qFF">仅已识别期号</option>
+        <option value="no" data-page-node-id="szDSD9URIs97aYycg5vaus">仅未识别</option>
+      </select>
+      <span class="meta" id="workCount" data-page-node-id="a0Wo0gXuEybvqm3NomiCI0"></span>
+    </div>
+    <div class="tbl-scroll" data-page-node-id="9eqSH9OiTYtEDAI7346WUS">
+      <table data-page-node-id="y48yzuDGVcSpeRwdRwB6kb">
+        <thead data-page-node-id="Afb40qF1aMmfCjvmmvntcO"><tr data-page-node-id="86bGNFnobi8hLfSQeEUWB3">
+          <th class="tl" data-sort="platform" data-page-node-id="vHB3TUGS9XKrzUugOM4FD5">平台</th>
+          <th data-sort="date" data-page-node-id="mL9IDxAbJVXcY0LGe4oslX">发布日</th>
+          <th class="tl" data-sort="title" data-page-node-id="GetQWMHPSb4pdGEBxVxFAi">标题</th>
+          <th class="tl" data-page-node-id="BXwO0W0b9OZ686QF1Kn500">期号</th>
+          <th data-sort="play" data-page-node-id="HB59IsobGBytMNZdYCYmor">播放</th>
+          <th data-sort="likes" data-page-node-id="iqaYWbchWDJNsu1dnqmUU0">赞</th>
+          <th data-sort="comments" data-page-node-id="2nKtWQtgjV0CvDw6aPxSna">评论</th>
+          <th data-sort="shares" data-page-node-id="3BifG6D34mTefWY32XXvCA">分享</th>
+          <th data-sort="completion" data-page-node-id="cgd9qMojnPO01y7hvzEkjT">完播率</th>
+          <th data-sort="m" data-page-node-id="Tqy8kOIQd0fUw2lVDCgDd1">成熟度</th>
+        </tr></thead>
+        <tbody id="workRows" data-page-node-id="2UhuK0lmNLRko1XamLg9Lp"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section data-page-node-id="8kUvqk4lZqWCmr3yIafG1I">
+    <h2 data-page-node-id="a9YpCAH7VLhDwIMQCKeqCF">数据来源与更新方式</h2>
+    <div class="note" data-page-node-id="1w8ideoyA8IBb43AahPqp3">
+      数据来源：<code data-page-node-id="jxA3x9Vtc14EPtnbSqSDMn">docs/数据分析/导入/</code> 下的两平台作品明细 + 每日聚合，期号映射来自 <code data-page-node-id="RNAGCIwLfDaLJ14ECx3PRc">docs/发布台账.md</code>。<br data-page-node-id="Jf85VfcRhuNUpX17isfTgj">
+      每周一更新流程：① 平台后台导出 4 个文件，按命名规范放入 <code data-page-node-id="6x2MtpTmrJVGIYuCfgOnfp">导入/</code> 目录；② 运行
+      <code data-page-node-id="2gHPqmEBZzH8xdOsCdWOFI">python3 scripts/extract-dashboard-data.py</code> 生成 <code data-page-node-id="awAK1h4xMAjIFVypZBLQzH">看板-data.json</code>；③ 打开本看板点「导入新数据」选中该 JSON。<br data-page-node-id="6WwWRtCj8Yam8dlU6gaFcQ">
+      合并规则：同一条视频出现多份快照时取导出日最新的一份；两平台数据不混算；「作品明细」为累计值、「每日聚合」为当日增量。<br data-page-node-id="lpAGiP7qTvaCFXfxVY4d0R">
+      存储说明：数据保存在本浏览器 localStorage（键前缀 <code data-page-node-id="uBGYZlOMKpV7L3GxTNeWuf">wb_video_dashboard_</code>），换设备请先「导出备份」再「导入恢复」。
+    </div>
+  </section>
+
+</div>
+<div class="toast" id="toast" data-page-node-id="dziIuZe5GvLr7GrEloGJ6x"></div>
+
+<script>
+"use strict";
+/* ================= 数据层 ================= */
+var LS_KEY = "wb_video_dashboard_v1";
+var SEED_DATA = {"version":1,"exportDay":"20260903","douyinWorks":[{"platform":"douyin","title":"这些词天天用，来历一个比一个冷 皇帝自称的「朕」，原来人人都能用？10 题答对 8 个算你牛 \n#中国文化  #涨知识  #冷知识  #传统文化  #国学","date":"2026-09-02","time":"18:00","issue":"","theme":"","play":330,"likes":5,"comments":0,"shares":0,"favorites":1,"fans":0,"completion":0.6711,"c5s":25.0,"bounce2s":56.0976,"avgDur":7.957317},{"platform":"douyin","title":"你天天说的成语意思全反了？ 「登堂入室」不是进屋子？10 题答对 8 个算你牛 \n#成语  #涨知识  #亲子教育  #传统文化 #中国文化","date":"2026-09-02","time":"06:00","issue":"成语 · 第 05 期","theme":"成语","play":1057,"likes":19,"comments":0,"shares":0,"favorites":4,"fans":2,"completion":2.0148,"c5s":38.2114,"bounce2s":42.276399999999995,"avgDur":21.437398},{"platform":"douyin","title":"这10个成语你可能一直理解反了 「屡试不爽」真的不爽吗？10 题答对 8 个算你牛 \n#成语  #涨知识  #冷知识  #传统文化  #中国文化","date":"2026-09-01","time":"18:00","issue":"成语 · 第 04 期","theme":"成语","play":1298,"likes":16,"comments":2,"shares":3,"favorites":3,"fans":1,"completion":0.8598,"c5s":36.0846,"bounce2s":46.5211,"avgDur":10.731241},{"platform":"douyin","title":"这些成语你用错了吗？ 「万人空巷」是说没人吗？10 题答对 8 个算你牛 \n#成语  #涨知识  #冷知识  #传统文化 #中国文化","date":"2026-09-01","time":"06:00","issue":"成语 · 第 03 期","theme":"成语","play":516,"likes":7,"comments":0,"shares":1,"favorites":6,"fans":0,"completion":0.0,"c5s":33.3333,"bounce2s":49.2375,"avgDur":9.202614},{"platform":"douyin","title":"成语故事第二弹 「司空见惯」的司空是什么？10 题答对 8 个算你牛 \n#成语  #涨知识  #传统文化  #成语故事  #中国文化","date":"2026-08-31","time":"18:00","issue":"成语 · 第 02 期","theme":"成语","play":795,"likes":21,"comments":0,"shares":0,"favorites":8,"fans":7,"completion":2.5825,"c5s":30.740699999999997,"bounce2s":47.9012,"avgDur":11.312346},{"platform":"douyin","title":"每个成语背后都藏着一个故事 「朝三暮四」最早讲的是谁？10 题答对 8 个算你牛 \n#成语  #涨知识  #冷知识  #传统文化  #中国文化","date":"2026-08-31","time":"06:00","issue":"成语 · 第 01 期","theme":"成语","play":588,"likes":7,"comments":0,"shares":3,"favorites":1,"fans":1,"completion":2.693,"c5s":29.890499999999996,"bounce2s":50.078199999999995,"avgDur":9.630673},{"platform":"douyin","title":"古人的词语代称！ 「社稷」指什么？10 题答对 8 个算你牛 \n#词语代称  #涨知识  #冷知识  #传统文化  #知识分享","date":"2026-08-30","time":"18:00","issue":"词语代称 · 第 01 期","theme":"词语代称","play":836,"likes":12,"comments":0,"shares":2,"favorites":7,"fans":3,"completion":2.9177999999999997,"c5s":39.5901,"bounce2s":40.1294,"avgDur":8.62891},{"platform":"douyin","title":"古人的代称你知道多少？ 古人的词语代称，全对算你厉害 \n#词语代称  #涨知识  #冷知识  #传统文化  #中国文化","date":"2026-08-30","time":"06:00","issue":"","theme":"","play":1818,"likes":43,"comments":0,"shares":7,"favorites":9,"fans":19,"completion":1.9317999999999997,"c5s":38.8441,"bounce2s":40.5495,"avgDur":9.62198},{"platform":"douyin","title":"你的成语是不是都用反了？ 七月流火不是天热，蛛丝马迹的「马」也不是马 \n#中国文化  #涨知识  #冷知识  #亲子教育 #成语","date":"2026-08-29","time":"18:00","issue":"中国文化冷知识 · 第 16 期","theme":"中国文化冷知识","play":549,"likes":10,"comments":1,"shares":1,"favorites":1,"fans":4,"completion":2.549,"c5s":41.0339,"bounce2s":41.680099999999996,"avgDur":25.392569},{"platform":"douyin","title":"万物雅称第二期 古人给十二个月起的雅称你知道多少？ \n#万物雅称  #涨知识  #冷知识  #传统文化   #古诗词","date":"2026-08-28","time":"18:00","issue":"万物雅称 · 第 03 期","theme":"万物雅称","play":597,"likes":29,"comments":1,"shares":2,"favorites":8,"fans":1,"completion":2.7726,"c5s":30.9484,"bounce2s":39.4343,"avgDur":10.702163},{"platform":"douyin","title":"90%不知道的成语的来历 连中三元、独占鳌头，这些词你都用对了吗 \n#中国文化  #涨知识  #冷知识  #科举  #古代高考","date":"2026-08-28","time":"06:00","issue":"中国文化冷知识 · 第 15 期","theme":"中国文化冷知识","play":841,"likes":12,"comments":0,"shares":1,"favorites":2,"fans":3,"completion":1.23,"c5s":20.6367,"bounce2s":38.3095,"avgDur":7.09989},{"platform":"douyin","title":"冷知识！ 你天天念的这四个词，其实都被皇帝改过名 \n#中国文化  #涨知识  #冷知识  #汉字  #传统文化","date":"2026-08-27","time":"18:00","issue":"中国文化冷知识 · 第 14 期","theme":"中国文化冷知识","play":633,"likes":10,"comments":3,"shares":0,"favorites":3,"fans":1,"completion":0.9434,"c5s":44.9032,"bounce2s":35.4839,"avgDur":11.43871},{"platform":"douyin","title":"你知道文具的名字吗？ 古人给文具起的「人名」，美到可以当名字 \n#万物雅称  #涨知识  #冷知识  #传统文化  #文房四宝","date":"2026-08-27","time":"07:46","issue":"万物雅称 · 第 02 期","theme":"万物雅称","play":561,"likes":20,"comments":1,"shares":1,"favorites":8,"fans":3,"completion":2.8235,"c5s":35.2212,"bounce2s":40.885,"avgDur":11.113274},{"platform":"douyin","title":"认识国宝！ 这4件国宝的名字，99%的人从小就叫错了 \n#中国文化  #涨知识  #文物  #故宫  #知识分享","date":"2026-08-26","time":"18:00","issue":"中国文化冷知识 · 第 13 期","theme":"中国文化冷知识","play":434,"likes":15,"comments":0,"shares":1,"favorites":7,"fans":2,"completion":2.5773,"c5s":45.222899999999996,"bounce2s":35.6688,"avgDur":14.696391},{"platform":"douyin","title":"你知道这些的雅称吗？ 古人的诗意外号，美到可以直接当名字 \n#万物雅称  #涨知识  #冷知识  #传统文化  #中国文化","date":"2026-08-26","time":"07:57","issue":"万物雅称 · 第 01 期","theme":"万物雅称","play":987,"likes":28,"comments":1,"shares":3,"favorites":8,"fans":5,"completion":4.6658,"c5s":41.1964,"bounce2s":38.713300000000004,"avgDur":19.653499},{"platform":"douyin","title":"你能答对几题 这4句话你天天说，来历99%的人不知道 \n#中国文化  #涨知识  #成语   #答题  #知识分享","date":"2026-08-25","time":"18:00","issue":"中国文化冷知识 · 第 12 期","theme":"中国文化冷知识","play":607,"likes":12,"comments":0,"shares":2,"favorites":7,"fans":3,"completion":6.0440000000000005,"c5s":45.0464,"bounce2s":32.3529,"avgDur":14.975232},{"platform":"douyin","title":"冷知识！ 这4个词的最初含义，99%的人都不知道 \n#中国文化  #涨知识  #冷知识  #成语  #传统文化","date":"2026-08-22","time":"18:00","issue":"中国文化冷知识 · 第 11 期","theme":"中国文化冷知识","play":1189,"likes":21,"comments":6,"shares":21,"favorites":4,"fans":8,"completion":2.7997,"c5s":44.9115,"bounce2s":33.4808,"avgDur":17.263274},{"platform":"douyin","title":"离了婚再遇前任是什么体验？ 陆游写成了千古名篇 \n#情感  #婚姻  #陆游  #钗头凤","date":"2026-08-21","time":"18:30","issue":"","theme":"","play":40,"likes":0,"comments":0,"shares":0,"favorites":0,"fans":0,"completion":2.5,"c5s":43.9024,"bounce2s":29.268300000000004,"avgDur":15.756098},{"platform":"douyin","title":"人生如逆旅，我读错了十年 苏轼安慰人，从来不说「加油」 \n#苏轼  #人生如逆旅  #国学经典  #中国传统文化  #治愈","date":"2026-08-20","time":"18:30","issue":"","theme":"","play":170,"likes":4,"comments":0,"shares":0,"favorites":1,"fans":1,"completion":3.2467999999999995,"c5s":41.5663,"bounce2s":35.5422,"avgDur":18.373494},{"platform":"douyin","title":"你真的知道吗？ 4个从小听到大的历史故事，99%的人都记错了 \n#中国文化  #历史  #涨知识  #三国","date":"2026-08-19","time":"18:00","issue":"中国文化冷知识 · 第 10 期","theme":"中国文化冷知识","play":459,"likes":8,"comments":0,"shares":0,"favorites":2,"fans":0,"completion":4.2316,"c5s":37.1429,"bounce2s":38.9796,"avgDur":18.361224},{"platform":"douyin","title":"中国的数字 90%的人都不知道数字的玄机 \n#中国文化 #冷知识 #数字 #传统文化","date":"2026-08-19","time":"07:00","issue":"","theme":"","play":169,"likes":1,"comments":0,"shares":0,"favorites":1,"fans":0,"completion":2.5157,"c5s":28.8344,"bounce2s":46.6258,"avgDur":13.699387},{"platform":"douyin","title":"这4个词，99%的人用错了 \n#中国文化  #涨知识  #成语  #亲子教育","date":"2026-08-18","time":"17:30","issue":"中国文化冷知识 · 第 09 期","theme":"中国文化冷知识","play":142,"likes":0,"comments":0,"shares":0,"favorites":0,"fans":0,"completion":3.5971,"c5s":30.366500000000002,"bounce2s":39.267,"avgDur":13.565445},{"platform":"douyin","title":"吃醋 你知道吃醋的故事吗? \n#历史故事  #中国文化  #亲子教育  #冷知识","date":"2026-08-18","time":"12:00","issue":"","theme":"","play":253,"likes":2,"comments":0,"shares":0,"favorites":1,"fans":0,"completion":2.0408,"c5s":34.5098,"bounce2s":24.3137,"avgDur":13.54902},{"platform":"douyin","title":"这4句诗，99%的人理解错了 \n#中国文化  #古诗词  #冷知识  #答题  #知识分享","date":"2026-08-18","time":"07:00","issue":"中国文化冷知识 · 第 08 期","theme":"中国文化冷知识","play":516,"likes":4,"comments":0,"shares":2,"favorites":3,"fans":0,"completion":2.6157,"c5s":39.4137,"bounce2s":29.6417,"avgDur":14.7557},{"platform":"douyin","title":"东西南北 原来东西南北都藏着老祖宗的智慧 \n#传统文化  #东西南北 #文化常识","date":"2026-08-17","time":"11:00","issue":"","theme":"","play":256,"likes":7,"comments":0,"shares":0,"favorites":5,"fans":1,"completion":2.193,"c5s":24.0343,"bounce2s":51.5021,"avgDur":8.304721},{"platform":"douyin","title":"真实意思你真的懂吗？ 这4句浪漫情话你天天念 \n #传统文化  #古诗词  #中国文化  #涨知识  #知识分享","date":"2026-08-17","time":"06:30","issue":"","theme":"","play":70,"likes":1,"comments":0,"shares":0,"favorites":1,"fans":0,"completion":4.6154,"c5s":39.1304,"bounce2s":31.8841,"avgDur":12.391304},{"platform":"douyin","title":"你知道这些成语吗？ 几个成语贯穿了中国千年的生活方式 \n#中国文化 #亲子教育 #成语","date":"2026-08-16","time":"06:30","issue":"","theme":"","play":150,"likes":1,"comments":0,"shares":0,"favorites":0,"fans":0,"completion":3.2258,"c5s":34.5865,"bounce2s":36.8421,"avgDur":7.954887},{"platform":"douyin","title":"成语故事 你真的知道半斤八两的由来吗？ \n#传统文化 #成语 #知识分享","date":"2026-08-15","time":"19:10","issue":"","theme":"","play":239,"likes":2,"comments":0,"shares":0,"favorites":2,"fans":0,"completion":6.818200000000001,"c5s":24.6753,"bounce2s":40.6926,"avgDur":8.636364},{"platform":"douyin","title":"90%的人都误解了 这句话根本不是你以为的意思 \n#中国文化 #答题 #诗句","date":"2026-08-15","time":"07:00","issue":"","theme":"","play":380,"likes":6,"comments":0,"shares":1,"favorites":1,"fans":0,"completion":2.5707,"c5s":27.8161,"bounce2s":40.0,"avgDur":10.133333},{"platform":"douyin","title":"成语你真的会用吗？ 我用了半辈子居然用反了 \n#答题 #中国文化  #知识分享","date":"2026-08-14","time":"12:00","issue":"","theme":"","play":448,"likes":8,"comments":0,"shares":1,"favorites":2,"fans":0,"completion":5.2995,"c5s":45.781,"bounce2s":31.2388,"avgDur":15.138241},{"platform":"douyin","title":"一碗一筷 中国人为什么不用刀叉？一双筷子里藏着五千年的脾气  \n#中国文化  #国学智慧  #老祖宗的智慧  #餐桌礼仪  \n#筷子","date":"2026-08-14","time":"08:04","issue":"","theme":"","play":277,"likes":7,"comments":1,"shares":4,"favorites":1,"fans":0,"completion":1.9084,"c5s":36.9963,"bounce2s":39.1941,"avgDur":25.974359},{"platform":"douyin","title":"能全对的人只有10% 天天挂在嘴边却理解错误 \n#中国文化 #趣味答题 #俗语","date":"2026-08-14","time":"07:00","issue":"","theme":"","play":283,"likes":2,"comments":0,"shares":0,"favorites":1,"fans":1,"completion":3.7037,"c5s":25.8389,"bounce2s":38.9262,"avgDur":39.64094},{"platform":"douyin","title":"人生所有的遗憾，都是另一种成全 \n#人物故事 #苏轼  #人生所有的遗憾  #生活","date":"2026-08-13","time":"18:00","issue":"","theme":"","play":102,"likes":0,"comments":0,"shares":0,"favorites":0,"fans":0,"completion":1.1764999999999999,"c5s":25.8824,"bounce2s":36.4706,"avgDur":9.823529},{"platform":"douyin","title":"庄子看透的事，你我中年才懂 \n#庄子   #国学智慧  #人间清醒  #好好生活","date":"2026-08-13","time":"08:35","issue":"","theme":"","play":341,"likes":8,"comments":1,"shares":0,"favorites":0,"fans":0,"completion":2.9126,"c5s":26.567200000000003,"bounce2s":44.4776,"avgDur":15.608955},{"platform":"douyin","title":"你背过的诗句，但真相90%的人不知道 \n#诗句 #答题 #中国文化","date":"2026-08-13","time":"07:00","issue":"","theme":"","play":316,"likes":4,"comments":1,"shares":0,"favorites":0,"fans":0,"completion":5.1852,"c5s":30.9942,"bounce2s":34.795300000000005,"avgDur":13.599415},{"platform":"douyin","title":"你知道什么是立秋称人吗？ 为什么立秋要在房梁挂秤 \n#立秋  #中国传统习俗  #传统文化冷知识 #二十四节气","date":"2026-08-12","time":"18:00","issue":"","theme":"","play":586,"likes":14,"comments":0,"shares":0,"favorites":2,"fans":3,"completion":5.0877,"c5s":39.0879,"bounce2s":29.967399999999998,"avgDur":22.763844},{"platform":"douyin","title":"你能答对几题？评论区说说 \n#中国文化 #你能答对几题 #趣味答题","date":"2026-08-12","time":"12:00","issue":"","theme":"","play":560,"likes":1,"comments":1,"shares":0,"favorites":1,"fans":0,"completion":8.8968,"c5s":32.1839,"bounce2s":40.0862,"avgDur":10.670977},{"platform":"douyin","title":"一场饭局，谁坐哪谁就活 坐错位置，真会没命？ \n#历史故事 #知识分享  #中国文化","date":"2026-08-12","time":"05:10","issue":"","theme":"","play":529,"likes":3,"comments":0,"shares":0,"favorites":0,"fans":0,"completion":3.1780000000000004,"c5s":47.379,"bounce2s":22.9839,"avgDur":22.110664},{"platform":"douyin","title":"衣冠禽兽 衣冠禽兽这个词，居然是用来夸自己的 \n#知识分享 #衣冠禽兽  #中国文化 #国风","date":"2026-08-11","time":"13:36","issue":"","theme":"","play":423,"likes":1,"comments":0,"shares":0,"favorites":0,"fans":0,"completion":6.812,"c5s":41.253299999999996,"bounce2s":29.503899999999998,"avgDur":10.652742},{"platform":"douyin","title":"看看你的历史基础！ 最后一道90%的人都会选错！ \n#历史知识  #趣味历史  #涨知识  #每日历史小测","date":"2026-08-11","time":"05:00","issue":"","theme":"","play":936,"likes":5,"comments":3,"shares":0,"favorites":0,"fans":3,"completion":3.5307999999999997,"c5s":35.017399999999995,"bounce2s":43.2927,"avgDur":11.824042},{"platform":"douyin","title":"古人的度量衡 “退避三舍”到底有多远？90%的人都不知道！ \n#国学文化  #古代度量衡  #冷知识","date":"2026-08-10","time":"20:32","issue":"","theme":"","play":1448,"likes":35,"comments":0,"shares":3,"favorites":19,"fans":12,"completion":4.8399,"c5s":27.900599999999997,"bounce2s":44.4751,"avgDur":13.138026},{"platform":"douyin","title":"每日答题 看看你的文学功底 \n#中华文化 #文化常识 #知识分享 #读书","date":"2026-08-10","time":"13:52","issue":"","theme":"","play":459,"likes":5,"comments":0,"shares":2,"favorites":0,"fans":3,"completion":10.256400000000001,"c5s":25.787399999999998,"bounce2s":54.724399999999996,"avgDur":11.600394},{"platform":"douyin","title":"古人称呼怎么称呼\"我\"的？ 皇帝有几种自称方法，你知道吗？ \n#知识分享 #中华文化 #文化常识 #读书","date":"2026-08-10","time":"13:24","issue":"","theme":"","play":911,"likes":11,"comments":0,"shares":0,"favorites":2,"fans":1,"completion":4.0865,"c5s":37.9819,"bounce2s":36.5079,"avgDur":13.904762},{"platform":"douyin","title":"你经历过几种穷？ 问君能有几多愁，恰似月底花呗向东流 \n#知识分享 #古人 #贫穷 #人生 #读书","date":"2026-08-09","time":"07:00","issue":"","theme":"","play":13,"likes":0,"comments":0,"shares":0,"favorites":0,"fans":0,"completion":0.0,"c5s":58.3333,"bounce2s":33.3333,"avgDur":19.0},{"platform":"douyin","title":"古人计时 你知道古人是怎么计时的吗？ \n#知识分享  #古代  #读书","date":"2026-08-08","time":"13:07","issue":"","theme":"","play":860,"likes":12,"comments":0,"shares":1,"favorites":4,"fans":3,"completion":5.8168,"c5s":29.341299999999997,"bounce2s":39.6407,"avgDur":9.876647},{"platform":"douyin","title":"夏日消暑 你知道古人怎么消暑的吗？ \n#知识分享 #读书 #古代","date":"2026-08-08","time":"11:32","issue":"","theme":"","play":541,"likes":6,"comments":0,"shares":1,"favorites":2,"fans":0,"completion":2.1458999999999997,"c5s":48.9919,"bounce2s":27.016099999999998,"avgDur":42.679435},{"platform":"douyin","title":"人生交情你知道哪些 愿你也有一生知己 \n#知识  #读书成长  #人生感悟","date":"2026-08-08","time":"08:58","issue":"","theme":"","play":640,"likes":22,"comments":0,"shares":0,"favorites":6,"fans":1,"completion":2.2222,"c5s":21.2318,"bounce2s":47.1637,"avgDur":8.703404},{"platform":"douyin","title":"人生交情 古人交情分九等，你都知道哪些？ \n#读书 #读书成长 #人生感悟","date":"2026-08-08","time":"08:40","issue":"","theme":"","play":0,"likes":0,"comments":0,"shares":0,"favorites":0,"fans":0,"completion":0.0,"c5s":0.0,"bounce2s":0.0,"avgDur":0.0},{"platform":"douyin","title":"人生交情分九等 你现在和你最好的朋友在哪等？ \n#交情 #读书 #读书分享","date":"2026-08-08","time":"08:30","issue":"","theme":"","play":0,"likes":0,"comments":0,"shares":0,"favorites":0,"fans":0,"completion":0.0,"c5s":0.0,"bounce2s":0.0,"avgDur":0.0},{"platform":"douyin","title":"怕被讨厌的人，一定要读这本书 别人的情绪是别人的事，你不必为别人负责。 \n#被讨厌的勇气  #认知觉醒  #读书 #情绪内耗  #好书推荐","date":"2026-08-06","time":"20:10","issue":"","theme":"","play":262,"likes":2,"comments":0,"shares":1,"favorites":1,"fans":0,"completion":2.5,"c5s":16.9421,"bounce2s":57.438,"avgDur":5.103306}],"douyinDaily":[{"date":"2026-08-06","posts":1,"play":73,"likes":1,"shares":0,"comments":0},{"date":"2026-08-07","posts":0,"play":179,"likes":1,"shares":1,"comments":0},{"date":"2026-08-08","posts":3,"play":1660,"likes":31,"shares":2,"comments":0},{"date":"2026-08-09","posts":1,"play":327,"likes":8,"shares":0,"comments":0},{"date":"2026-08-10","posts":3,"play":1173,"likes":15,"shares":0,"comments":0},{"date":"2026-08-11","posts":2,"play":2716,"likes":41,"shares":5,"comments":2},{"date":"2026-08-12","posts":3,"play":1212,"likes":4,"shares":0,"comments":2},{"date":"2026-08-13","posts":3,"play":1298,"likes":25,"shares":0,"comments":1},{"date":"2026-08-14","posts":3,"play":1013,"likes":14,"shares":4,"comments":1},{"date":"2026-08-15","posts":2,"play":561,"likes":12,"shares":2,"comments":1},{"date":"2026-08-16","posts":1,"play":274,"likes":2,"shares":0,"comments":0},{"date":"2026-08-17","posts":2,"play":163,"likes":1,"shares":0,"comments":0},{"date":"2026-08-18","posts":3,"play":849,"likes":13,"shares":2,"comments":0},{"date":"2026-08-19","posts":2,"play":441,"likes":3,"shares":0,"comments":0},{"date":"2026-08-20","posts":1,"play":482,"likes":7,"shares":0,"comments":0},{"date":"2026-08-21","posts":1,"play":129,"likes":3,"shares":0,"comments":0},{"date":"2026-08-22","posts":1,"play":221,"likes":5,"shares":1,"comments":0},{"date":"2026-08-23","posts":0,"play":1076,"likes":17,"shares":20,"comments":6},{"date":"2026-08-24","posts":0,"play":19,"likes":0,"shares":0,"comments":0},{"date":"2026-08-25","posts":1,"play":562,"likes":12,"shares":2,"comments":0},{"date":"2026-08-26","posts":2,"play":1237,"likes":32,"shares":3,"comments":1},{"date":"2026-08-27","posts":2,"play":957,"likes":35,"shares":2,"comments":2},{"date":"2026-08-28","posts":2,"play":1554,"likes":30,"shares":2,"comments":3},{"date":"2026-08-29","posts":1,"play":648,"likes":22,"shares":1,"comments":1},{"date":"2026-08-30","posts":2,"play":2828,"likes":59,"shares":10,"comments":0},{"date":"2026-08-31","posts":2,"play":910,"likes":15,"shares":3,"comments":0},{"date":"2026-09-01","posts":2,"play":2408,"likes":37,"shares":4,"comments":1},{"date":"2026-09-02","posts":2,"play":1404,"likes":25,"shares":0,"comments":0}],"wechatWorks":[{"platform":"wechat","title":"这些词天天用，来历一个比一个冷，知道一半算你厉害  #中国文化 #涨知识 #冷知识 #传统文化 #国学 #中国文化冷知识","date":"2026-09-02","time":"","issue":"","theme":"","play":411,"likes":3,"comments":0,"shares":2,"favorites":0,"fans":0,"recommend":0,"completion":6.33,"avgDur":32.35},{"platform":"wechat","title":"你天天说的成语意思全反了？全对算你厉害  #成语 #涨知识 #冷知识 #传统文化 #成语故事 #中国文化","date":"2026-09-02","time":"","issue":"成语 · 第 05 期","theme":"成语","play":734,"likes":4,"comments":0,"shares":2,"favorites":0,"fans":7,"recommend":1,"completion":10.1,"avgDur":48.78},{"platform":"wechat","title":"这10个成语你可能一直理解反了，全对算你厉害  #成语 #涨知识 #冷知识 #传统文化 #成语故事 #中国文化","date":"2026-09-01","time":"","issue":"成语 · 第 04 期","theme":"成语","play":839,"likes":5,"comments":0,"shares":9,"favorites":0,"fans":5,"recommend":3,"completion":9.17,"avgDur":47.14},{"platform":"wechat","title":"「万人空巷」是说没人吗？10 题答对 8 个算你牛  #成语 #涨知识 #冷知识 #传统文化 #成语故事 #中国文化 #知识分享","date":"2026-09-01","time":"","issue":"成语 · 第 03 期","theme":"成语","play":598,"likes":5,"comments":3,"shares":4,"favorites":0,"fans":4,"recommend":3,"completion":10.5,"avgDur":47.37},{"platform":"wechat","title":"成语故事第二弹，全对算你厉害  #成语 #涨知识 #冷知识 #传统文化 #成语故事 #中国文化","date":"2026-08-31","time":"","issue":"成语 · 第 02 期","theme":"成语","play":770,"likes":1,"comments":1,"shares":3,"favorites":0,"fans":2,"recommend":0,"completion":20.88,"avgDur":34.05},{"platform":"wechat","title":"每个成语背后都藏着一个故事，全对算你厉害  #成语 #涨知识 #冷知识 #传统文化 #成语故事 #中国文化","date":"2026-08-31","time":"","issue":"成语 · 第 01 期","theme":"成语","play":956,"likes":4,"comments":0,"shares":10,"favorites":0,"fans":3,"recommend":2,"completion":24.03,"avgDur":37.54},{"platform":"wechat","title":"「社稷」指什么？10 题答对 8 个算你牛  #词语代称 #涨知识 #冷知识 #传统文化 #古诗词 #中国文化 #知识分享","date":"2026-08-30","time":"","issue":"词语代称 · 第 01 期","theme":"词语代称","play":717,"likes":2,"comments":0,"shares":9,"favorites":0,"fans":5,"recommend":0,"completion":21.76,"avgDur":24.67},{"platform":"wechat","title":"古人的词语代称，全对算你厉害  #词语代称 #涨知识 #冷知识 #传统文化 #古诗词 #中国文化","date":"2026-08-30","time":"","issue":"词语代称 · 第 01 期","theme":"词语代称","play":751,"likes":3,"comments":0,"shares":3,"favorites":0,"fans":3,"recommend":1,"completion":6.26,"avgDur":23.93},{"platform":"wechat","title":"七月流火不是天热，蛛丝马迹的「马」也不是马  #中国文化 #涨知识 #冷知识 #成语 #亲子教育","date":"2026-08-29","time":"","issue":"中国文化冷知识 · 第 16 期","theme":"中国文化冷知识","play":1886,"likes":7,"comments":2,"shares":18,"favorites":0,"fans":5,"recommend":1,"completion":27.98,"avgDur":41.11},{"platform":"wechat","title":"90%人不知道古人给十二个月起的雅称  #万物雅称 #涨知识 #冷知识 #传统文化 #二十四节气 #古诗词 #知识分享","date":"2026-08-28","time":"","issue":"万物雅称 · 第 03 期","theme":"万物雅称","play":690,"likes":6,"comments":0,"shares":3,"favorites":0,"fans":1,"recommend":2,"completion":13.91,"avgDur":27.4},{"platform":"wechat","title":"连中三元、独占鳌头，这些词你都用对了吗  #中国文化 #涨知识 #冷知识 #科举 #古代高考 #传统文化","date":"2026-08-28","time":"","issue":"中国文化冷知识 · 第 15 期","theme":"中国文化冷知识","play":685,"likes":1,"comments":4,"shares":2,"favorites":0,"fans":1,"recommend":1,"completion":18.66,"avgDur":32.88},{"platform":"wechat","title":"你天天念的这四个词，其实都被皇帝改过名  #中国文化 #涨知识 #冷知识 #汉字 #避讳 #传统文化","date":"2026-08-27","time":"","issue":"中国文化冷知识 · 第 14 期","theme":"中国文化冷知识","play":909,"likes":2,"comments":0,"shares":2,"favorites":0,"fans":1,"recommend":1,"completion":16.59,"avgDur":31.22},{"platform":"wechat","title":"古人给文具起的「人名」，美到可以当名字  #万物雅称 #涨知识 #冷知识 #传统文化 #文房四宝 #书法","date":"2026-08-27","time":"","issue":"万物雅称 · 第 02 期","theme":"万物雅称","play":354,"likes":1,"comments":0,"shares":1,"favorites":0,"fans":2,"recommend":1,"completion":13.84,"avgDur":27.53},{"platform":"wechat","title":"这4件国宝的名字，99%的人从小就叫错了  #中国文化 #涨知识 #冷知识 #文物 #故宫 #传统文化","date":"2026-08-26","time":"","issue":"中国文化冷知识 · 第 13 期","theme":"中国文化冷知识","play":921,"likes":1,"comments":0,"shares":3,"favorites":0,"fans":2,"recommend":0,"completion":34.53,"avgDur":45.4},{"platform":"wechat","title":"古人的诗意外号，美到可以直接当名字  #万物雅称 #涨知识 #冷知识 #传统文化 #古诗词 #中国文化","date":"2026-08-26","time":"","issue":"万物雅称 · 第 01 期","theme":"万物雅称","play":432,"likes":6,"comments":1,"shares":0,"favorites":0,"fans":1,"recommend":2,"completion":18.48,"avgDur":34.24},{"platform":"wechat","title":"这4句话你天天说，来历99%的人不知道  #中国文化 #涨知识 #冷知识 #成语 #传统文化 #答题","date":"2026-08-25","time":"","issue":"中国文化冷知识 · 第 12 期","theme":"中国文化冷知识","play":1493,"likes":5,"comments":1,"shares":5,"favorites":0,"fans":2,"recommend":2,"completion":31.39,"avgDur":37.62},{"platform":"wechat","title":"这4个词的最初含义，99%的人都不知道  #中国文化 #涨知识 #冷知识 #成语 #传统文化 #答题","date":"2026-08-22","time":"","issue":"中国文化冷知识 · 第 11 期","theme":"中国文化冷知识","play":1323,"likes":11,"comments":0,"shares":5,"favorites":0,"fans":1,"recommend":10,"completion":29.66,"avgDur":43.81},{"platform":"wechat","title":"教科书没告诉你：陆游是被亲妈拆散的  #情感 #婚姻 #陆游 #钗头凤","date":"2026-08-21","time":"","issue":"","theme":"","play":438,"likes":2,"comments":2,"shares":0,"favorites":0,"fans":0,"recommend":1,"completion":8.68,"avgDur":26.06},{"platform":"wechat","title":"人生如逆旅，我读错了十年  #苏轼 #苏东坡 #人生如逆旅 #国学经典 #中国传统文化 #治愈 #内耗 #诗词","date":"2026-08-20","time":"","issue":"","theme":"","play":472,"likes":4,"comments":0,"shares":3,"favorites":0,"fans":0,"recommend":1,"completion":8.9,"avgDur":54.63},{"platform":"wechat","title":"4个从小听到大的历史故事，99%的人都记错了  #中国文化 #历史 #冷知识 #涨知识 #三国 #传统文化","date":"2026-08-19","time":"","issue":"中国文化冷知识 · 第 10 期","theme":"中国文化冷知识","play":1630,"likes":8,"comments":7,"shares":7,"favorites":0,"fans":3,"recommend":5,"completion":35.4,"avgDur":47.46},{"platform":"wechat","title":"90%的人都不知道数字的玄机  #中国文化  #传统文化  #冷知识  #教育","date":"2026-08-19","time":"","issue":"","theme":"","play":217,"likes":0,"comments":0,"shares":0,"favorites":0,"fans":0,"recommend":0,"completion":1.84,"avgDur":20.94},{"platform":"wechat","title":"这4个词，99%的人用错了  #中国文化 #涨知识 #冷知识 #成语 #传统文化 #答题","date":"2026-08-18","time":"","issue":"中国文化冷知识 · 第 09 期","theme":"中国文化冷知识","play":560,"likes":1,"comments":1,"shares":1,"favorites":0,"fans":0,"recommend":0,"completion":24.82,"avgDur":38.51},{"platform":"wechat","title":"你知道吃醋的故事吗？今天给你讲讲！  #历史故事  #中国文化  #亲子教育  #冷知识","date":"2026-08-18","time":"","issue":"","theme":"","play":374,"likes":0,"comments":2,"shares":0,"favorites":0,"fans":0,"recommend":0,"completion":12.83,"avgDur":32.86},{"platform":"wechat","title":"这4句诗90%人理解错误了  #亲子教育  #中国文化  #诗词  #答题","date":"2026-08-18","time":"","issue":"中国文化冷知识 · 第 08 期","theme":"中国文化冷知识","play":490,"likes":1,"comments":1,"shares":0,"favorites":0,"fans":0,"recommend":0,"completion":20.0,"avgDur":33.33},{"platform":"wechat","title":"原来东西南北都藏着老祖宗的智慧  #传统文化  #东西南北  #文化常识","date":"2026-08-17","time":"","issue":"","theme":"","play":536,"likes":3,"comments":0,"shares":3,"favorites":0,"fans":2,"recommend":1,"completion":15.11,"avgDur":32.86},{"platform":"wechat","title":"这4句浪漫情话你天天念 背后真相一个比一个意外  #冷知识 #传统文化 #古诗词 #中国文化","date":"2026-08-17","time":"","issue":"","theme":"","play":693,"likes":3,"comments":0,"shares":2,"favorites":0,"fans":1,"recommend":0,"completion":26.55,"avgDur":31.2},{"platform":"wechat","title":"你知道中国人千年来是怎么生活的吗？  #成语 #中国文化  #亲子教育  #千年文化","date":"2026-08-16","time":"","issue":"","theme":"","play":327,"likes":1,"comments":0,"shares":0,"favorites":0,"fans":0,"recommend":0,"completion":7.34,"avgDur":13.66},{"platform":"wechat","title":"你真的知道半斤八两的由来吗？  #传统文化  #成语  #知识分享  #成语历史","date":"2026-08-15","time":"","issue":"","theme":"","play":438,"likes":0,"comments":0,"shares":1,"favorites":0,"fans":1,"recommend":0,"completion":17.81,"avgDur":14.8},{"platform":"wechat","title":"90%的人理解错误，这句诗根本不是你以为的意思  #诗词 #中国文化  #趣味答题","date":"2026-08-15","time":"","issue":"","theme":"","play":858,"likes":6,"comments":2,"shares":6,"favorites":0,"fans":5,"recommend":0,"completion":30.07,"avgDur":33.91},{"platform":"wechat","title":"用半辈子别再用错了  #中国文化  #答题  #成语","date":"2026-08-14","time":"","issue":"","theme":"","play":1134,"likes":7,"comments":1,"shares":3,"favorites":0,"fans":0,"recommend":1,"completion":28.9,"avgDur":36.85},{"platform":"wechat","title":"中国人为什么不用刀叉？一双筷子里藏着五千年的脾气  #中国文化 #传统文化 #筷子 #冷知识 #涨知识 #国学智慧 #老祖宗的智慧 #餐桌礼仪 #家风 #文化传承","date":"2026-08-14","time":"","issue":"","theme":"","play":324,"likes":2,"comments":0,"shares":1,"favorites":0,"fans":0,"recommend":1,"completion":7.34,"avgDur":56.2},{"platform":"wechat","title":"只有10%的人能全对！真的全对的在评论区发朵[玫瑰]  #知识分享 #趣味答题  #俗语  #中国文化","date":"2026-08-14","time":"","issue":"","theme":"","play":409,"likes":1,"comments":1,"shares":0,"favorites":0,"fans":1,"recommend":0,"completion":23.72,"avgDur":27.86},{"platform":"wechat","title":"年少不懂苏轼，读懂已是中年  #人生遗憾  #历史故事  #感悟  #当下","date":"2026-08-13","time":"","issue":"","theme":"","play":211,"likes":1,"comments":0,"shares":0,"favorites":0,"fans":0,"recommend":0,"completion":0,"avgDur":17.34},{"platform":"wechat","title":"庄子看透的事，你我中年才懂  #庄子 #人生感悟 #国学智慧 #人间清醒 #好好生活","date":"2026-08-13","time":"","issue":"","theme":"","play":352,"likes":1,"comments":0,"shares":1,"favorites":0,"fans":1,"recommend":1,"completion":11.65,"avgDur":45.28},{"platform":"wechat","title":"你背过的诗句，但真相90%的人不知道  #诗句 #中国文化  #答题","date":"2026-08-13","time":"","issue":"","theme":"","play":1516,"likes":5,"comments":5,"shares":11,"favorites":0,"fans":3,"recommend":1,"completion":30.21,"avgDur":36.33},{"platform":"wechat","title":"为什么立秋要在房梁挂秤  #立秋 #中国传统民俗 #传统文化冷知识 #二十四节气","date":"2026-08-12","time":"","issue":"","theme":"","play":364,"likes":1,"comments":0,"shares":0,"favorites":0,"fans":0,"recommend":0,"completion":8.52,"avgDur":17.51},{"platform":"wechat","title":"你能答对几题？评论区说说  #中国文化 #趣味答题  #读书","date":"2026-08-12","time":"","issue":"","theme":"","play":926,"likes":1,"comments":1,"shares":0,"favorites":0,"fans":1,"recommend":1,"completion":28.08,"avgDur":30.34},{"platform":"wechat","title":"坐错位置，真会没命？  #历史故事 #中国文化 #知识分享","date":"2026-08-12","time":"","issue":"","theme":"","play":394,"likes":1,"comments":0,"shares":0,"favorites":0,"fans":0,"recommend":0,"completion":15.74,"avgDur":23.81},{"platform":"wechat","title":"名句答题，你能对多少？评论区说说  #诗词  #名句  #趣味答题","date":"2026-08-11","time":"","issue":"中国文学名句 · 第 01 期","theme":"中国文学名句","play":890,"likes":4,"comments":1,"shares":1,"favorites":0,"fans":2,"recommend":1,"completion":25.84,"avgDur":33.48},{"platform":"wechat","title":"衣冠禽兽这个词，居然是用来夸自己的  #中国文化 #知识分享 #衣冠禽兽 #国风","date":"2026-08-11","time":"","issue":"","theme":"","play":497,"likes":2,"comments":0,"shares":0,"favorites":0,"fans":0,"recommend":0,"completion":16.87,"avgDur":19.46},{"platform":"wechat","title":"你可以答对多少？评论区说一下  #历史 #趣味问答 #知识分享","date":"2026-08-11","time":"","issue":"","theme":"","play":574,"likes":0,"comments":5,"shares":2,"favorites":0,"fans":0,"recommend":0,"completion":25.91,"avgDur":33.06},{"platform":"wechat","title":"最后一道90%的人都会选错！  #历史知识 #趣味历史 #涨知识 #每日历史小测","date":"2026-08-11","time":"","issue":"","theme":"","play":870,"likes":1,"comments":7,"shares":3,"favorites":0,"fans":1,"recommend":0,"completion":26.44,"avgDur":36.38},{"platform":"wechat","title":"5个藏在成语里的古代度量衡，第一个就惊到你！  #国学文化 #古代度量衡 #成语故事 #涨知识 #传统文化","date":"2026-08-10","time":"","issue":"","theme":"","play":530,"likes":2,"comments":0,"shares":4,"favorites":0,"fans":0,"recommend":2,"completion":17.92,"avgDur":32.38},{"platform":"wechat","title":"看看你的文学功底  #中华文化 #知识分享 #文化常识 #读书","date":"2026-08-10","time":"","issue":"中国文学常识 · 第 01 期","theme":"中国文学常识","play":750,"likes":6,"comments":1,"shares":1,"favorites":0,"fans":4,"recommend":0,"completion":24.7,"avgDur":20.82},{"platform":"wechat","title":"皇帝有几种自称方法，你知道吗？  #中华文化 #文化常识 #读书 #知识分享","date":"2026-08-10","time":"","issue":"","theme":"","play":351,"likes":2,"comments":0,"shares":1,"favorites":0,"fans":0,"recommend":1,"completion":10.54,"avgDur":26.12},{"platform":"wechat","title":"问君能有几多愁，恰似月底花呗向东流！  #读书分享  #知识分享   #人生  #贫穷","date":"2026-08-09","time":"","issue":"","theme":"","play":198,"likes":3,"comments":0,"shares":2,"favorites":0,"fans":0,"recommend":0,"completion":20.3,"avgDur":36.16},{"platform":"wechat","title":"藏在文字里面的中国智慧  #读书 #读书分享 #历史","date":"2026-08-08","time":"","issue":"","theme":"","play":446,"likes":5,"comments":0,"shares":2,"favorites":0,"fans":2,"recommend":2,"completion":34.75,"avgDur":35.11},{"platform":"wechat","title":"热散由心静，凉生为室空  #知识分享 #感悟 #读书 #夏日消暑","date":"2026-08-08","time":"","issue":"","theme":"","play":431,"likes":0,"comments":0,"shares":0,"favorites":0,"fans":0,"recommend":1,"completion":16.24,"avgDur":75.08},{"platform":"wechat","title":"人生交情分九等，你都知道哪一些？  #读书 #读书分享 #古人知识 #人生交情","date":"2026-08-08","time":"","issue":"","theme":"","play":3344,"likes":15,"comments":0,"shares":37,"favorites":0,"fans":1,"recommend":3,"completion":39.95,"avgDur":44.5},{"platform":"wechat","title":"古人之交分九等，你都知道哪些？  #读书 #古人 #人生交情 #读书成长","date":"2026-08-08","time":"","issue":"","theme":"","play":6,"likes":0,"comments":0,"shares":0,"favorites":0,"fans":0,"recommend":0,"completion":0,"avgDur":7.0},{"platform":"wechat","title":"你以为半小时，古人却叫它「一炷香」  #古人怎么计时间 #汉字里的智慧 #传统文化 #国风 #冷知识 #涨知识 #好书推荐 #读书","date":"2026-08-07","time":"","issue":"","theme":"","play":282,"likes":1,"comments":3,"shares":2,"favorites":0,"fans":1,"recommend":2,"completion":15.6,"avgDur":17.01},{"platform":"wechat","title":"一盏茶、一刻钟，藏在汉字里的时间浪漫  #古人怎么计时间 #汉字里的智慧 #传统文化 #国风 #冷知识 #涨知识 #好书推荐 #读书","date":"2026-08-07","time":"","issue":"","theme":"","play":1859,"likes":3,"comments":2,"shares":13,"favorites":0,"fans":1,"recommend":1,"completion":36.53,"avgDur":41.44},{"platform":"wechat","title":"怕被讨厌的人，一定要读这本书","date":"2026-08-07","time":"","issue":"","theme":"","play":194,"likes":0,"comments":0,"shares":0,"favorites":0,"fans":0,"recommend":0,"completion":10.31,"avgDur":13.23},{"platform":"wechat","title":"活得太累，是因为太在意别人的评价。  #情绪内耗 #好书推荐 #被讨厌的勇气 #自我成长","date":"2026-08-06","time":"","issue":"","theme":"","play":181,"likes":0,"comments":0,"shares":1,"favorites":0,"fans":0,"recommend":0,"completion":3.31,"avgDur":6.14},{"platform":"wechat","title":"那个从不拒绝别人的“老好人”，最后都怎样了？ #被讨厌的勇气 #课题分离 #讨好型人格 #视频号读书推荐","date":"2026-08-06","time":"","issue":"","theme":"","play":248,"likes":1,"comments":0,"shares":0,"favorites":0,"fans":0,"recommend":0,"completion":1.21,"avgDur":6.28}],"wechatDaily":[{"date":"2026-09-02","posts":0,"play":1690,"likes":11,"shares":20,"comments":2},{"date":"2026-09-01","posts":0,"play":1698,"likes":9,"shares":15,"comments":3},{"date":"2026-08-31","posts":0,"play":1455,"likes":5,"shares":15,"comments":1},{"date":"2026-08-30","posts":0,"play":1804,"likes":4,"shares":8,"comments":0},{"date":"2026-08-29","posts":0,"play":1712,"likes":12,"shares":6,"comments":2},{"date":"2026-08-28","posts":0,"play":1465,"likes":3,"shares":4,"comments":2},{"date":"2026-08-27","posts":0,"play":1220,"likes":2,"shares":4,"comments":0},{"date":"2026-08-26","posts":0,"play":1451,"likes":10,"shares":3,"comments":2},{"date":"2026-08-25","posts":0,"play":960,"likes":3,"shares":2,"comments":0},{"date":"2026-08-24","posts":0,"play":61,"likes":0,"shares":2,"comments":0},{"date":"2026-08-23","posts":0,"play":742,"likes":8,"shares":4,"comments":0},{"date":"2026-08-22","posts":0,"play":724,"likes":2,"shares":0,"comments":0},{"date":"2026-08-21","posts":0,"play":583,"likes":5,"shares":2,"comments":2},{"date":"2026-08-20","posts":0,"play":1018,"likes":4,"shares":4,"comments":5},{"date":"2026-08-19","posts":0,"play":1061,"likes":4,"shares":2,"comments":2},{"date":"2026-08-18","posts":0,"play":1409,"likes":3,"shares":1,"comments":4},{"date":"2026-08-17","posts":0,"play":1265,"likes":6,"shares":5,"comments":1},{"date":"2026-08-16","posts":0,"play":422,"likes":2,"shares":1,"comments":0},{"date":"2026-08-15","posts":0,"play":1750,"likes":10,"shares":8,"comments":2},{"date":"2026-08-14","posts":0,"play":1410,"likes":7,"shares":4,"comments":2},{"date":"2026-08-13","posts":0,"play":2344,"likes":8,"shares":10,"comments":5},{"date":"2026-08-12","posts":0,"play":1921,"likes":3,"shares":1,"comments":2},{"date":"2026-08-11","posts":0,"play":3022,"likes":12,"shares":10,"comments":11},{"date":"2026-08-10","posts":0,"play":570,"likes":3,"shares":2,"comments":1},{"date":"2026-08-09","posts":0,"play":603,"likes":4,"shares":3,"comments":0},{"date":"2026-08-08","posts":0,"play":3800,"likes":19,"shares":37,"comments":1},{"date":"2026-08-07","posts":0,"play":2342,"likes":3,"shares":14,"comments":4},{"date":"2026-08-06","posts":0,"play":326,"likes":1,"shares":1,"comments":0},{"date":"2026-08-05","posts":0,"play":0,"likes":0,"shares":0,"comments":0},{"date":"2026-08-04","posts":0,"play":0,"likes":0,"shares":0,"comments":0}]};   // 内置基线快照（extract-dashboard-data.py 产出）
+var state = { snapshots: [], filter: { platform:"all", theme:"all", issue:"all", sort:"play", dir:-1 } };
+
+function loadStore(){
+  try{
+    var raw = localStorage.getItem(LS_KEY);
+    var arr = raw ? JSON.parse(raw) : null;
+    if(Array.isArray(arr) && arr.length) { state.snapshots = arr; return; }
+  }catch(e){}
+  state.snapshots = SEED_DATA ? [SEED_DATA] : [];
+}
+function saveStore(){ localStorage.setItem(LS_KEY, JSON.stringify(state.snapshots)); }
+
+/* ================= 计算层（纯函数，无 DOM） ================= */
+function snapKey(w){ return w.platform + "|" + w.date + "|" + (w.title||"").slice(0,12); }
+
+function computeMerged(){
+  // 快照按导出日升序，后导入覆盖先导入（= 取导出日最新）
+  var snaps = state.snapshots.slice().sort(function(a,b){ return (a.exportDay||"").localeCompare(b.exportDay||""); });
+  var works = {}, daily = {};
+  snaps.forEach(function(s){
+    ["douyinWorks","wechatWorks"].forEach(function(k){
+      (s[k]||[]).forEach(function(w){ works[snapKey(w)] = w; });
+    });
+  });
+  var dyDaily = {}, wcDaily = {};
+  snaps.forEach(function(s){
+    (s.douyinDaily||[]).forEach(function(d){ dyDaily[d.date] = d; });
+    (s.wechatDaily||[]).forEach(function(d){ wcDaily[d.date] = d; });
+  });
+  var workList = Object.keys(works).map(function(k){ return works[k]; });
+  var dy = keysSorted(dyDaily), wc = keysSorted(wcDaily);
+  var cutoff = "";
+  workList.forEach(function(w){ if(w.date > cutoff) cutoff = w.date; });
+  [dy,wc].forEach(function(arr){ arr.forEach(function(d){ if(d.date > cutoff) cutoff = d.date; }); });
+  // 成熟度 M 的口径 = 快照日期（导出日），与指标字典一致；趋势窗口与展示继续用数据实际覆盖的最大日期
+  var mCutoff = "";
+  if(snaps.length && snaps[snaps.length-1].exportDay){
+    var e = String(snaps[snaps.length-1].exportDay);
+    mCutoff = e.slice(0,4) + "-" + e.slice(4,6) + "-" + e.slice(6,8);
+  }
+  if(!mCutoff) mCutoff = cutoff;
+  return { works: workList, douyinDaily: dy, wechatDaily: wc, cutoff: cutoff, mCutoff: mCutoff };
+}
+function keysSorted(obj){
+  return Object.keys(obj).sort().map(function(k){ return obj[k]; });
+}
+function median(arr){
+  var a = arr.filter(function(x){ return x > 0; }).sort(function(p,q){ return p-q; });
+  if(!a.length) return 0;
+  var m = Math.floor(a.length/2);
+  return a.length % 2 ? a[m] : Math.round((a[m-1]+a[m])/2);
+}
+function medianKeepZero(arr){
+  // 与 median 的区别：保留 0 值（0 完播率是真实值，不应被过滤）
+  var a = arr.filter(function(x){ return x != null && !isNaN(x); }).sort(function(p,q){ return p-q; });
+  if(!a.length) return 0;
+  var m = Math.floor(a.length/2);
+  return a.length % 2 ? a[m] : (a[m-1]+a[m])/2;
+}
+function daysBetween(d1, d2){
+  return Math.round((new Date(d2) - new Date(d1)) / 86400000);
+}
+function maturity(w, cutoff){
+  if(!w.date || !cutoff) return null;
+  return daysBetween(w.date, cutoff);
+}
+function sumBy(arr, key){
+  return arr.reduce(function(s,x){ return s + (Number(x[key])||0); }, 0);
+}
+function avgDaily(arr, from, to){
+  var sel = arr.filter(function(d){ return d.date >= from && d.date <= to; });
+  if(!sel.length) return 0;
+  return Math.round(sumBy(sel,"play") / sel.length);
+}
+function computeKpis(m){
+  var dy = m.works.filter(function(w){ return w.platform==="douyin"; });
+  var wc = m.works.filter(function(w){ return w.platform==="wechat"; });
+  function plat(p, daily){
+    var last7From = shiftDate(m.cutoff, -6);
+    var d21From = shiftDate(m.cutoff, -27);
+    var prev21 = avgDaily(daily, d21From, shiftDate(m.cutoff, -7));
+    var last7 = avgDaily(daily, last7From, m.cutoff);
+    return {
+      count: p.length,
+      play: sumBy(p,"play"),
+      avgPlay: p.length ? Math.round(sumBy(p,"play")/p.length) : 0,
+      medPlay: median(p.map(function(w){ return w.play; })),
+      likes: sumBy(p,"likes"), comments: sumBy(p,"comments"),
+      shares: sumBy(p,"shares"), favorites: sumBy(p,"favorites"),
+      fans: sumBy(p,"fans"),
+      completion: medianKeepZero(p.map(function(w){ return w.completion; })),
+      last7: last7, prev21: prev21,
+      delta: prev21 ? Math.round((last7-prev21)/prev21*100) : null,
+      posts7: p.filter(function(w){ return w.date >= last7From; }).length,
+      days: daily.length
+    };
+  }
+  return { dy: plat(dy, m.douyinDaily), wc: plat(wc, m.wechatDaily) };
+}
+function shiftDate(d, deltaDays){
+  var t = new Date(d); t.setDate(t.getDate()+deltaDays);
+  var m = String(t.getMonth()+1).padStart(2,"0"), dd = String(t.getDate()).padStart(2,"0");
+  return t.getFullYear()+"-"+m+"-"+dd;
+}
+function computeFocus(m, k){
+  var items = [];
+  // 1. 爬坡期作品（M < 7 且有播放）
+  m.works.forEach(function(w){
+    var mt = maturity(w, m.mCutoff);
+    if(mt !== null && mt < 7 && w.play > 0){
+      items.push({ type:"climb", w:w, mt:mt });
+    }
+  });
+  items.sort(function(a,b){ return b.w.play - a.w.play; });
+  // 2. 周发布条数告警（护栏：6–8 条/周/平台，<80% 即 5 条告警）
+  [["douyin","抖音",k.dy],["wechat","视频号",k.wc]].forEach(function(x){
+    if(x[2].posts7 > 0 && x[2].posts7 < 5){
+      items.push({ type:"alert", plat:x[0], platName:x[1], posts7:x[2].posts7 });
+    }
+  });
+  return items;
+}
+function computeThemes(m){
+  var map = {};
+  m.works.forEach(function(w){
+    if(!w.issue || !w.theme) return;
+    var k = w.theme;
+    if(!map[k]) map[k] = { theme:k, douyin:[], wechat:[] };
+    map[k][w.platform].push(w.play);
+  });
+  return Object.keys(map).map(function(k){ return map[k]; })
+    .map(function(t){ return { theme:t.theme, dy:median(t.douyin), wc:median(t.wechat),
+      dyN:t.douyin.length, wcN:t.wechat.length, total:median(t.douyin)+median(t.wechat)}; })
+    .sort(function(a,b){ return b.total - a.total; });
+}
+
+/* ================= 格式化 ================= */
+function fmt(n){ return (n||0).toLocaleString("zh-CN"); }
+function fmtPct(v, digits){ return (v==null||isNaN(v)) ? "—" : (Number(v).toFixed(digits==null?1:digits)+"%"); }
+function fmtDate(d){ return d ? d.slice(5).replace("-","/") : "—"; }
+function platName(p){ return p==="douyin" ? "抖音" : "视频号"; }
+
+/* ================= 渲染层（只写 DOM，互不调用） ================= */
+function renderMeta(m){
+  var snaps = state.snapshots;
+  var days = m.cutoff ? "数据截至 " + m.cutoff : "";
+  var exp = snaps.length ? "快照：导入日 " + snaps.map(function(s){return s.exportDay;}).join(" / ") : "";
+  document.getElementById("metaInfo").textContent = [days, exp, m.works.length + " 条作品"].filter(Boolean).join(" ｜ ");
+}
+function renderFocus(focus){
+  var box = document.getElementById("focusList");
+  if(!focus.length){
+    box.innerHTML = '<div class="focus-item"><span>暂无需要关注的事项</span></div>';
+    return;
+  }
+  var climbs = focus.filter(function(f){ return f.type==="climb"; });
+  var alerts = focus.filter(function(f){ return f.type==="alert"; });
+  var html = "";
+  alerts.forEach(function(a){
+    html += '<div class="focus-item warn"><span><span class="tag">护栏告警</span> ' +
+      a.platName + '近 7 天仅发布 <b>' + a.posts7 + '</b> 条，低于周发布护栏（6–8 条/周）的 80%</span></div>';
+  });
+  climbs.slice(0,8).forEach(function(f){
+    var w = f.w;
+    html += '<div class="focus-item"><span><span class="tag">爬坡中 M=' + f.mt + '</span>' +
+      '<b class="' + (w.platform==="douyin"?"plat-dy":"plat-wc") + '">' + platName(w.platform) + '</b> ' +
+      esc(w.title.slice(0,24)) + '</span><span>当前播放 ' + fmt(w.play) +
+      ' <button data-goto="' + w.platform + '" data-title="' + esc(w.title.slice(0,12)) + '">查看</button></span></div>';
+  });
+  if(climbs.length > 8){
+    html += '<div class="focus-item"><span class="tag">另有 ' + (climbs.length-8) + ' 条爬坡期作品</span></div>';
+  }
+  box.innerHTML = html;
+  box.querySelectorAll("button[data-goto]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var sel = document.getElementById("selPlatform");
+      sel.value = btn.getAttribute("data-goto");
+      onFilterChange();
+      document.getElementById("workRows").closest("section").scrollIntoView({behavior:"smooth"});
+    });
+  });
+}
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); }
+
+function renderKpis(k){
+  function kpi(label, val, sub, cls){
+    return '<div class="kpi"><div class="k">' + label + '</div><div class="v ' + (cls||"") + '">' + val +
+      '</div><div class="s">' + (sub||"") + '</div></div>';
+  }
+  function deltaHtml(d){
+    if(d==null) return "—";
+    return '<span class="' + (d>=0?"up":"down") + '">' + (d>=0?"▲":"▼") + Math.abs(d) + '%</span>';
+  }
+  var html = "";
+  html += kpi("抖音 · 总播放（" + k.dy.days + "天）", fmt(k.dy.play), k.dy.count + " 条作品，条均 " + fmt(k.dy.avgPlay), "dy");
+  html += kpi("视频号 · 总播放（" + k.wc.days + "天）", fmt(k.wc.play), k.wc.count + " 条作品，条均 " + fmt(k.wc.avgPlay), "wc");
+  html += kpi("互动量（赞）", "抖音 " + fmt(k.dy.likes) + " / 视频号 " + fmt(k.wc.likes), "评论 " + (k.dy.comments+k.wc.comments) + " · 分享 " + (k.dy.shares+k.wc.shares));
+  html += kpi("涨粉 / 关注", "抖音 +" + fmt(k.dy.fans) + " / 视频号 +" + fmt(k.wc.fans), "结果指标，滞后 1–2 周");
+  html += kpi("完播率中位数", "抖音 " + fmtPct(k.dy.completion) + " / 视频号 " + fmtPct(k.wc.completion), "中位数口径（指标字典）；两平台不可横比");
+  html += kpi("近 7 天日均播放", "抖音 " + fmt(k.dy.last7) + " " + deltaHtml(k.dy.delta) + "<br>视频号 " + fmt(k.wc.last7) + " " + deltaHtml(k.wc.delta), "对比前 21 天日均");
+  document.getElementById("kpiGrid").innerHTML = html;
+  document.getElementById("trendSummary").innerHTML =
+    "近 7 天日均：抖音 " + fmt(k.dy.last7) + "（" + deltaHtml(k.dy.delta) + "）· 视频号 " + fmt(k.wc.last7) + "（" + deltaHtml(k.wc.delta) + "）";
+}
+
+function renderTrend(m){
+  var el = document.getElementById("trendChart");
+  if(!m.douyinDaily.length && !m.wechatDaily.length){ el.innerHTML = '<div class="note">暂无每日聚合数据</div>'; return; }
+  var dates = {};
+  m.douyinDaily.concat(m.wechatDaily).forEach(function(d){ dates[d.date] = 1; });
+  var list = Object.keys(dates).sort();
+  if(list.length < 2){ el.innerHTML = '<div class="note">数据不足以绘制趋势</div>'; return; }
+  var W = 680, H = 240, padL = 44, padR = 12, padT = 14, padB = 26;
+  var all = [];
+  m.douyinDaily.forEach(function(d){ all.push(d.play); });
+  m.wechatDaily.forEach(function(d){ all.push(d.play); });
+  var maxV = Math.max.apply(null, all.concat([1]));
+  var niceMax = Math.ceil(maxV/500)*500;
+  var n = list.length;
+  function xy(i, v){ return [padL + (W-padL-padR) * (n===1?0:i/(n-1)), padT + (H-padT-padB) * (1 - v/niceMax)]; }
+  function lineOf(series){
+    var pts = [];
+    list.forEach(function(d, i){ var v = series[d]; if(v!=null) pts.push(xy(i, v).join(",")); });
+    return pts;
+  }
+  var dyPts = lineOf(toMap(m.douyinDaily)), wcPts = lineOf(toMap(m.wechatDaily));
+  var grid = "", labels = "";
+  for(var g=0; g<=4; g++){
+    var v = niceMax * g/4, y = xy(0, v)[1];
+    grid += '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="#eef0f3"/>';
+    labels += '<text x="'+(padL-6)+'" y="'+(y+4)+'" font-size="10" fill="#8b9199" text-anchor="end">'+fmt(Math.round(v))+'</text>';
+  }
+  var step = Math.max(1, Math.ceil(n/8));
+  list.forEach(function(d, i){
+    if(i % step === 0 || i === n-1){
+      var x = xy(i,0)[0];
+      labels += '<text x="'+x+'" y="'+(H-8)+'" font-size="10" fill="#8b9199" text-anchor="middle">'+fmtDate(d)+'</text>';
+      grid += '<line x1="'+x+'" y1="'+padT+'" x2="'+x+'" y2="'+(H-padB)+'" stroke="#f5f6f8"/>';
+    }
+  });
+  function path(pts){ return pts.length ? '<polyline fill="none" stroke-width="2" stroke-linejoin="round" points="' + pts.join(" ") + '"/>' : ""; }
+  el.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;min-width:560px;height:auto" role="img" aria-label="每日播放趋势">' +
+    grid + labels +
+    '<g stroke="#d9480f">' + path(dyPts) + '</g>' +
+    '<g stroke="#1971c2">' + path(wcPts) + '</g>' +
+    dyPts.map(function(p){ var c = p.split(","); return '<circle cx="'+c[0]+'" cy="'+c[1]+'" r="2" fill="#d9480f"/>'; }).join("") +
+    wcPts.map(function(p){ var c = p.split(","); return '<circle cx="'+c[0]+'" cy="'+c[1]+'" r="2" fill="#1971c2"/>'; }).join("") +
+    '</svg>';
+}
+function toMap(arr){ var o={}; arr.forEach(function(d){ o[d.date]=d.play; }); return o; }
+
+function renderThemes(themes, m){
+  var el = document.getElementById("themeChart");
+  if(!themes.length){ el.innerHTML = '<div class="note">暂无已识别期号的作品（期号映射依赖发布台账）</div>'; return; }
+  var maxV = Math.max.apply(null, themes.map(function(t){ return Math.max(t.dy, t.wc); }).concat([1]));
+  var html = "";
+  themes.forEach(function(t){
+    html += '<div class="bar-row">' +
+      '<div class="bar-name" title="' + esc(t.theme) + '">' + esc(t.theme) + '</div>' +
+      '<div class="bar-track">' +
+        '<div class="bar-fill" style="width:' + (t.dy/maxV*100) + '%;background:var(--douyin)" title="抖音中位数 ' + fmt(t.dy) + '（n=' + t.dyN + '）"></div>' +
+        '<div class="bar-fill b2" style="width:' + (t.wc/maxV*100) + '%;background:var(--wechat)" title="视频中位数 ' + fmt(t.wc) + '（n=' + t.wcN + '）"></div>' +
+      '</div>' +
+      '<div class="bar-val">' + (t.dy?fmt(t.dy):"—") + ' / ' + (t.wc?fmt(t.wc):"—") + '</div>' +
+    '</div>';
+  });
+  html += '<div class="legend"><span><i style="background:var(--douyin)"></i>抖音（上）</span><span><i style="background:var(--wechat)"></i>视频号（下）</span><span>数值 = 中位数播放，n 为样本量；n&lt;5 为观察级</span></div>';
+  el.innerHTML = html;
+}
+
+function renderThemeOptions(m){
+  var sel = document.getElementById("selTheme");
+  var cur = sel.value || "all";
+  var themes = {};
+  m.works.forEach(function(w){ if(w.theme) themes[w.theme] = 1; });
+  var opts = '<option value="all">全部主题</option>' + Object.keys(themes).sort().map(function(t){
+    return '<option value="' + esc(t) + '">' + esc(t) + '</option>';
+  }).join("");
+  sel.innerHTML = opts;
+  sel.value = cur;
+}
+function renderWorks(m){
+  var f = state.filter;
+  var rows = m.works.filter(function(w){
+    if(f.platform !== "all" && w.platform !== f.platform) return false;
+    if(f.theme !== "all" && w.theme !== f.theme) return false;
+    if(f.issue === "yes" && !w.issue) return false;
+    if(f.issue === "no" && w.issue) return false;
+    return true;
+  });
+  var key = f.sort;
+  rows.sort(function(a,b){
+    var va = a[key], vb = b[key];
+    if(key === "platform"){ va = va||""; vb = vb||""; }
+    if(typeof va === "string" || typeof vb === "string"){
+      return String(va).localeCompare(String(vb)) * f.dir;
+    }
+    return ((va||0)-(vb||0)) * f.dir;
+  });
+  var html = "";
+  rows.forEach(function(w){
+    var mt = maturity(w, m.mCutoff);
+    html += "<tr>" +
+      '<td class="' + (w.platform==="douyin"?"p-dy":"p-wc") + '">' + platName(w.platform) + "</td>" +
+      "<td>" + (w.date||"—") + "</td>" +
+      '<td class="tl" title="' + esc(w.title) + '">' + esc(w.title.slice(0,26)) + (w.title.length>26?"…":"") + "</td>" +
+      "<td>" + (w.issue ? '<span class="issue">' + esc(w.issue) + "</span>" : '<span class="noissue">未识别</span>') + "</td>" +
+      "<td><b>" + fmt(w.play) + "</b></td>" +
+      "<td>" + fmt(w.likes) + "</td>" +
+      "<td>" + fmt(w.comments) + "</td>" +
+      "<td>" + fmt(w.shares) + "</td>" +
+      "<td>" + fmtPct(w.completion) + "</td>" +
+      '<td class="' + (mt!==null && mt<7 ? "m-low":"") + '">' + (mt===null?"—":"M="+mt) + "</td>" +
+      "</tr>";
+  });
+  if(!html) html = '<tr><td colspan="10" style="text-align:center;color:#8b9199;padding:20px">没有符合条件的作品</td></tr>';
+  document.getElementById("workRows").innerHTML = html;
+  document.getElementById("workCount").textContent = rows.length + " / " + m.works.length + " 条";
+}
+
+/* ================= 统一刷新入口 ================= */
+function refreshAll(){
+  var m = computeMerged();
+  var k = computeKpis(m);
+  renderMeta(m);
+  renderThemeOptions(m);
+  renderFocus(computeFocus(m, k));
+  renderKpis(k);
+  renderTrend(m);
+  renderThemes(computeThemes(m), m);
+  renderWorks(m);
+}
+
+/* ================= 事件与初始化 ================= */
+function onFilterChange(){
+  state.filter.platform = document.getElementById("selPlatform").value;
+  state.filter.theme = document.getElementById("selTheme").value;
+  state.filter.issue = document.getElementById("selIssue").value;
+  refreshAll();
+}
+function toast(msg){
+  var t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove("show"); }, 2600);
+}
+function handleImportedJson(data, mode){
+  // mode: "new" 追加快照（extract 脚本产物）/ "restore" 整包恢复（导出备份）
+  if(!data) { toast("文件内容为空"); return; }
+  var snaps = [];
+  if(Array.isArray(data.snapshots)){ snaps = data.snapshots; }
+  else if(data.version === 1 && (data.douyinWorks || data.wechatWorks)){ snaps = [data]; }
+  else { toast("文件格式不认识：请选择看板导出的备份或 extract 脚本生成的 JSON"); return; }
+  if(mode === "new"){
+    snaps.forEach(function(s){
+      var i = state.snapshots.findIndex(function(x){ return x.exportDay === s.exportDay; });
+      if(i >= 0) state.snapshots[i] = s; else state.snapshots.push(s);
+    });
+  } else {
+    state.snapshots = snaps;
+  }
+  saveStore(); refreshAll();
+  toast(mode === "new" ? "已导入 " + snaps.length + " 个快照并合并" : "已恢复备份（" + snaps.length + " 个快照）");
+}
+function downloadJson(obj, filename){
+  var blob = new Blob([JSON.stringify(obj, null, 1)], { type: "application/json" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 100);
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+  loadStore();
+  var fileMode = "new";
+  document.getElementById("btnImport").addEventListener("click", function(){
+    fileMode = "new"; document.getElementById("fileInput").click();
+  });
+  document.getElementById("btnRestore").addEventListener("click", function(){
+    fileMode = "restore"; document.getElementById("fileInput").click();
+  });
+  document.getElementById("fileInput").addEventListener("change", function(ev){
+    var file = ev.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{ handleImportedJson(JSON.parse(reader.result), fileMode); }
+      catch(e){ toast("JSON 解析失败：" + e.message); }
+    };
+    reader.readAsText(file, "utf-8");
+    ev.target.value = "";
+  });
+  document.getElementById("btnExport").addEventListener("click", function(){
+    if(!state.snapshots.length){ toast("当前没有数据可导出"); return; }
+    downloadJson({ app:"video-dashboard", exportedAt:new Date().toISOString(), snapshots:state.snapshots },
+      "看板备份-" + new Date().toISOString().slice(0,10) + ".json");
+    toast("已导出备份文件");
+  });
+  document.getElementById("btnReset").addEventListener("click", function(){
+    if(!confirm("确定恢复为内置基线数据吗？当前导入的快照将被清除（建议先导出备份）。")){
+      return;
+    }
+    state.snapshots = SEED_DATA ? [SEED_DATA] : [];
+    saveStore(); refreshAll();
+    toast("已恢复内置基线数据");
+  });
+  ["selPlatform","selTheme","selIssue"].forEach(function(id){
+    document.getElementById(id).addEventListener("change", onFilterChange);
+  });
+  document.querySelectorAll("th[data-sort]").forEach(function(th){
+    th.addEventListener("click", function(){
+      var key = th.getAttribute("data-sort");
+      if(state.filter.sort === key){ state.filter.dir *= -1; }
+      else { state.filter.sort = key; state.filter.dir = -1; }
+      refreshAll();
+    });
+  });
+  refreshAll();
+});
+</script>
+</body>
+</html>

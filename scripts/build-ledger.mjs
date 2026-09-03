@@ -247,7 +247,11 @@ const matchQuiz = (title, date, quizzes) => {
     else if (hasLongFragment(title, q.publishTitle) || hasLongFragment(title, q.introTitle)) score += 40;
     if (q.dateStr && date) {
       const days = Math.round((new Date(date) - new Date(q.dateStr)) / 86_400_000);
-      if (days >= 0 && days <= 3) score += 10;
+      // 「提前剪好 + 定时发布」→ 发布日 ≥ 剪片日。若发布日早于剪片日 1 天以上，
+      // 不可能是定时发布（最多是「先发后建」的 1 天跨日误差），判为误配拦截，防「仅栏目词命中」误配。
+      if (days < -1) continue;
+      // 定时发布：发布日 = 剪片日 +0~+1 天为常态；不设上界，避免提前多天剪片时漏分。
+      if (days >= 0) score += 10;
     }
     if (score > 0 && (!best || score > best.score)) best = { quiz: q, score };
   }

@@ -209,6 +209,9 @@ const FALLBACK_TAGS = ["#传统文化"];
 // 抖音额外追加的泛流量标签，扩大推荐池
 const DOUYIN_EXTRA_TAGS = ["#涨知识", "#知识分享"];
 
+// 抖音话题上限：平台规则「视频标题话题最多 5 个」，去重后超出即截断（视频号无此硬限）
+const DOUYIN_MAX_HASHTAGS = 5;
+
 const unique = (arr) => [...new Set(arr)];
 
 const normalizeHashtags = (tags) =>
@@ -247,7 +250,11 @@ export const derivePublish = (data, platform) => {
         : coreTags)
   );
 
-  return { title, hashtags };
+  // 抖音强制 ≤5 个话题（平台硬限制），无论话题来自栏目映射还是 publish 覆盖
+  const finalHashtags =
+    platform === "douyin" ? hashtags.slice(0, DOUYIN_MAX_HASHTAGS) : hashtags;
+
+  return { title, hashtags: finalHashtags };
 };
 
 export const generatePublishText = (data, publishTextPath) => {

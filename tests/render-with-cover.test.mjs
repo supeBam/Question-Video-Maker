@@ -95,6 +95,34 @@ test("万物雅称栏目映射专属话题", () => {
   assert.ok(hashtags.includes("#涨知识"));
 });
 
+test("抖音话题最多 5 个（超出即截断）", () => {
+  const data = {
+    meta: { series: "成语" },
+    intro: { title: "标题" },
+    publish: {
+      hashtags: ["成语", "成语故事", "涨知识", "冷知识", "传统文化", "中国文化"],
+    },
+  };
+  const { hashtags } = derivePublish(data, "douyin");
+  assert.ok(
+    hashtags.length <= 5,
+    `实际 ${hashtags.length} 个：${hashtags.join(" ")}`
+  );
+  assert.equal(hashtags.length, 5);
+});
+
+test("抖音话题即使 publish 覆盖也强制 ≤5", () => {
+  const data = {
+    meta: { series: "成语" },
+    intro: { title: "标题" },
+    publish: {
+      douyin: { hashtags: ["a", "b", "c", "d", "e", "f", "g"] },
+    },
+  };
+  const { hashtags } = derivePublish(data, "douyin");
+  assert.equal(hashtags.length, 5);
+});
+
 test("Windows 文件 URL 能识别为直接执行", () => {
   const scriptPath = path.resolve("scripts/render-with-cover.mjs");
   assert.equal(isDirectExecution(scriptPath, pathToFileURL(scriptPath).href), true);

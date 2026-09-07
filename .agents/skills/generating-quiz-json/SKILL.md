@@ -36,6 +36,8 @@ description: Use when the user asks to create, replace, or update this project's
 - 需要覆盖已有文件时，先读取并保留用户未要求改变的字段，再运行校验器。
 - 背景音乐目录是 `public/assets/bg-audio/`；新增背景音乐文件应放在此目录，避免散落到其他资源目录。
 - 背景皮肤规则（`background.src`）：**选择题一律用黄色宣纸底 `assets/bg-paper.svg`；填空题（万物雅称）用青灰白底 `assets/bg-yacheng.svg`**。不指定 `background` 时组件默认即黄色宣纸底（选择题可省略该字段）。快闪模板沿用 `cloudSrc: null`、`drift: 0.04`。
+- **发布话题（硬性规则）**：抖音一条视频话题最多 5 个。`publish.hashtags` 只写 2~3 个栏目垂直词（如成语栏目 `["成语","成语故事","冷知识"]`），不要塞泛流量词；抖音发布时可手动补 `#涨知识 #知识分享`，总数卡在 5 以内。脚本导出时也会自动截断到 5 个兜底（`scripts/render-with-cover.mjs`）。
+- **发布标题去同质化（硬性规则）**：`publish.title`（视频号）与 `publish.douyin.title`（抖音）分别给、不共用；抖音标题用「第一题悬念句 + 轮换后缀」，挑战词后缀不得连续两期重复（如连续「答对 8 个算你牛」）。后缀从挑战式/结果承诺·段位/身份式/收藏指令/悬念式五类轮着取，段位后缀对准 `outro.scoreHints` 的段位名。详见 `docs/标题流量方法论.md`。
 - 主题确认：主题必须来自用户明确指定或用户确认的选择。用户只说「出新题/新一期」而未给主题时，先向用户确认主题再动手，禁止自作主张延续最近系列、禁止把预留词当作默认选题。
 
 ## 参考资料

@@ -8,7 +8,7 @@
     python3 scripts/extract-dashboard-data.py --organize    # 自动识别+改名+归位（用户只把文件放进 导入/ 即可）
     python3 scripts/extract-dashboard-data.py               # 生成 看板-data.json
     python3 scripts/extract-dashboard-data.py --sync-seed   # 生成 JSON 并同步 看板.html 内嵌基线
-    python3 scripts/extract-dashboard-data.py --to-csv      # 抖音作品明细 xlsx → out/ 下 UTF-8 CSV
+    python3 scripts/extract-dashboard-data.py --to-csv      # 抖音单条视频 xlsx → out/ 下 UTF-8 CSV
                                                             # （macOS 无 Excel COM，供 build-ledger.mjs 使用）
 规则（与 docs/数据分析/README.md 对齐）：
 - 同一颗粒度目录下取「导出日」最新的文件（文件名第 2 段）。
@@ -179,7 +179,7 @@ def theme_of(issue):
 
 # ---------- 抖音 ----------
 def parse_douyin_works():
-    path = newest_file(os.path.join(IMPORT_DIR, "抖音", "作品明细", "*.xlsx"))
+    path = newest_file(os.path.join(IMPORT_DIR, "抖音", "单条视频", "*.xlsx"))
     if not path:
         return [], None
     export_day = re.search(r"-(\d{8})-", os.path.basename(path)).group(1)
@@ -227,7 +227,7 @@ def parse_douyin_works():
 
 
 def parse_douyin_daily():
-    path = newest_file(os.path.join(IMPORT_DIR, "抖音", "每日聚合", "*.xlsx"))
+    path = newest_file(os.path.join(IMPORT_DIR, "抖音", "每日汇总", "*.xlsx"))
     if not path:
         return []
     rows = read_xlsx_rows(path)
@@ -252,7 +252,7 @@ def parse_douyin_daily():
 
 # ---------- 视频号 ----------
 def parse_wechat_works():
-    path = newest_file(os.path.join(IMPORT_DIR, "视频号", "作品明细", "*.csv"))
+    path = newest_file(os.path.join(IMPORT_DIR, "视频号", "单条视频", "*.csv"))
     if not path:
         return [], None
     export_day = re.search(r"-(\d{8})-", os.path.basename(path)).group(1)
@@ -284,7 +284,7 @@ def parse_wechat_works():
 
 
 def parse_wechat_daily():
-    path = newest_file(os.path.join(IMPORT_DIR, "视频号", "每日聚合", "*.csv"))
+    path = newest_file(os.path.join(IMPORT_DIR, "视频号", "每日汇总", "*.csv"))
     if not path:
         return []
     out = []
@@ -311,16 +311,16 @@ def parse_wechat_daily():
 
 
 def dump_douyin_csv():
-    """抖音作品明细 xlsx → out/ 下 UTF-8 CSV（macOS 无 Excel COM，供 build-ledger.mjs 使用）。"""
-    path = newest_file(os.path.join(IMPORT_DIR, "抖音", "作品明细", "*.xlsx"))
+    """抖音单条视频 xlsx → out/ 下 UTF-8 CSV（macOS 无 Excel COM，供 build-ledger.mjs 使用）。"""
+    path = newest_file(os.path.join(IMPORT_DIR, "抖音", "单条视频", "*.xlsx"))
     if not path:
-        print("未找到抖音作品明细 xlsx（导入/抖音/作品明细/）", file=sys.stderr)
+        print("未找到抖音单条视频 xlsx（导入/抖音/单条视频/）", file=sys.stderr)
         return 1
     export_day = re.search(r"-(\d{8})-", os.path.basename(path)).group(1)
     rows = read_xlsx_rows(path)
     out_dir = os.path.join(ROOT, "out")
     os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, f"抖音-{export_day}-作品明细.csv")
+    out_path = os.path.join(out_dir, f"抖音-{export_day}-单条视频.csv")
     with open(out_path, "w", encoding="utf-8-sig", newline="") as f:
         w = csv.writer(f)
         for r in rows:
@@ -363,20 +363,20 @@ def organize_imports():
     - 导出日：取文件导入时间（mtime）；若早于数据截止日则按数据截止日取；
     - 冲突/无法识别的不动、列出来请用户确认（不覆盖、不猜测）。
     """
-    CONFORM_RE = re.compile(r"^(抖音|视频号)-\d{8}-(作品明细|每日聚合)-[\d~-]+\.(xlsx|csv)$")
+    CONFORM_RE = re.compile(r"^(抖音|视频号)-\d{8}-(单条视频|每日汇总)-[\d~-]+\.(xlsx|csv)$")
     # 平台原始导出文件名 → (平台, 颗粒度)
     NAME_HINTS = [
-        (["视频详情", "详情数据"], "视频号", "作品明细"),
-        (["动态数据", "动态明细"], "视频号", "每日聚合"),
-        (["作品列表", "列表导出"], "抖音", "作品明细"),
-        (["全量指标", "数据表现", "短视频全量"], "抖音", "每日聚合"),
+        (["动态数据", "动态明细"], "视频号", "单条视频"),
+        (["视频详情", "详情数据"], "视频号", "每日汇总"),
+        (["作品列表", "列表导出"], "抖音", "单条视频"),
+        (["全量指标", "数据表现", "短视频全量"], "抖音", "每日汇总"),
     ]
 
     def mtime_day(p):
         return datetime.datetime.fromtimestamp(os.path.getmtime(p)).strftime("%Y%m%d")
 
     def sniff_csv(path):
-        """返回 (表头行, 表头行索引)。视频号每日聚合前两行是标题/免责声明。"""
+        """返回 (表头行, 表头行索引)。视频号每日汇总前两行是标题/免责声明。"""
         with open(path, encoding="utf-8-sig", errors="replace") as f:
             lines = [ln.strip() for ln in f if ln.strip()]
         for i, ln in enumerate(lines[:6]):
@@ -400,14 +400,14 @@ def organize_imports():
         platform = "抖音" if ext == ".xlsx" else "视频号"
         if platform == "视频号":
             if "视频描述" in header or "视频ID" in header:
-                return platform, "作品明细"
+                return platform, "单条视频"
             if "时间" in header:
-                return platform, "每日聚合"
+                return platform, "每日汇总"
             return platform, ""
         if "作品名称" in header and "发布时间" in header:
-            return platform, "作品明细"
+            return platform, "单条视频"
         if "日期" in header and "投稿量" in header:
-            return platform, "每日聚合"
+            return platform, "每日汇总"
         return platform, ""
 
     def dates_of(path, gran, ext):
@@ -418,8 +418,8 @@ def organize_imports():
             if not rows:
                 return vals
             header = [str(h or "").strip() for h in rows[0]]
-            want = "发布时间" if gran == "作品明细" else "日期"
-            col = next((i for i, h in enumerate(header) if h == want), 1 if gran == "作品明细" else 0)
+            want = "发布时间" if gran == "单条视频" else "日期"
+            col = next((i for i, h in enumerate(header) if h == want), 1 if gran == "单条视频" else 0)
             for r in rows[1:]:
                 if r and col < len(r) and r[col]:
                     vals.append(str(r[col]))
@@ -441,7 +441,7 @@ def organize_imports():
 
     roots = [IMPORT_DIR] + [
         os.path.join(IMPORT_DIR, p, g)
-        for p in ("抖音", "视频号") for g in ("作品明细", "每日聚合")
+        for p in ("抖音", "视频号") for g in ("单条视频", "每日汇总")
     ]
     files = []
     seen = set()

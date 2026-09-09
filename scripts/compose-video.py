@@ -36,6 +36,8 @@ W, H = 1080, 1920
 MARGIN_X = 60
 SUBTITLE_TOP = 1460
 VOLUME = 1.8
+BGM = "public/assets/bg-audio/bg-古箫吟风曲.mp3"  # 背景音乐（古箫，文人雅谈）
+BGM_VOLUME = 0.15  # BGM 低音量，不压人声
 
 
 def run(cmd):
@@ -153,13 +155,17 @@ def main():
         inputs += ["-loop", "1", "-t", f"{dur:.3f}", "-i", fp]
     for role in roles:
         inputs += ["-i", os.path.join(OUT, f"{label}-{role}-minimax.mp3")]
+    inputs += ["-stream_loop", "-1", "-i", BGM]  # BGM 循环
 
     n = len(frames)
     concat_in = "".join(f"[{i}:v]" for i in range(n))
     amix_in = "".join(f"[{n + j}:a]" for j in range(len(roles)))
+    bgm_idx = n + len(roles)
     fc = (
         f"{concat_in}concat=n={n}:v=1:a=0[v];"
-        f"{amix_in}amix=inputs={len(roles)}:duration=longest:normalize=0,volume={VOLUME}[a]"
+        f"{amix_in}amix=inputs={len(roles)}:duration=longest:normalize=0,volume={VOLUME}[voice];"
+        f"[{bgm_idx}:a]volume={BGM_VOLUME}[bgm];"
+        f"[voice][bgm]amix=inputs=2:duration=first:normalize=0[a]"
     )
     out_mp4 = os.path.join(OUT, f"{label}-成片.mp4")
     cmd = ["ffmpeg", "-y", "-v", "error", *inputs,

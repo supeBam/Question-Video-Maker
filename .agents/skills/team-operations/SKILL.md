@@ -30,6 +30,7 @@ description: Use when managing, dispatching, or onboarding the 题目视频自�
 - 审核结论三级：✅ 放行 / ⚠️ 修改后放行（给出可直接替换文案）/ ❌ 不通过；**每个结论必须附真实证据**（规范条款号+原文摘录、权威出处 URL、源码行号等），拿不到证据标「存疑·需人工确认」，不得编造条款号
 - 审核两轮：文案阶段（题库 JSON）→ 成片阶段（剪映加 TTS 后的 MP4/封面/字幕）；审核负责准备逐句 TTS 配音文案供用户粘贴剪映
 - 发布：**用户手动发布**（抖音 + 视频号，不用 OpenCLI publish），建议 19:00 整点
+- **出片纪律（2026-09-08 用户确认）**：渲染/出片一律直接命令行 `node scripts/quiz/render-with-cover.mjs out/<期号>.mp4 --data=<题库JSON> [--composition=BurstQuiz] [--no-hook-image]`，**禁止新建 export-*.mjs 专用导出脚本**（该入口已支持全部参数）；不需要片尾钩子图时加 `--no-hook-image`（钩子图由用户自行导入）。详见 `docs/项目管理/项目文档.md` 第七节。
 
 ## 三、内容创作规范
 

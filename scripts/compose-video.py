@@ -86,10 +86,16 @@ def wrap_text(text, font, max_width):
 
 
 def draw_subtitle(img, role, text):
-    draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
+    max_height = H - SUBTITLE_TOP - 40  # 字幕可用高度（底部留 40px 边距）
+    font_size = FONT_SIZE
+    font = ImageFont.truetype(FONT_PATH, font_size)
     lines = wrap_text(text, font, W - 2 * MARGIN_X)
-    line_h = FONT_SIZE + 16
+    # 超长文本自动缩字号，保证完整显示在字幕区内
+    while font_size > 32 and (font_size + 16) * len(lines) > max_height:
+        font_size -= 4
+        font = ImageFont.truetype(FONT_PATH, font_size)
+        lines = wrap_text(text, font, W - 2 * MARGIN_X)
+    line_h = font_size + 16
     total_h = line_h * len(lines)
     y = SUBTITLE_TOP
     pad = 26

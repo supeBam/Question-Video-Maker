@@ -1,5 +1,7 @@
 {
   "_说明": "MiniMax 音色库：按气质类型管理的可复用音色资产。voice_id 是账号级持久资源（音色设计生成的 ttv-voice 需至少成功调用一次合成才激活）。新人物/新旁白先查此库，气质匹配直接复用；无匹配再用 scripts/dialogue/design-voices.py 定制（成本约 0.01 元/个）。每期对白 JSON 的 voices 字段从这里选型。",
+  "_管理文档": "docs/方法论/音色库.md（人读版：总表+选型流程+踩坑。双登记：改动先改本 JSON 再同步 MD）",
+  "_试听归档": "public/assets/voice-previews/{音色名}.mp3（git 提交永久保存）",
   "_规则": [
     "status 取值：在用 / 备用 / 弃用",
     "换人物先查 reusable_for 气质匹配，能复用就不重新设计",

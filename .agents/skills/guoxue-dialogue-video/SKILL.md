@@ -11,12 +11,12 @@ description: 国学对谈短视频出片（庄子×曾国藩等历史人物的 A
 
 | 资产 | 位置 | 说明 |
 |---|---|---|
-| 音色 voice_id | 硬编码在 `scripts/dialogue/gen-minimax-tts.py` 的 `VOICES` | 庄子/曾国藩/旁白三个 MiniMax 定制音色，**直接复用，别重新设计** |
+| 音色库 | `src/data/dialogue/voice-library.json`（数据）+ [`docs/方法论/音色库.md`](../../../docs/方法论/音色库.md)（管理手册） | 11 个音色按气质登记；每期对白 JSON 的 `voices` 从库里选型，**在用音色直接复用，别重新设计** |
 | 画像 | `public/assets/portraits/庄子.png`、`曾国藩.png` | 成片用的 AI 水墨画像 |
 | 配音脚本 | `scripts/dialogue/gen-minimax-tts.py` | 读对白 JSON（`--data=`），不碰代码 |
 | 出片脚本 | `scripts/dialogue/compose-video.py` | 读对白 JSON（`--data=`）+ SRT 出片（画像全屏切换 + 分色字幕 + 音量放大） |
-| 音色设计脚本 | `scripts/dialogue/design-voices.py` | 仅在需要新音色时用（一般不用） |
-| 对标文案参考 | `docs/对标-庄子曾国藩谈自律-文案.md` | 第一期完整文案 + 角色结构 |
+| 音色设计脚本 | `scripts/dialogue/design-voices.py` | 仅在音色库无匹配时用（成本约 0.01 元/个） |
+| 对标文案参考 | `docs/选题/对标-庄子曾国藩谈自律-文案.md` | 第一期完整文案 + 角色结构 |
 
 ## 二、出片 SOP（第二期流程，只改 JSON 不碰代码）
 

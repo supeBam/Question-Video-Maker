@@ -24,7 +24,7 @@ description: 国学对谈短视频出片（庄子×曾国藩等历史人物的 A
 2. **写对白 JSON**：复制 `src/data/dialogue/dialogue-01.json` → `src/data/dialogue/dialogue-02.json`，改 `label`（如「国学对谈02」）+ `lines`（新对白，12 句左右，结构见第三节）；`voices` 直接复用，不动。
 3. **合成配音**（需 MiniMax API key）：
    ```bash
-   MINIMAX_API_KEY=sk-api-xxx .venv-asr/bin/python scripts/gen-minimax-tts.py --data=src/data/dialogue/dialogue-02.json
+   .venv-asr/bin/python scripts/gen-minimax-tts.py --data=src/data/dialogue/dialogue-02.json
    ```
 4. **出片**：
    ```bash
@@ -45,5 +45,5 @@ description: 国学对谈短视频出片（庄子×曾国藩等历史人物的 A
 - **成本**：配音 speech-2.8-hd ¥3.5/万字符，一期约 470 字 ≈ ¥0.16。
 - **音量/字幕**：`compose-video.py` 里 `VOLUME=1.8`、`FONT_SIZE=58`（适配中老年），按需调。
 - **画像是正方形裁竖屏**：单画像顶部对齐裁切（保住头部）、旁白上下合并，已在脚本内处理。
-- **MiniMax key**：走环境变量，别写进文件；合成报「insufficient balance」= 账户余额不足，充值后重跑。
+- **MiniMax key**：存项目根 `.minimax.key`（gitignored，脚本自动读）；合成报「insufficient balance」= 账户余额不足，充值后重跑。
 - **本机 ffmpeg 无 libass**：字幕靠 Pillow 画帧，别用 ass/subtitles filter（会报 Unknown filter）。

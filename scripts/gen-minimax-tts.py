@@ -27,17 +27,15 @@ DEFAULT_DATA = "src/data/dialogue/dialogue-01.json"
 
 
 def get_api_key():
-    """优先环境变量 MINIMAX_API_KEY，其次项目根目录 .minimax.key 文件（gitignored）"""
-    key = os.environ.get("MINIMAX_API_KEY")
-    if key:
-        return key.strip()
+    """从项目根目录 .minimax.key 文件读取 MiniMax API key（gitignored，不进 git）"""
     key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".minimax.key")
     if os.path.exists(key_file):
         with open(key_file, encoding="utf-8") as f:
-            return f.read().strip()
+            key = f.read().strip()
+        if key:
+            return key
     raise RuntimeError(
-        "未找到 MiniMax API key：请设置环境变量 MINIMAX_API_KEY，"
-        "或在项目根目录创建 .minimax.key 文件（内容为 key）"
+        "未找到 MiniMax API key：请在项目根目录创建 .minimax.key 文件（内容为 key，一行）"
     )
 
 

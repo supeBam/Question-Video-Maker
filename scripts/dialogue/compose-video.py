@@ -42,7 +42,7 @@ MARGIN_X = 60
 SUBTITLE_TOP = 1460
 VOLUME = 1.8
 BGM = "public/assets/bg-audio/bg-古箫吟风曲.mp3"  # 背景音乐（古箫，文人雅谈）
-BGM_VOLUME = 0.15  # BGM 低音量，不压人声
+BGM_VOLUME = 0.08  # BGM 低音量，只垫氛围不抢人声
 
 
 def run(cmd):

@@ -1,0 +1,114 @@
+{
+  "_说明": "MiniMax 音色库：按气质类型管理的可复用音色资产。voice_id 是账号级持久资源（音色设计生成的 ttv-voice 需至少成功调用一次合成才激活）。新人物/新旁白先查此库，气质匹配直接复用；无匹配再用 scripts/dialogue/design-voices.py 定制（成本约 0.01 元/个）。每期对白 JSON 的 voices 字段从这里选型。",
+  "_规则": [
+    "status 取值：在用 / 备用 / 弃用",
+    "换人物先查 reusable_for 气质匹配，能复用就不重新设计",
+    "弃用的 voice_id 不删（账号资源留着），只是标注",
+    "speed 建议：旁白/叙述类 1.1（防拖沓），人物对白 1.0"
+  ],
+  "voices": [
+    {
+      "name": "庄子",
+      "type": "custom",
+      "voice_id": "ttv-voice-2026090913182326-PvkWI60i",
+      "desc": "通透超脱的道家智者老者，温润从容、淡然洒脱、仙风道骨",
+      "status": "在用",
+      "used_in": ["国学对谈01", "国学对谈02"],
+      "reusable_for": ["老子", "列子", "嵇康", "陶渊明"],
+      "speed": 1.0
+    },
+    {
+      "name": "曾国藩",
+      "type": "custom",
+      "voice_id": "ttv-voice-2026090913195726-FgcfnGTr",
+      "desc": "厚重威严的清代儒臣，低沉浑厚、字正腔圆、克己严肃",
+      "status": "在用",
+      "used_in": ["国学对谈01", "国学对谈02"],
+      "reusable_for": ["左宗棠", "张居正", "雍正", "王安石"],
+      "speed": 1.0
+    },
+    {
+      "name": "旁白-有声书",
+      "type": "system",
+      "voice_id": "audiobook_male_1",
+      "desc": "有声书男声：讲故事专业户，娓娓道来、自然利落（官方精调，自然度高于音色设计生成）",
+      "status": "在用",
+      "used_in": ["国学对谈02"],
+      "reusable_for": ["所有期次的旁白（永久固定）"],
+      "speed": 1.1
+    },
+    {
+      "name": "旁白-旧-国学解说",
+      "type": "custom",
+      "voice_id": "ttv-voice-2026090913202326-Fy6I8Qyj",
+      "desc": "国学纪录片解说，庄重但拖沓、有 AI 感（用户反馈不真实、慢）",
+      "status": "弃用",
+      "used_in": ["国学对谈01", "国学对谈02（已替换）"],
+      "reusable_for": []
+    },
+    {
+      "name": "旁白候选A-利落纪录片",
+      "type": "custom",
+      "voice_id": "ttv-voice-2026090916464526-82gzBidj",
+      "desc": "醇厚但节奏明快，吐字干净利落，自带悬念张力",
+      "status": "备用",
+      "used_in": [],
+      "reusable_for": ["悬疑叙事", "真实事件复盘"]
+    },
+    {
+      "name": "旁白候选B-预告片风",
+      "type": "custom",
+      "voice_id": "ttv-voice-2026090916465926-sj68E2MC",
+      "desc": "低沉有磁性，节奏紧凑有力，史诗感与紧张感",
+      "status": "备用",
+      "used_in": [],
+      "reusable_for": ["历史战争", "王朝兴衰类选题"]
+    },
+    {
+      "name": "旁白候选C-聊天讲故事",
+      "type": "custom",
+      "voice_id": "ttv-voice-2026090916515026-ySYlvQMP",
+      "desc": "老朋友饭桌上聊历史，自然松弛、真诚有感染力（已去播音腔）",
+      "status": "备用",
+      "used_in": [],
+      "reusable_for": ["轻话题对谈", "生活哲理"]
+    },
+    {
+      "name": "电台男主播",
+      "type": "system",
+      "voice_id": "Chinese (Mandarin)_Radio_Host",
+      "desc": "电台聊天感，娓娓道来（旁白候选E，惜败给有声书）",
+      "status": "备用",
+      "used_in": [],
+      "reusable_for": ["夜话类", "情感类话题"],
+      "speed": 1.1
+    },
+    {
+      "name": "播报男声",
+      "type": "system",
+      "voice_id": "Chinese (Mandarin)_Male_Announcer",
+      "desc": "浑厚大气播报感（第一期旁白，后被替换）",
+      "status": "备用",
+      "used_in": [],
+      "reusable_for": ["正式公告式开场"]
+    },
+    {
+      "name": "温润男声",
+      "type": "system",
+      "voice_id": "Chinese (Mandarin)_Gentleman",
+      "desc": "温润有涵养（第一期庄子候选，被定制音色替代）",
+      "status": "备用",
+      "used_in": [],
+      "reusable_for": ["温和型文人角色"]
+    },
+    {
+      "name": "沉稳高管",
+      "type": "system",
+      "voice_id": "Chinese (Mandarin)_Reliable_Executive",
+      "desc": "沉稳厚重、可靠权威（第一期曾国藩候选，被定制音色替代）",
+      "status": "备用",
+      "used_in": [],
+      "reusable_for": ["权威型长者角色", "商务类旁白"]
+    }
+  ]
+}

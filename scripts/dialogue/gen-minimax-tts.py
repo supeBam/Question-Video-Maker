@@ -70,13 +70,13 @@ def ms_to_srt(ms):
     return f"{h:02d}:{m:02d}:{s:02d},{milli:03d}"
 
 
-def synth(api_key, voices, role, text, idx):
+def synth(api_key, voices, speeds, role, text, idx):
     mp3 = os.path.join(TMP, f"l{idx:02d}.mp3")
     payload = {
         "model": MODEL,
         "text": text,
         "stream": False,
-        "voice_setting": {"voice_id": voices[role], "speed": 1.0, "vol": 1.0, "pitch": 0},
+        "voice_setting": {"voice_id": voices[role], "speed": speeds.get(role, 1.0), "vol": 1.0, "pitch": 0},
         "audio_setting": {"sample_rate": 32000, "bitrate": 128000, "format": "mp3", "channel": 1},
         "output_format": "hex",
     }
@@ -112,12 +112,13 @@ def main():
     data = load_data(data_path)
     label = data["label"]
     voices = data["voices"]
+    speeds = data.get("speeds", {})  # 可选：按角色调语速，如 {"旁白": 1.15}
     lines = [(ln["role"], ln["text"]) for ln in data["lines"]]
 
     os.makedirs(TMP, exist_ok=True)
     durations = []
     for i, (role, text) in enumerate(lines):
-        mp3 = synth(api_key, voices, role, text, i)
+        mp3 = synth(api_key, voices, speeds, role, text, i)
         wav = os.path.join(TMP, f"l{i:02d}.wav")
         run(["ffmpeg", "-y", "-v", "error", "-i", mp3, "-ac", "1", "-ar", "44100", wav])
         d = duration_ms(wav)

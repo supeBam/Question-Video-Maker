@@ -23,7 +23,7 @@ OUT = "out"
 PORTRAIT_ZHUANGZI = "public/assets/portraits/庄子.png"   # 庄子画像
 PORTRAIT_ZENGGUOFAN = "public/assets/portraits/曾国藩.png" # 曾国藩画像
 TMP = os.path.join(OUT, "_compose_tmp")
-DEFAULT_DATA = "src/data/dialogue-01.json"
+DEFAULT_DATA = "src/data/dialogue/dialogue-01.json"
 
 COLORS = {
     "旁白": (255, 255, 255),

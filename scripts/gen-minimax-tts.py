@@ -22,7 +22,7 @@ MODEL = "speech-2.8-hd"
 OUT = "out"
 TMP = os.path.join(OUT, "_mm_tts_tmp")
 GAP_MS = 600  # 句间停顿
-DEFAULT_DATA = "src/data/dialogue-01.json"
+DEFAULT_DATA = "src/data/dialogue/dialogue-01.json"
 
 
 def load_data(path):

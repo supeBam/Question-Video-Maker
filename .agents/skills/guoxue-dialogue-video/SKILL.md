@@ -21,14 +21,14 @@ description: 国学对谈短视频出片（庄子×曾国藩等历史人物的 A
 ## 二、出片 SOP（第二期流程，只改 JSON 不碰代码）
 
 1. **选题**：定对谈话题，用「二元对立」钩子（如「读书该博还是该精」「快乐是求来的还是放下的」）。
-2. **写对白 JSON**：复制 `src/data/dialogue-01.json` → `dialogue-02.json`，改 `label`（如「国学对谈02」）+ `lines`（新对白，12 句左右，结构见第三节）；`voices` 直接复用，不动。
+2. **写对白 JSON**：复制 `src/data/dialogue/dialogue-01.json` → `src/data/dialogue/dialogue-02.json`，改 `label`（如「国学对谈02」）+ `lines`（新对白，12 句左右，结构见第三节）；`voices` 直接复用，不动。
 3. **合成配音**（需 MiniMax API key）：
    ```bash
-   MINIMAX_API_KEY=sk-api-xxx .venv-asr/bin/python scripts/gen-minimax-tts.py --data=src/data/dialogue-02.json
+   MINIMAX_API_KEY=sk-api-xxx .venv-asr/bin/python scripts/gen-minimax-tts.py --data=src/data/dialogue/dialogue-02.json
    ```
 4. **出片**：
    ```bash
-   .venv-asr/bin/python scripts/compose-video.py --data=src/data/dialogue-02.json
+   .venv-asr/bin/python scripts/compose-video.py --data=src/data/dialogue/dialogue-02.json
    ```
 5. **交付**：`out/国学对谈02-成片.mp4`。
 

@@ -4,13 +4,18 @@
 画面逻辑：
   - 庄子说话 → 庄子画像全屏铺满
   - 曾国藩说话 → 曾国藩画像全屏铺满
-  - 旁白（片头/片尾）→ 两张画像左右合并全屏
+  - 旁白（片头/片尾）→ 两张画像上下合并全屏
 
-用法：.venv-asr/bin/python scripts/compose-video.py
+用法：
+    .venv-asr/bin/python scripts/compose-video.py [--data=src/data/dialogue-01.json]
+
+期号从 JSON 的 label 读；画像 / 颜色等视觉配置留在本脚本（庄子×曾国藩固定 IP）。
 """
+import json
 import os
 import re
 import subprocess
+import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -18,7 +23,7 @@ OUT = "out"
 PORTRAIT_ZHUANGZI = "public/assets/portraits/庄子.png"   # 庄子画像
 PORTRAIT_ZENGGUOFAN = "public/assets/portraits/曾国藩.png" # 曾国藩画像
 TMP = os.path.join(OUT, "_compose_tmp")
-ROLES = ["旁白", "庄子", "曾国藩"]
+DEFAULT_DATA = "src/data/dialogue-01.json"
 
 COLORS = {
     "旁白": (255, 255, 255),
@@ -98,6 +103,15 @@ def draw_subtitle(img, role, text):
 
 
 def main():
+    data_path = DEFAULT_DATA
+    for a in sys.argv[1:]:
+        if a.startswith("--data="):
+            data_path = a[len("--data="):]
+    with open(data_path, encoding="utf-8") as f:
+        data = json.load(f)
+    label = data["label"]
+    roles = list(data["voices"].keys())
+
     os.makedirs(TMP, exist_ok=True)
 
     # 三张底图：庄子全屏 / 曾国藩全屏 / 合并全屏
@@ -106,12 +120,11 @@ def main():
     merged = Image.new("RGB", (W, H))
     merged.paste(fullscreen(PORTRAIT_ZHUANGZI, (W, H // 2)), (0, 0))
     merged.paste(fullscreen(PORTRAIT_ZENGGUOFAN, (W, H // 2)), (0, H // 2))
-
     base_map = {"庄子": zhuangzi_full, "曾国藩": zengguofan_full, "旁白": merged}
 
     sentences = []
-    for role in ROLES:
-        srt = os.path.join(OUT, f"国学对谈01-{role}-minimax.srt")
+    for role in roles:
+        srt = os.path.join(OUT, f"{label}-{role}-minimax.srt")
         for start, end, text in parse_srt(srt):
             sentences.append((role, start, end, text))
     sentences.sort(key=lambda x: x[1])
@@ -127,22 +140,22 @@ def main():
         else:
             dur = (end - start) / 1000.0
         frames.append((fp, dur))
-        print(f"帧 {i+1}/12 [{role}] {dur:.1f}s", flush=True)
+        print(f"帧 {i+1}/{len(sentences)} [{role}] {dur:.1f}s", flush=True)
 
     inputs = []
     for fp, dur in frames:
         inputs += ["-loop", "1", "-t", f"{dur:.3f}", "-i", fp]
-    for role in ROLES:
-        inputs += ["-i", os.path.join(OUT, f"国学对谈01-{role}-minimax.mp3")]
+    for role in roles:
+        inputs += ["-i", os.path.join(OUT, f"{label}-{role}-minimax.mp3")]
 
     n = len(frames)
     concat_in = "".join(f"[{i}:v]" for i in range(n))
-    amix_in = "".join(f"[{n + j}:a]" for j in range(3))
+    amix_in = "".join(f"[{n + j}:a]" for j in range(len(roles)))
     fc = (
         f"{concat_in}concat=n={n}:v=1:a=0[v];"
-        f"{amix_in}amix=inputs=3:duration=longest:normalize=0,volume={VOLUME}[a]"
+        f"{amix_in}amix=inputs={len(roles)}:duration=longest:normalize=0,volume={VOLUME}[a]"
     )
-    out_mp4 = os.path.join(OUT, "国学对谈01-成片.mp4")
+    out_mp4 = os.path.join(OUT, f"{label}-成片.mp4")
     cmd = ["ffmpeg", "-y", "-v", "error", *inputs,
            "-filter_complex", fc, "-map", "[v]", "-map", "[a]",
            "-c:v", "libx264", "-preset", "medium", "-crf", "20",

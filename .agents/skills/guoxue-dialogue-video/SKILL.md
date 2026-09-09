@@ -13,25 +13,24 @@ description: 国学对谈短视频出片（庄子×曾国藩等历史人物的 A
 |---|---|---|
 | 音色 voice_id | 硬编码在 `scripts/gen-minimax-tts.py` 的 `VOICES` | 庄子/曾国藩/旁白三个 MiniMax 定制音色，**直接复用，别重新设计** |
 | 画像 | `public/assets/portraits/庄子.png`、`曾国藩.png` | 成片用的 AI 水墨画像 |
-| 配音脚本 | `scripts/gen-minimax-tts.py` | 改 `LINES` 就出下一期配音 + SRT |
-| 出片脚本 | `scripts/compose-video.py` | 读 SRT 出片（画像全屏切换 + 分色字幕 + 音量放大），**无需改** |
+| 配音脚本 | `scripts/gen-minimax-tts.py` | 读对白 JSON（`--data=`），不碰代码 |
+| 出片脚本 | `scripts/compose-video.py` | 读对白 JSON（`--data=`）+ SRT 出片（画像全屏切换 + 分色字幕 + 音量放大） |
 | 音色设计脚本 | `scripts/design-voices.py` | 仅在需要新音色时用（一般不用） |
 | 对标文案参考 | `docs/对标-庄子曾国藩谈自律-文案.md` | 第一期完整文案 + 角色结构 |
 
-## 二、出片 SOP（第二期流程）
+## 二、出片 SOP（第二期流程，只改 JSON 不碰代码）
 
 1. **选题**：定对谈话题，用「二元对立」钩子（如「读书该博还是该精」「快乐是求来的还是放下的」）。
-2. **写对白**：12 句左右，角色结构见第三节。
-3. **改文案**：编辑 `scripts/gen-minimax-tts.py` 里的 `LINES`（只改文本，音色 `VOICES` 不动）。
-4. **合成配音**（需 MiniMax API key，见下）：
+2. **写对白 JSON**：复制 `src/data/dialogue-01.json` → `dialogue-02.json`，改 `label`（如「国学对谈02」）+ `lines`（新对白，12 句左右，结构见第三节）；`voices` 直接复用，不动。
+3. **合成配音**（需 MiniMax API key）：
    ```bash
-   MINIMAX_API_KEY=sk-api-xxx .venv-asr/bin/python scripts/gen-minimax-tts.py
+   MINIMAX_API_KEY=sk-api-xxx .venv-asr/bin/python scripts/gen-minimax-tts.py --data=src/data/dialogue-02.json
    ```
-5. **出片**：
+4. **出片**：
    ```bash
-   .venv-asr/bin/python scripts/compose-video.py
+   .venv-asr/bin/python scripts/compose-video.py --data=src/data/dialogue-02.json
    ```
-6. **交付**：`out/国学对谈01-成片.mp4`（文件名期号按需改）。
+5. **交付**：`out/国学对谈02-成片.mp4`。
 
 ## 三、对白结构模板（第一期验证）
 

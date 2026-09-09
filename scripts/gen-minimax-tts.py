@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """用 MiniMax 官方 TTS（t2a_v2）合成「国学对谈」分角色配音 + 对齐 SRT。
 
-流程：MiniMax 逐句合成 → ffprobe 测实际时长 → 按「实际时长+句间隔」重算时间轴
+流程：读对白 JSON → MiniMax 逐句合成 → ffprobe 测实际时长 → 按「实际时长+句间隔」重算时间轴
      → 静音对齐拼接出每个角色一条完整音轨 → 用新时间轴重写 SRT。
 
 用法：
-    MINIMAX_API_KEY=sk-xxx .venv-asr/bin/python scripts/gen-minimax-tts.py
+    MINIMAX_API_KEY=sk-xxx .venv-asr/bin/python scripts/gen-minimax-tts.py [--data=src/data/dialogue-01.json]
 
-改 VOICES / LINES 即可复用到下一期对谈。
+对白数据（期号 / 音色 / 台词）全部在 JSON 里，换一期只改 --data 指向的新 JSON，不碰本脚本。
 """
+import json
 import os
 import subprocess
+import sys
 from collections import defaultdict
 
 import requests
@@ -20,29 +22,12 @@ MODEL = "speech-2.8-hd"
 OUT = "out"
 TMP = os.path.join(OUT, "_mm_tts_tmp")
 GAP_MS = 600  # 句间停顿
+DEFAULT_DATA = "src/data/dialogue-01.json"
 
-# 角色 -> 系统音色 voice_id
-VOICES = {
-    "旁白": "ttv-voice-2026090913202326-Fy6I8Qyj",   # 定制：国学纪录片旁白
-    "庄子": "ttv-voice-2026090913182326-PvkWI60i",   # 定制：通透超脱道家智者
-    "曾国藩": "ttv-voice-2026090913195726-FgcfnGTr", # 定制：厚重威严清代儒臣
-}
 
-# (角色, 纯对白文本) —— 不含「庄子：」「曾国藩说」等前缀
-LINES = [
-    ("旁白", "自律，到底是逼自己，还是放过自己？让两个最懂的人，吵一架。"),
-    ("曾国藩", "人这一生，不逼自己，成不了事。我给自己立过十二条日课，主敬、静坐、早起、读书不二，一条条逼过来，才有后来的曾国藩。"),
-    ("庄子", "十二条日课，把一天切成了十二个格子。先生，你的命，是活在这十二个格子里，还是格子外头？"),
-    ("曾国藩", "人性好逸恶劳。今日想多睡一个时辰，明日便想少读一页书。不逼，人就往下出溜。"),
-    ("庄子", "往上爬，就一定比往下对吗？庄子偏要说，一棵树正因为长得歪、不成材，才活成了百年老树。"),
-    ("曾国藩", "人不是树。我日记里写过八个字，不为圣贤，便为禽兽。"),
-    ("庄子", "不为圣贤，便为禽兽。先生可知道，正是这八个字，把多少人逼成了，装着圣贤的禽兽。"),
-    ("庄子", "庖丁解牛，一把刀用了十九年，还像刚磨的。他不是硬砍，是顺着骨缝走，该停就停，该转就转。"),
-    ("曾国藩", "可庖丁自己也说，头三年所见无非牛，第四年才看见骨缝。没有前头，哪来的后头？"),
-    ("庄子", "那三年不是逼，是泡。刀顺缝，人顺性，日久自然。自律最高的段位，不是天天跟自己较劲，是终于知道，哪里根本不用较劲。"),
-    ("曾国藩", "那到底，什么时候该逼，什么时候该放？"),
-    ("旁白", "逼，是逼你穿过难处，别半途而废。放，是放你离开错路，别一条道走到黑。会逼的人，走得远。会放的人，走得长。真正难的，从来不是坚持，是分清。你此刻，是在穿过困难，还是在自我折磨？"),
-]
+def load_data(path):
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
 
 
 def run(cmd):
@@ -71,13 +56,13 @@ def ms_to_srt(ms):
     return f"{h:02d}:{m:02d}:{s:02d},{milli:03d}"
 
 
-def synth(api_key, role, text, idx):
+def synth(api_key, voices, role, text, idx):
     mp3 = os.path.join(TMP, f"l{idx:02d}.mp3")
     payload = {
         "model": MODEL,
         "text": text,
         "stream": False,
-        "voice_setting": {"voice_id": VOICES[role], "speed": 1.0, "vol": 1.0, "pitch": 0},
+        "voice_setting": {"voice_id": voices[role], "speed": 1.0, "vol": 1.0, "pitch": 0},
         "audio_setting": {"sample_rate": 32000, "bitrate": 128000, "format": "mp3", "channel": 1},
         "output_format": "hex",
     }
@@ -97,27 +82,34 @@ def synth(api_key, role, text, idx):
 
 def main():
     api_key = os.environ["MINIMAX_API_KEY"]
-    os.makedirs(TMP, exist_ok=True)
+    data_path = DEFAULT_DATA
+    for a in sys.argv[1:]:
+        if a.startswith("--data="):
+            data_path = a[len("--data="):]
 
+    data = load_data(data_path)
+    label = data["label"]
+    voices = data["voices"]
+    lines = [(ln["role"], ln["text"]) for ln in data["lines"]]
+
+    os.makedirs(TMP, exist_ok=True)
     durations = []
-    for i, (role, text) in enumerate(LINES):
-        mp3 = synth(api_key, role, text, i)
+    for i, (role, text) in enumerate(lines):
+        mp3 = synth(api_key, voices, role, text, i)
         wav = os.path.join(TMP, f"l{i:02d}.wav")
         run(["ffmpeg", "-y", "-v", "error", "-i", mp3, "-ac", "1", "-ar", "44100", wav])
         d = duration_ms(wav)
         durations.append(d)
-        print(f"[{i+1}/{len(LINES)}] {role} {d/1000:.1f}s", flush=True)
+        print(f"[{i+1}/{len(lines)}] {role} {d/1000:.1f}s", flush=True)
 
-    # 重算时间轴
     timeline = []
     cur = 0
     for d in durations:
         timeline.append((cur, cur + int(d)))
         cur += int(d) + GAP_MS
 
-    # 按角色拼接（静音对齐）
     by_role = defaultdict(list)
-    for i, (role, _) in enumerate(LINES):
+    for i, (role, _) in enumerate(lines):
         by_role[role].append(i)
     for role, idxs in by_role.items():
         segs = []
@@ -138,18 +130,17 @@ def main():
         out_wav = os.path.join(TMP, f"{role}.wav")
         run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0",
              "-i", listfile, "-c", "copy", out_wav])
-        out_mp3 = os.path.join(OUT, f"国学对谈01-{role}-minimax.mp3")
+        out_mp3 = os.path.join(OUT, f"{label}-{role}-minimax.mp3")
         run(["ffmpeg", "-y", "-v", "error", "-i", out_wav, "-b:a", "128k", out_mp3])
         print(f"生成: {out_mp3}", flush=True)
 
-    # 重写 SRT（按角色）
     for role, idxs in by_role.items():
-        srt_path = os.path.join(OUT, f"国学对谈01-{role}-minimax.srt")
+        srt_path = os.path.join(OUT, f"{label}-{role}-minimax.srt")
         blocks = []
         n = 1
         for i in idxs:
             s, e = timeline[i]
-            blocks.append(f"{n}\n{ms_to_srt(s)} --> {ms_to_srt(e)}\n{LINES[i][1]}\n")
+            blocks.append(f"{n}\n{ms_to_srt(s)} --> {ms_to_srt(e)}\n{lines[i][1]}\n")
             n += 1
         with open(srt_path, "w", encoding="utf-8") as f:
             f.write("\n".join(blocks) + "\n")

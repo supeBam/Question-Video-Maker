@@ -43,7 +43,7 @@ description: 国学对谈短视频出片（庄子×曾国藩等历史人物的 A
 
 - **音色别重设计**：定制音色（ttv-voice）是账号持久资源，先查音色库（`voice-library.json` 的 `reusable_for`），气质匹配直接复用；只有库里无匹配才用 `design-voices.py` 定制（约 0.01 元/个）。
 - **成本与增量缓存**：配音 speech-2.8-hd ¥3.5/万字符（turbo ¥2，草稿可先用 turbo）。合成脚本自带**增量缓存**（指纹 = 模型+音色+语速+文本，存 `src/data/dialogue/.tts-cache/`，gitignored）——重跑时文本/音色没变的句子零消耗，改一句只花一句的钱。
-- **音量/字幕/语速**：`compose-video.py` 里 `VOLUME=1.8`、`FONT_SIZE=58`（适配中老年）；对白 JSON 的 `speeds` 按角色调语速（旁白 1.1 防拖沓），按需调。
+- **响度/字幕/语速**：`compose-video.py` 用 EBU R128 响度标准化（人声锁 `VOICE_LUFS=-14`、BGM 锁 `BGM_LUFS=-34`，恒差 20dB；本机 ffmpeg 的 loudnorm TP 范围 [-9,0]，BGM 的 TP 写 -20 会报错）；`FONT_SIZE=58`（适配中老年）；对白 JSON 的 `speeds` 按角色调语速（旁白 1.1 防拖沓），按需调。
 - **画像是正方形裁竖屏**：单画像顶部对齐裁切（保住头部）、旁白上下合并，已在脚本内处理。
 - **MiniMax key**：存项目根 `.minimax.key`（gitignored，脚本自动读）；报「insufficient balance」= 按量余额不足，报「2056 用量上限」= Token Plan 额度耗尽（买积分可自动补充），充值后重跑。
 - **本机 ffmpeg 无 libass**：字幕靠 Pillow 画帧，别用 ass/subtitles filter（会报 Unknown filter）。

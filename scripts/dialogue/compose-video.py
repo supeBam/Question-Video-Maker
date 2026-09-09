@@ -40,9 +40,10 @@ FONT_SIZE = 58
 W, H = 1080, 1920
 MARGIN_X = 60
 SUBTITLE_TOP = 1460
-VOLUME = 1.8
+# 响度标准化（EBU R128）：不用拍脑袋的音量系数，直接锁 LUFS 目标，每期自动正确
+VOICE_LUFS = -14   # 人声目标响度（流媒体标准偏上限，中老年友好）
+BGM_LUFS = -34     # BGM 目标响度（恒比人声低 20dB，只垫氛围）
 BGM = "public/assets/bg-audio/bg-古箫吟风曲.mp3"  # 背景音乐（古箫，文人雅谈）
-BGM_VOLUME = 0.08  # BGM 低音量，只垫氛围不抢人声
 
 
 def run(cmd):
@@ -173,8 +174,9 @@ def main():
     bgm_idx = n + len(roles)
     fc = (
         f"{concat_in}concat=n={n}:v=1:a=0[v];"
-        f"{amix_in}amix=inputs={len(roles)}:duration=longest:normalize=0,volume={VOLUME}[voice];"
-        f"[{bgm_idx}:a]volume={BGM_VOLUME}[bgm];"
+        f"{amix_in}amix=inputs={len(roles)}:duration=longest:normalize=0,"
+        f"loudnorm=I={VOICE_LUFS}:TP=-1.0:LRA=9,aresample=44100[voice];"
+        f"[{bgm_idx}:a]loudnorm=I={BGM_LUFS}:TP=-9:LRA=7,aresample=44100[bgm];"
         f"[voice][bgm]amix=inputs=2:duration=first:normalize=0[a]"
     )
     out_mp4 = os.path.join(OUT, f"{label}-成片.mp4")

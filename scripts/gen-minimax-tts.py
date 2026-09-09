@@ -13,6 +13,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from collections import defaultdict
 
 import requests
@@ -66,18 +67,26 @@ def synth(api_key, voices, role, text, idx):
         "audio_setting": {"sample_rate": 32000, "bitrate": 128000, "format": "mp3", "channel": 1},
         "output_format": "hex",
     }
-    r = requests.post(
-        API,
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-        json=payload, timeout=60,
-    )
-    r.raise_for_status()
-    data = r.json()
-    if data.get("base_resp", {}).get("status_code") != 0:
+    for attempt in range(8):  # 限流自动退避重试
+        r = requests.post(
+            API,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json=payload, timeout=60,
+        )
+        r.raise_for_status()
+        data = r.json()
+        code = data.get("base_resp", {}).get("status_code")
+        if code == 0:
+            with open(mp3, "wb") as f:
+                f.write(bytes.fromhex(data["data"]["audio"]))
+            return mp3
+        if code == 1002:  # rate limit exceeded(RPM)：等待后重试
+            wait = 12 * (attempt + 1)
+            print(f"  限流（RPM），{wait}s 后重试...", flush=True)
+            time.sleep(wait)
+            continue
         raise RuntimeError(f"MiniMax 错误: {data.get('base_resp')}")
-    with open(mp3, "wb") as f:
-        f.write(bytes.fromhex(data["data"]["audio"]))
-    return mp3
+    raise RuntimeError("限流重试次数用尽")
 
 
 def main():

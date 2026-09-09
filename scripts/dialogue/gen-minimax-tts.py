@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-"""用 MiniMax 官方 TTS（t2a_v2）合成「国学对谈」分角色配音 + 对齐 SRT。
+"""用 MiniMax 官方 TTS（t2a_v2）合成「国学对谈」分角色配音 + 对齐 SRT（增量缓存版）。
 
-流程：读对白 JSON → MiniMax 逐句合成 → ffprobe 测实际时长 → 按「实际时长+句间隔」重算时间轴
-     → 静音对齐拼接出每个角色一条完整音轨 → 用新时间轴重写 SRT。
+流程：读对白 JSON → 逐句查增量缓存（指纹 = 模型+音色+语速+文本）→ 命中直接复用，
+     未命中的才调 MiniMax 合成并写入缓存 → ffprobe 测实际时长 → 重算时间轴
+     → 静音对齐拼接每个角色完整音轨 → 重写 SRT。
 
 用法：
-    MINIMAX_API_KEY=sk-xxx .venv-asr/bin/python scripts/gen-minimax-tts.py [--data=src/data/dialogue-01.json]
+    .venv-asr/bin/python scripts/dialogue/gen-minimax-tts.py [--data=src/data/dialogue/dialogue-03.json]
 
-对白数据（期号 / 音色 / 台词）全部在 JSON 里，换一期只改 --data 指向的新 JSON，不碰本脚本。
+对白数据（期号 / 音色 / 台词 / 语速）全部在 JSON 里，换一期只改 --data 指向的新 JSON。
+合成自带增量缓存：改一句只重合成一句，换音色只重跑该角色，重复跑不重复扣费。
 """
+import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -22,8 +26,9 @@ API = "https://api.minimax.cn/v1/t2a_v2"
 MODEL = "speech-2.8-hd"
 OUT = "out"
 TMP = os.path.join(OUT, "_mm_tts_tmp")
+CACHE = "src/data/dialogue/.tts-cache"  # 增量缓存（gitignored，勿提交）
 GAP_MS = 600  # 句间停顿
-DEFAULT_DATA = "src/data/dialogue/dialogue-01.json"
+DEFAULT_DATA = "src/data/dialogue/dialogue-03.json"
 
 
 def get_api_key():
@@ -70,8 +75,21 @@ def ms_to_srt(ms):
     return f"{h:02d}:{m:02d}:{s:02d},{milli:03d}"
 
 
+def cache_key(voice_id, speed, text):
+    """增量缓存指纹：模型 + 音色 + 语速 + 文本，任一变化即视为新句子"""
+    raw = f"{MODEL}|{voice_id}|{speed}|{text}"
+    return hashlib.md5(raw.encode("utf-8")).hexdigest()
+
+
 def synth(api_key, voices, speeds, role, text, idx):
+    """合成一句。返回 (mp3路径, 是否命中缓存)。命中缓存则零 API 消耗。"""
     mp3 = os.path.join(TMP, f"l{idx:02d}.mp3")
+    ck = cache_key(voices[role], speeds.get(role, 1.0), text)
+    cache_file = os.path.join(CACHE, f"{ck}.mp3")
+    if os.path.exists(cache_file) and os.path.getsize(cache_file) > 0:
+        shutil.copyfile(cache_file, mp3)
+        return mp3, True
+
     payload = {
         "model": MODEL,
         "text": text,
@@ -90,9 +108,12 @@ def synth(api_key, voices, speeds, role, text, idx):
         data = r.json()
         code = data.get("base_resp", {}).get("status_code")
         if code == 0:
-            with open(mp3, "wb") as f:
-                f.write(bytes.fromhex(data["data"]["audio"]))
-            return mp3
+            audio = bytes.fromhex(data["data"]["audio"])
+            os.makedirs(CACHE, exist_ok=True)
+            with open(cache_file, "wb") as f:
+                f.write(audio)
+            shutil.copyfile(cache_file, mp3)
+            return mp3, False
         if code == 1002:  # rate limit exceeded(RPM)：等待后重试
             wait = 12 * (attempt + 1)
             print(f"  限流（RPM），{wait}s 后重试...", flush=True)
@@ -117,13 +138,16 @@ def main():
 
     os.makedirs(TMP, exist_ok=True)
     durations = []
+    hit_count = 0
     for i, (role, text) in enumerate(lines):
-        mp3 = synth(api_key, voices, speeds, role, text, i)
+        mp3, hit = synth(api_key, voices, speeds, role, text, i)
+        hit_count += 1 if hit else 0
         wav = os.path.join(TMP, f"l{i:02d}.wav")
         run(["ffmpeg", "-y", "-v", "error", "-i", mp3, "-ac", "1", "-ar", "44100", wav])
         d = duration_ms(wav)
         durations.append(d)
-        print(f"[{i+1}/{len(lines)}] {role} {d/1000:.1f}s", flush=True)
+        tag = "缓存复用" if hit else "新合成"
+        print(f"[{i+1}/{len(lines)}] {role} {d/1000:.1f}s（{tag}）", flush=True)
 
     timeline = []
     cur = 0
@@ -170,6 +194,7 @@ def main():
         print(f"字幕: {srt_path}", flush=True)
 
     print(f"总时长约 {timeline[-1][1]/1000:.1f}s", flush=True)
+    print(f"增量合成：{len(lines)} 句 = 缓存复用 {hit_count} + 新合成 {len(lines) - hit_count}", flush=True)
 
 
 if __name__ == "__main__":

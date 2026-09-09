@@ -41,10 +41,11 @@ description: 国学对谈短视频出片（庄子×曾国藩等历史人物的 A
 
 ## 四、注意事项
 
-- **音色别重设计**：`VOICES` 里的 ttv-voice 是账号持久资源，复用即可；只有换人物（如换成孔子、王阳明）才需要 `design-voices.py` 重新设计。
-- **成本**：配音 speech-2.8-hd ¥3.5/万字符，一期约 470 字 ≈ ¥0.16。
-- **音量/字幕**：`compose-video.py` 里 `VOLUME=1.8`、`FONT_SIZE=58`（适配中老年），按需调。
+- **音色别重设计**：定制音色（ttv-voice）是账号持久资源，先查音色库（`voice-library.json` 的 `reusable_for`），气质匹配直接复用；只有库里无匹配才用 `design-voices.py` 定制（约 0.01 元/个）。
+- **成本与增量缓存**：配音 speech-2.8-hd ¥3.5/万字符（turbo ¥2，草稿可先用 turbo）。合成脚本自带**增量缓存**（指纹 = 模型+音色+语速+文本，存 `src/data/dialogue/.tts-cache/`，gitignored）——重跑时文本/音色没变的句子零消耗，改一句只花一句的钱。
+- **音量/字幕/语速**：`compose-video.py` 里 `VOLUME=1.8`、`FONT_SIZE=58`（适配中老年）；对白 JSON 的 `speeds` 按角色调语速（旁白 1.1 防拖沓），按需调。
 - **画像是正方形裁竖屏**：单画像顶部对齐裁切（保住头部）、旁白上下合并，已在脚本内处理。
-- **MiniMax key**：存项目根 `.minimax.key`（gitignored，脚本自动读）；合成报「insufficient balance」= 账户余额不足，充值后重跑。
+- **MiniMax key**：存项目根 `.minimax.key`（gitignored，脚本自动读）；报「insufficient balance」= 按量余额不足，报「2056 用量上限」= Token Plan 额度耗尽（买积分可自动补充），充值后重跑。
 - **本机 ffmpeg 无 libass**：字幕靠 Pillow 画帧，别用 ass/subtitles filter（会报 Unknown filter）。
-- **换人物（如第三期换王阳明、孔子）完整路径**：① 全局 skill `huashu-nuwa` 蒸馏新人物视角（说「蒸馏王阳明」）；② `scripts/dialogue/design-voices.py` 定制新音色；③ `public/assets/portraits/` 放新画像；④ 复制对白 JSON 改 voices/lines；⑤ `compose-video.py` 的画像映射（base_map）需加新人物条目（当前硬编码庄子/曾国藩）。
+- **换人物（如换王阳明、孔子）完整路径**：① 全局 skill `huashu-nuwa` 蒸馏新人物视角（说「蒸馏王阳明」）；② 音色：先查音色库 `reusable_for`，无匹配再 `design-voices.py` 定制；③ `public/assets/portraits/` 放新画像；④ 对白 JSON 改 label/lines/voices/portraits/colors/speeds；⑤ 出片脚本零改动（画像/颜色已 JSON 化）。
+- **钩子公式轮换**：开头钩子不得连续两期同款（01「吵一架」对抗式 → 02 同款已犯规 → 03 改「痛点共鸣+权威反转」）。候选公式：对抗式 / 痛点共鸣 / 悬念式 / 身份式 / 收藏指令，见 `wechat-video-hooks` skill。

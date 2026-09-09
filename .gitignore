@@ -68,3 +68,6 @@ video/
 
 # MiniMax API key（本地密钥，严禁提交）
 .minimax.key
+
+# TTS 增量合成缓存（按 音色+语速+文本 指纹存 mp3）
+.tts-cache/

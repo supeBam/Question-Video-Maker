@@ -177,7 +177,8 @@ def main():
         f"{amix_in}amix=inputs={len(roles)}:duration=longest:normalize=0,"
         f"loudnorm=I={VOICE_LUFS}:TP=-1.0:LRA=9,aresample=44100[voice];"
         f"[{bgm_idx}:a]loudnorm=I={BGM_LUFS}:TP=-9:LRA=7,aresample=44100[bgm];"
-        f"[voice][bgm]amix=inputs=2:duration=first:normalize=0[a]"
+        f"[voice][bgm]amix=inputs=2:duration=first:normalize=0,"
+        f"aformat=sample_fmts=fltp:channel_layouts=stereo[a]"
     )
     out_mp4 = os.path.join(OUT, f"{label}-成片.mp4")
     cmd = ["ffmpeg", "-y", "-v", "error", *inputs,

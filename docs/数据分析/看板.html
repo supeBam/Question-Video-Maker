@@ -176,7 +176,7 @@
     <div class="note" data-page-node-id="1w8ideoyA8IBb43AahPqp3">
       数据来源：<code data-page-node-id="jxA3x9Vtc14EPtnbSqSDMn">docs/数据分析/导入/</code> 下的两平台作品明细 + 每日聚合，期号映射来自 <code data-page-node-id="RNAGCIwLfDaLJ14ECx3PRc">docs/发布台账.md</code>。<br data-page-node-id="Jf85VfcRhuNUpX17isfTgj">
       每周一更新流程：① 平台后台导出 4 个文件，按命名规范放入 <code data-page-node-id="6x2MtpTmrJVGIYuCfgOnfp">导入/</code> 目录；② 运行
-      <code data-page-node-id="2gHPqmEBZzH8xdOsCdWOFI">python3 scripts/extract-dashboard-data.py</code> 生成 <code data-page-node-id="awAK1h4xMAjIFVypZBLQzH">看板-data.json</code>；③ 打开本看板点「导入新数据」选中该 JSON。<br data-page-node-id="6WwWRtCj8Yam8dlU6gaFcQ">
+      <code data-page-node-id="2gHPqmEBZzH8xdOsCdWOFI">python3 scripts/analytics/extract-dashboard-data.py</code> 生成 <code data-page-node-id="awAK1h4xMAjIFVypZBLQzH">看板-data.json</code>；③ 打开本看板点「导入新数据」选中该 JSON。<br data-page-node-id="6WwWRtCj8Yam8dlU6gaFcQ">
       合并规则：同一条视频出现多份快照时取导出日最新的一份；两平台数据不混算；「作品明细」为累计值、「每日聚合」为当日增量。<br data-page-node-id="lpAGiP7qTvaCFXfxVY4d0R">
       存储说明：数据保存在本浏览器 localStorage（键前缀 <code data-page-node-id="uBGYZlOMKpV7L3GxTNeWuf">wb_video_dashboard_</code>），换设备请先「导出备份」再「导入恢复」。
     </div>

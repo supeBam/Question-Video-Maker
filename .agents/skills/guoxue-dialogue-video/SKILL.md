@@ -11,11 +11,11 @@ description: 国学对谈短视频出片（庄子×曾国藩等历史人物的 A
 
 | 资产 | 位置 | 说明 |
 |---|---|---|
-| 音色 voice_id | 硬编码在 `scripts/gen-minimax-tts.py` 的 `VOICES` | 庄子/曾国藩/旁白三个 MiniMax 定制音色，**直接复用，别重新设计** |
+| 音色 voice_id | 硬编码在 `scripts/dialogue/gen-minimax-tts.py` 的 `VOICES` | 庄子/曾国藩/旁白三个 MiniMax 定制音色，**直接复用，别重新设计** |
 | 画像 | `public/assets/portraits/庄子.png`、`曾国藩.png` | 成片用的 AI 水墨画像 |
-| 配音脚本 | `scripts/gen-minimax-tts.py` | 读对白 JSON（`--data=`），不碰代码 |
-| 出片脚本 | `scripts/compose-video.py` | 读对白 JSON（`--data=`）+ SRT 出片（画像全屏切换 + 分色字幕 + 音量放大） |
-| 音色设计脚本 | `scripts/design-voices.py` | 仅在需要新音色时用（一般不用） |
+| 配音脚本 | `scripts/dialogue/gen-minimax-tts.py` | 读对白 JSON（`--data=`），不碰代码 |
+| 出片脚本 | `scripts/dialogue/compose-video.py` | 读对白 JSON（`--data=`）+ SRT 出片（画像全屏切换 + 分色字幕 + 音量放大） |
+| 音色设计脚本 | `scripts/dialogue/design-voices.py` | 仅在需要新音色时用（一般不用） |
 | 对标文案参考 | `docs/对标-庄子曾国藩谈自律-文案.md` | 第一期完整文案 + 角色结构 |
 
 ## 二、出片 SOP（第二期流程，只改 JSON 不碰代码）
@@ -24,11 +24,11 @@ description: 国学对谈短视频出片（庄子×曾国藩等历史人物的 A
 2. **写对白 JSON**：复制 `src/data/dialogue/dialogue-01.json` → `src/data/dialogue/dialogue-02.json`，改 `label`（如「国学对谈02」）+ `lines`（新对白，12 句左右，结构见第三节）；`voices` 直接复用，不动。
 3. **合成配音**（需 MiniMax API key）：
    ```bash
-   .venv-asr/bin/python scripts/gen-minimax-tts.py --data=src/data/dialogue/dialogue-02.json
+   .venv-asr/bin/python scripts/dialogue/gen-minimax-tts.py --data=src/data/dialogue/dialogue-02.json
    ```
 4. **出片**：
    ```bash
-   .venv-asr/bin/python scripts/compose-video.py --data=src/data/dialogue/dialogue-02.json
+   .venv-asr/bin/python scripts/dialogue/compose-video.py --data=src/data/dialogue/dialogue-02.json
    ```
 5. **交付**：`out/国学对谈02-成片.mp4`。
 

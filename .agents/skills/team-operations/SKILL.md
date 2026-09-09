@@ -60,7 +60,7 @@ description: Use when managing, dispatching, or onboarding the 题目视频自�
 - Excel 规范：命名 `YYYYMMDD-平台-内容.xlsx`；表头第一行；日期 `YYYY-MM-DD`；注明数据截止时间。
   - 抖音必填 7 列：发布日期、作品标题/期号、播放量、点赞数、评论数、收藏数、转发数；建议补充涨粉数/完播率/5秒留存率/2秒跳出率等。
   - 视频号必填 7 列：发布日期、作品标题/期号、播放量（后台「播放次数」）、点赞数、评论数、转发数、收藏数；建议补充关注数/完播率/平均播放时长。
-- **周复盘一键脚本**：运行 `node scripts/weekly-review.mjs --wechat=导入/视频号/…csv --douyin=导入/抖音/…xlsx` 完成①台账自动登记（发布时间取自 Excel，无需用户口头告知，已登记自动去重）②`out/` 调试垃圾清理（成片与未识别清单一律保留）③复盘摘要；未识别行写入 `out/ledger-unmatched-*.txt` 请用户确认，绝不猜测。只跑台账用 `build-ledger.mjs`。
+- **周复盘一键脚本**：运行 `node scripts/analytics/weekly-review.mjs --wechat=导入/视频号/…csv --douyin=导入/抖音/…xlsx` 完成①台账自动登记（发布时间取自 Excel，无需用户口头告知，已登记自动去重）②`out/` 调试垃圾清理（成片与未识别清单一律保留）③复盘摘要；未识别行写入 `out/ledger-unmatched-*.txt` 请用户确认，绝不猜测。只跑台账用 `build-ledger.mjs`。
 
 ## 六、文件保护制度（后勤执行）
 

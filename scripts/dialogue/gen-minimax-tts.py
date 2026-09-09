@@ -28,7 +28,7 @@ DEFAULT_DATA = "src/data/dialogue/dialogue-01.json"
 
 def get_api_key():
     """从项目根目录 .minimax.key 文件读取 MiniMax API key（gitignored，不进 git）"""
-    key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".minimax.key")
+    key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".minimax.key")
     if os.path.exists(key_file):
         with open(key_file, encoding="utf-8") as f:
             key = f.read().strip()

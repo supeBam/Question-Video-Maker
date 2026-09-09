@@ -12,7 +12,7 @@ const dataPath = arg ? arg.slice("--data=".length) : "src/data/questions.json";
 // 统一以项目根目录为工作目录：remotion 配置、src/、out/ 都相对它解析
 const projectRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  ".."
+  "../.."
 );
 if (process.cwd() !== projectRoot) {
   process.chdir(projectRoot);

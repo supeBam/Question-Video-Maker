@@ -65,7 +65,6 @@ video/
 .hf-cache/
 
 # image-gen 工具输出目录（生成图已归档到 public/assets/，此目录为临时工作区）
-dsh-image-gen/
 
 # MiniMax API key（本地密钥，严禁提交）
 .minimax.key

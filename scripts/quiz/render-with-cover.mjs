@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { buildTimeline } from "../src/types.ts";
-import { computeAnswerPages } from "../src/answerSheet.ts";
+import { buildTimeline } from "../../src/types.ts";
+import { computeAnswerPages } from "../../src/answerSheet.ts";
 
 // ── helpers ───────────────────────────────────────────────
 
@@ -298,7 +298,7 @@ export const renderVideoWithCover = (
   // 统一以项目根目录为工作目录：remotion 配置、src/、out/ 都相对它解析
   const projectRoot = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
-    ".."
+    "../.."
   );
   if (process.cwd() !== projectRoot) {
     process.chdir(projectRoot);

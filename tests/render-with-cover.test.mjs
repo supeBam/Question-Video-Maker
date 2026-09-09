@@ -9,7 +9,7 @@ import {
   getAnswerSheetPath,
   derivePublish,
   isDirectExecution,
-} from "../scripts/render-with-cover.mjs";
+} from "../scripts/quiz/render-with-cover.mjs";
 
 test("封面与 MP4 同路径同名", () => {
   assert.equal(
@@ -124,6 +124,6 @@ test("抖音话题即使 publish 覆盖也强制 ≤5", () => {
 });
 
 test("Windows 文件 URL 能识别为直接执行", () => {
-  const scriptPath = path.resolve("scripts/render-with-cover.mjs");
+  const scriptPath = path.resolve("scripts/quiz/render-with-cover.mjs");
   assert.equal(isDirectExecution(scriptPath, pathToFileURL(scriptPath).href), true);
 });

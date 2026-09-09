@@ -31,7 +31,7 @@ docs/数据分析/
 - **合并规则**：同一条视频出现多份快照时，取导出日最新的那份（文件名里的导出日判定）。
 - **防丢规则**：窗口起点固定为「上周日往前 30 天」，不用「近 7 天」滚动窗口，否则老视频会随窗口前移掉出快照链。
 - **数据看板（2026-09-03 起）**：`看板.html` 为展示层入口，随周复盘更新——导出 4 文件后运行
-  `python3 scripts/extract-dashboard-data.py` 生成 `看板-data.json`，在看板中「导入新数据」即可；用法见 [`看板-说明.md`](看板-说明.md)。看板不替代周复盘报告。
+  `python3 scripts/analytics/extract-dashboard-data.py` 生成 `看板-data.json`，在看板中「导入新数据」即可；用法见 [`看板-说明.md`](看板-说明.md)。看板不替代周复盘报告。
 
 ## 工作模式原则（2026-08-27 起生效）
 
@@ -46,11 +46,11 @@ docs/数据分析/
 
 ## Excel 导入规范
 
-- **存放位置**：直接把平台原始导出文件放进 `docs/数据分析/导入/`（根目录或任意子目录均可，**名字随意，无需手动改名**）——AI 用 `python3 scripts/extract-dashboard-data.py --organize` 自动识别平台/颗粒度、改名并归位到 `导入/{平台}/{颗粒度}/` 子目录（识别依据：文件名关键词优先，表头内容兜底）。
+- **存放位置**：直接把平台原始导出文件放进 `docs/数据分析/导入/`（根目录或任意子目录均可，**名字随意，无需手动改名**）——AI 用 `python3 scripts/analytics/extract-dashboard-data.py --organize` 自动识别平台/颗粒度、改名并归位到 `导入/{平台}/{颗粒度}/` 子目录（识别依据：文件名关键词优先，表头内容兜底）。
 - **命名规范**（落盘结果，由 organize 自动生成）：`平台-导出日-颗粒度-数据窗口.ext`，如 `抖音-20260903-单条视频-20260804~20260903.csv`。
   「导出日」= 文件导入时间（mtime；若早于数据截止日按数据截止日取）；「数据窗口」= 从文件日期列自动提取。
 - **表头要求**：见下文「两平台最小字段要求」；表头行在第一行，日期统一 `YYYY-MM-DD` 或 `YYYY-MM-DD HH:MM`。
-- **转换流程**：Excel（xlsx）为二进制，`scripts/extract-dashboard-data.py` 已内置纯标准库 xlsx 读取（零第三方依赖），日期列需以文本存储；视频号 CSV 直读（注意编码 utf-8-sig）。清洗规则：视频号「平均播放时长」自动去「秒」字解析；播放为 0 的作品留存字段归零；每日汇总负互动归零。
+- **转换流程**：Excel（xlsx）为二进制，`scripts/analytics/extract-dashboard-data.py` 已内置纯标准库 xlsx 读取（零第三方依赖），日期列需以文本存储；视频号 CSV 直读（注意编码 utf-8-sig）。清洗规则：视频号「平均播放时长」自动去「秒」字解析；播放为 0 的作品留存字段归零；每日汇总负互动归零。
 - **口径提示**：请在表格中注明数据截止日期（如「数据截至 2026-08-27 12:00」），避免口径漂移。
 - **Excel ↔ 题库对应**：单条作品的「发布日期 + 标题」按 [`docs/发布台账.md`](../发布台账.md) 识别为**期号**，再经 [`docs/选题归档.md`](../选题归档.md) 定位到 `src/data/questions-*.json`，即可取到该条视频对应的题目（题型/题量/主题）。台账查不到的行列入「未识别清单」请用户确认，不猜测。
 
@@ -59,13 +59,13 @@ docs/数据分析/
 把台账整理 + out/ 清理 + 复盘摘要串成一条命令（数据分析执行）：
 
 ```powershell
-node scripts/weekly-review.mjs --wechat=导入/视频号/…csv --douyin=导入/抖音/…xlsx
+node scripts/analytics/weekly-review.mjs --wechat=导入/视频号/…csv --douyin=导入/抖音/…xlsx
 ```
 
 - 自动完成：① Excel/CSV → 期号识别 → 更新 [`docs/发布台账.md`](../发布台账.md)（已登记自动去重）；② 清理 `out/` 调试垃圾（仅删可再生的预览/检查截图与 props 残留，**成片与未识别清单一律保留**）；③ 输出本周复盘摘要。
 - 抖音 xlsx 自动调用本机 Excel COM 转 CSV（兼容 Excel 2007 的 ANSI 格式）；视频号 CSV 直读。
 - 可选参数：`--no-clean` 跳过清理；`--out=…` 指定台账路径；多个同平台文件用逗号分隔。
-- 只跑台账不动 out/：`node scripts/build-ledger.mjs --wechat=… --douyin=…`。
+- 只跑台账不动 out/：`node scripts/analytics/build-ledger.mjs --wechat=… --douyin=…`。
 
 ### 两平台 Excel 最小字段要求
 

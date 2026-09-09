@@ -6,9 +6,9 @@
   "description": "视频号竖屏「中国文学常识选择题」短视频 - Remotion 模板（换题库即可批量复刻）",
   "scripts": {
     "dev": "remotion studio",
-    "dev:data": "node scripts/studio-with-data.mjs",
+    "dev:data": "node scripts/quiz/studio-with-data.mjs",
     "studio": "remotion studio",
-    "render": "node scripts/render-with-cover.mjs",
+    "render": "node scripts/quiz/render-with-cover.mjs",
     "still": "remotion still LiteratureQuiz out/preview.png",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test tests/*.test.mjs",
     "upgrade": "remotion upgrade"

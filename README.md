@@ -234,7 +234,7 @@ npx remotion render WanwuYacheng out/wanwu-yacheng-ep01.mp4
 用脚本一次出片（含封面 / 字幕 / 发布文案）：
 
 ```bash
-node scripts/render-with-cover.mjs out/wanwu-yacheng-ep01.mp4 \
+node scripts/quiz/render-with-cover.mjs out/wanwu-yacheng-ep01.mp4 \
   --data=src/data/questions-wanwu-yacheng.json
 ```
 

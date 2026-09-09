@@ -28,7 +28,7 @@ created: 2026-09-03
 AI 接手后先跑：
 
 ```bash
-python3 scripts/extract-dashboard-data.py --organize
+python3 scripts/analytics/extract-dashboard-data.py --organize
 ```
 
 自动完成：
@@ -69,13 +69,13 @@ docs/数据分析/导入/
 
 ```bash
 # 0. macOS/Linux 无 Excel COM：先把抖音 xlsx 转成 UTF-8 CSV（Windows 可跳过此步）
-python3 scripts/extract-dashboard-data.py --to-csv
+python3 scripts/analytics/extract-dashboard-data.py --to-csv
 
 # 1. 登记发布台账（Excel → 期号识别 → 更新 docs/发布台账.md）
-node scripts/build-ledger.mjs --wechat=导入/视频号/单条视频/xxx.csv --douyin=out/抖音-YYYYMMDD-单条视频.csv
+node scripts/analytics/build-ledger.mjs --wechat=导入/视频号/单条视频/xxx.csv --douyin=out/抖音-YYYYMMDD-单条视频.csv
 
 # 2. 生成看板数据 + 同步看板内嵌基线（打开 看板.html 即最新，免手动导入）
-python3 scripts/extract-dashboard-data.py --sync-seed
+python3 scripts/analytics/extract-dashboard-data.py --sync-seed
 ```
 
 - 台账识别不出的行会写入 `out/ledger-unmatched-*.txt` → 汇总成「未识别清单」请用户确认（哪些是纯内容视频无需对题、哪些需补录题库）

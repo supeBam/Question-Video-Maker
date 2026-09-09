@@ -47,3 +47,4 @@ description: 国学对谈短视频出片（庄子×曾国藩等历史人物的 A
 - **画像是正方形裁竖屏**：单画像顶部对齐裁切（保住头部）、旁白上下合并，已在脚本内处理。
 - **MiniMax key**：存项目根 `.minimax.key`（gitignored，脚本自动读）；合成报「insufficient balance」= 账户余额不足，充值后重跑。
 - **本机 ffmpeg 无 libass**：字幕靠 Pillow 画帧，别用 ass/subtitles filter（会报 Unknown filter）。
+- **换人物（如第三期换王阳明、孔子）完整路径**：① 全局 skill `huashu-nuwa` 蒸馏新人物视角（说「蒸馏王阳明」）；② `scripts/dialogue/design-voices.py` 定制新音色；③ `public/assets/portraits/` 放新画像；④ 复制对白 JSON 改 voices/lines；⑤ `compose-video.py` 的画像映射（base_map）需加新人物条目（当前硬编码庄子/曾国藩）。

@@ -12,6 +12,21 @@ import requests
 API = "https://api.minimax.cn/v1/voice_design"
 OUT = "out"
 
+
+def get_api_key():
+    """优先环境变量 MINIMAX_API_KEY，其次项目根目录 .minimax.key 文件（gitignored）"""
+    key = os.environ.get("MINIMAX_API_KEY")
+    if key:
+        return key.strip()
+    key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".minimax.key")
+    if os.path.exists(key_file):
+        with open(key_file, encoding="utf-8") as f:
+            return f.read().strip()
+    raise RuntimeError(
+        "未找到 MiniMax API key：请设置环境变量 MINIMAX_API_KEY，"
+        "或在项目根目录创建 .minimax.key 文件（内容为 key）"
+    )
+
 VOICES = [
     ("庄子", 
      "一位通透超脱的古代道家智者老者，声音温润从容、语速平缓、语气淡然洒脱，"
@@ -29,7 +44,7 @@ VOICES = [
 
 
 def main():
-    api_key = os.environ["MINIMAX_API_KEY"]
+    api_key = get_api_key()
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     for name, prompt, preview in VOICES:
         r = requests.post(API, headers=headers,

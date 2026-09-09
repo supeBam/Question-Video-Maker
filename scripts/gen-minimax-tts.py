@@ -26,6 +26,21 @@ GAP_MS = 600  # 句间停顿
 DEFAULT_DATA = "src/data/dialogue/dialogue-01.json"
 
 
+def get_api_key():
+    """优先环境变量 MINIMAX_API_KEY，其次项目根目录 .minimax.key 文件（gitignored）"""
+    key = os.environ.get("MINIMAX_API_KEY")
+    if key:
+        return key.strip()
+    key_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".minimax.key")
+    if os.path.exists(key_file):
+        with open(key_file, encoding="utf-8") as f:
+            return f.read().strip()
+    raise RuntimeError(
+        "未找到 MiniMax API key：请设置环境变量 MINIMAX_API_KEY，"
+        "或在项目根目录创建 .minimax.key 文件（内容为 key）"
+    )
+
+
 def load_data(path):
     with open(path, encoding="utf-8") as f:
         return json.load(f)
@@ -90,7 +105,7 @@ def synth(api_key, voices, role, text, idx):
 
 
 def main():
-    api_key = os.environ["MINIMAX_API_KEY"]
+    api_key = get_api_key()
     data_path = DEFAULT_DATA
     for a in sys.argv[1:]:
         if a.startswith("--data="):

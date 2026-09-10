@@ -35,6 +35,11 @@ logs/
 .DS_Store
 Thumbs.db
 desktop.ini
+*.bak
+*.tmp
+*.orig
+*~
+.DS_Store
 
 # 测试覆盖率与报告
 coverage/

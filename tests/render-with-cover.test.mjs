@@ -5,8 +5,6 @@ import { pathToFileURL } from "node:url";
 import {
   getCoverPath,
   getPublishTextPath,
-  getHookImagePath,
-  getAnswerSheetPath,
   derivePublish,
   isDirectExecution,
 } from "../scripts/quiz/render-with-cover.mjs";
@@ -15,24 +13,6 @@ test("封面与 MP4 同路径同名", () => {
   assert.equal(
     getCoverPath("out/中国朝代历史-第02期.mp4"),
     "out/中国朝代历史-第02期.png"
-  );
-});
-
-test("片尾钩子图为 -钩子.png 后缀", () => {
-  assert.equal(
-    getHookImagePath("out/成语-第01期.mp4"),
-    "out/成语-第01期-钩子.png"
-  );
-});
-
-test("答案解释图按页码命名", () => {
-  assert.equal(
-    getAnswerSheetPath("out/成语-第01期.mp4", 1),
-    "out/成语-第01期-答案-第1页.png"
-  );
-  assert.equal(
-    getAnswerSheetPath("out/成语-第01期.mp4", 3),
-    "out/成语-第01期-答案-第3页.png"
   );
 });
 
@@ -127,3 +107,6 @@ test("Windows 文件 URL 能识别为直接执行", () => {
   const scriptPath = path.resolve("scripts/quiz/render-with-cover.mjs");
   assert.equal(isDirectExecution(scriptPath, pathToFileURL(scriptPath).href), true);
 });
+
+// 注：--compose-tts 一键出片端到端验证放在 4 步跑一次真渲染（需 .venv-asr + ffprobe + Remotion）
+// 这里 单元测试只覆盖纯函数（路径、标题、话题），整合由 E2E 覆盖。

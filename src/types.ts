@@ -5,15 +5,15 @@
  *   - fill       填空题（万物雅称：问「X 的雅称是什么」→ 揭晓雅称 + 解释）
  * ============================================================ */
 
-/** 选择题三段式节奏 */
+/** 选择题两段式节奏（呈现 → 揭晓）+ 题间停顿 */
 export type PerQuestionTiming = {
   /** 题干+选项出场并留给观众阅读的时间 */
   presentSeconds: number;
-  /** 倒计时时长（几秒作答） */
+  /** 倒计时时长（几秒作答）；快闪模板通常为 0（无倒计时） */
   countdownSeconds: number;
   /** 揭晓答案+解析的时间 */
   revealSeconds: number;
-  /** 揭晓后、下一题前的停顿秒数（仅 burst 模式生效，缺省 1s；classic 忽略） */
+  /** 揭晓后、下一题前的停顿秒数（缺省 1s） */
   pauseSeconds?: number;
 };
 
@@ -91,27 +91,21 @@ export type QuizData = {
     fps: number;
     introSeconds: number;
     outroSeconds: number;
-    /** 选择题三段式节奏（classic 模式缺省时由 buildTimeline 兜底；burst 模式可省略） */
+    /** 选择题节奏（缺省时由 buildTimeline 用快闪兜底值补齐） */
     perQuestion?: PerQuestionTiming;
-    /** 填空题全局节奏（缺省时由 buildTimeline 兜底） */
+    /** 填空题节奏（缺省时用快闪兜底值补齐） */
     fill?: FillTiming;
+    /** 节奏模式：固定 "burst"（爆款快闪）。保留此字段兼容旧题库，忽略其它值。 */
+    pacing?: "burst";
     /**
-     * 节奏模式：
-     *   - "classic"（缺省）三段式：呈现 → 倒计时作答 → 揭晓解析
-     *   - "burst"   爆款快闪（对标「学霸都考哭了」系列）：零片头、
-     *     每题约 5 秒两段式（题干快速呈现 → 答案立即揭晓），无倒计时。
-     *     题库里显式给出的 perQuestion / fill 值仍然优先于 burst 默认值。
-     */
-    pacing?: "classic" | "burst";
-    /**
-     * 快闪模板音效开关（classic 模式忽略此字段）：
+     * 音效开关：
      *   - 缺省或 true：揭晓时播「正确答案音效」；若 perQuestion 显式给了
      *     countdownSeconds > 0，则作答阶段还会播倒计时音效并显示倒计时环
-     *   - false：纯快闪无音效（完全对标「学霸都考哭了」系列）
+     *   - false：纯快闪无音效
      */
     soundEffects?: boolean;
     /**
-     * 剪映「字幕转音频」朗读语速（字/秒），仅 burst 模式生效：
+     * 剪映「字幕转音频」朗读语速（字/秒）：
      * 每题字幕区间按此自动兜底——题干段（present+countdown）至少覆盖
      * 题干朗读时长 + 0.5s，答案段（reveal+pause）至少覆盖答案朗读时长 + 0.6s，
      * 防止上一段音频没读完就叠进下一段（听感重复/重叠）。
@@ -119,21 +113,19 @@ export type QuizData = {
      */
     ttsWordsPerSecond?: number;
     /**
-     * 极简片尾（burst 模式专属）：缺省 false —— 保留 3 秒「全对=学霸 + CTA」文字版片尾；
-     * 设 true 时视频在最后一题结束后直接结束（不含片尾帧），钩子图/答案图由用户发布时自行导入。
+     * 极简片尾：缺省 false —— 保留「全对=学霸 + CTA」文字版片尾；
+     * 设 true 时视频在最后一题结束后直接结束（不含片尾帧）。
      */
     minimalOutro?: boolean;
     /**
-     * 快闪模板片尾「本期答案」回顾时长（秒）：在片尾 CTA 之前逐题展示
+     * 片尾「本期答案」回顾时长（秒）：在片尾 CTA 之前逐题展示
      * 题干→答案→解释（仅画面，不进字幕）。缺省 12 秒；设 0 关闭。
-     * classic 模式忽略此字段。
      */
     summarySeconds?: number;
     /**
-     * 快闪模板钩子开场时长（秒）：题目开始前先播放挑战标题画面
+     * 钩子开场时长（秒）：题目开始前先播放挑战标题画面
      * （栏目 + 大标题 + 挑战词，如「10 题 · 答对 8 个算你牛」）。
-     * 缺省 2 秒；设 0 则零片头直接进第一题（完全对标）。
-     * classic 模式忽略此字段（用 introSeconds 片头）。
+     * 缺省 2 秒；设 0 则零片头直接进第一题。
      */
     hookSeconds?: number;
   };
@@ -192,43 +184,28 @@ export type QuestionSlot = {
   index: number;
   from: number;
   durationInFrames: number;
-  /** —— 选择题 / 填空题三段式 —— */
+  /** —— 两段式：呈现 → 揭晓 —— */
   presentFrames: number;
   countdownFrames: number;
   revealFrames: number;
-  /** 揭晓后、下一题前的停顿帧数（burst 模式 ≥0；classic 恒为 0） */
+  /** 揭晓后、下一题前的停顿帧数（≥0） */
   pauseFrames: number;
   question: AnyQuestion;
 };
 
 export type Timeline = {
   fps: number;
-  introFrames: number;
-  /** 快闪模板钩子开场时长（classic 模式恒为 0） */
+  /** 钩子开场时长（零片头时可能为 0） */
   hookFrames: number;
   outroFrames: number;
-  /** 快闪模板片尾答案回顾时长（classic 模式恒为 0） */
+  /** 片尾答案回顾时长 */
   summaryFrames: number;
   slots: QuestionSlot[];
   totalFrames: number;
 };
 
-/** 填空题节奏兜底值（呈现 → 思考 → 揭晓） */
-export const DEFAULT_FILL_TIMING: FillTiming = {
-  presentSeconds: 3.5,
-  countdownSeconds: 6,
-  revealSeconds: 7,
-};
-
-/** 经典模式选择题节奏兜底值（老题库缺省 perQuestion 时的安全值） */
-export const DEFAULT_CLASSIC_TIMING: PerQuestionTiming = {
-  presentSeconds: 3.5,
-  countdownSeconds: 5,
-  revealSeconds: 7,
-};
-
 /**
- * 爆款快闪节奏兜底（对标「学霸都考哭了」系列实测：平均每题 4.6~6.5 秒）。
+ * 快闪节奏兜底（对标「学霸都考哭了」系列实测：平均每题 4.6~6.5 秒）。
  * 呈现 2.2s（题干+选项入场）→ 揭晓 2.8s（答案高亮 + 一句真相），无倒计时；
  * 揭晓后再留 1s 题间停顿，给 TTS 朗读缓冲，避免「答案一出立刻读下一题」。
  */
@@ -239,7 +216,7 @@ export const DEFAULT_BURST_TIMING: PerQuestionTiming = {
   pauseSeconds: 1,
 };
 
-/** 剪映「字幕转音频」缺省朗读语速（字/秒），用于 burst 模式每题时长兜底 */
+/** 剪映「字幕转音频」缺省朗读语速（字/秒），用于每题时长兜底 */
 export const DEFAULT_TTS_WORDS_PER_SECOND = 4.5;
 /** 题干段（present+countdown）在朗读时长外额外留的缓冲秒数 */
 const SPEAK_BUFFER_LEAD = 0.5;
@@ -256,21 +233,64 @@ const answerText = (q: AnyQuestion): string => {
   return `正确答案：${String.fromCharCode(65 + q.answerIndex)}. ${q.options[q.answerIndex]}`;
 };
 
-/** 计算单题三段式 + 停顿帧数（burst 模式启用 pause 与 TTS 语速兜底） */
+/**
+ * 单段音频实测时长（毫秒）。由 `gen-burst-tts.py` 写出的 measurements.json 解码后传入。
+ * segment 取值：
+ *   - "question"  题干段（含 punchline 时还覆盖题干的 present+countdown）
+ *   - "answer"    答案段（揭晓答案那一行）
+ *   - "punchline" 一句真相段（选择题且题库带 punchline 才有）
+ */
+export type AudioSegmentMeasurements = {
+  question?: number;
+  answer?: number;
+  punchline?: number;
+};
+
+/** 实测音频时长 → buildTimeline 兜底（gen-burst-tts.py 输出）。 */
+export type AudioMeasurements = Record<string, AudioSegmentMeasurements>;
+
+/** 计算单题两段式 + 停顿帧数（启用 pause 与 TTS 语速兜底） */
 const resolveSlotTiming = (
   question: AnyQuestion,
   baseTiming: PerQuestionTiming,
-  burst: boolean,
   ttsWps: number,
-  fps: number
+  fps: number,
+  audioMeas?: AudioSegmentMeasurements,
+  includePunchlineAudio = false
 ) => {
   const t = { ...baseTiming, ...(question.timingOverride ?? {}) };
   let presentSeconds = t.presentSeconds;
   let countdownSeconds = t.countdownSeconds;
   let revealSeconds = t.revealSeconds;
-  const pauseSeconds = burst ? (t.pauseSeconds ?? DEFAULT_BURST_TIMING.pauseSeconds ?? 1) : 0;
+  const pauseSeconds = t.pauseSeconds ?? DEFAULT_BURST_TIMING.pauseSeconds ?? 1;
 
-  if (burst && ttsWps > 0) {
+  // 决定兜底源：实测音频时长优先 > 字/秒估算 > 关闭兜底
+  //  - 有 audioMeas：用实测时长 + 缓冲（音频驱动视频，TTS 念完才切下一题）
+  //  - 仅 ttsWps > 0：用字/秒估算（兼容老剪映手工配音场景）
+  //  - 都没有：保持 timing 字段原值
+  const useMeasured = !!(audioMeas && (audioMeas.question !== undefined || audioMeas.answer !== undefined));
+
+  if (useMeasured && audioMeas) {
+    // 题干段（present+countdown）至少覆盖题干 + 缓冲
+    if (audioMeas.question !== undefined) {
+      const leadNeed = audioMeas.question / 1000 + SPEAK_BUFFER_LEAD;
+      if (presentSeconds + countdownSeconds < leadNeed) {
+        presentSeconds += leadNeed - (presentSeconds + countdownSeconds);
+      }
+    }
+    // 答案段（reveal+pause）至少覆盖答案音频 + 缓冲；
+    // 是否算 punchline 由调用方（BuildTimelineOptions.includePunchlineAudio）决定：
+    // 缺省 false —— BurstScene 已不播 punchline 音频，避免与画面底部解释文字听感拥挤。
+    const answerMs = audioMeas.answer ?? 0;
+    const punchlineMs =
+      includePunchlineAudio && audioMeas.punchline !== undefined
+        ? audioMeas.punchline
+        : 0;
+    const answerNeed = (answerMs + punchlineMs) / 1000 + SPEAK_BUFFER_ANSWER;
+    if (revealSeconds + pauseSeconds < answerNeed) {
+      revealSeconds = answerNeed - pauseSeconds;
+    }
+  } else if (ttsWps > 0) {
     // 题干段（present+countdown）至少覆盖题干朗读 + 缓冲
     const leadNeed = speakSeconds(question.stem.replace(/\n/g, ""), ttsWps) + SPEAK_BUFFER_LEAD;
     if (presentSeconds + countdownSeconds < leadNeed) {
@@ -297,44 +317,79 @@ const resolveSlotTiming = (
   };
 };
 
-export const buildTimeline = (data: QuizData): Timeline => {
-  const { fps, introSeconds, outroSeconds } = data.timing;
-  const burst = data.timing.pacing === "burst";
-  // 剪映「字幕转音频」语速兜底（仅 burst；设 0 关闭）
-  const ttsWps = burst ? (data.timing.ttsWordsPerSecond ?? DEFAULT_TTS_WORDS_PER_SECOND) : 0;
-  const perQuestion = burst
-    ? { ...DEFAULT_BURST_TIMING, ...(data.timing.perQuestion ?? {}) }
-    : { ...DEFAULT_CLASSIC_TIMING, ...(data.timing.perQuestion ?? {}) };
-  const fillTiming = burst
-    ? { ...DEFAULT_BURST_TIMING, ...(data.timing.fill ?? {}) }
-    : {
-        ...DEFAULT_FILL_TIMING,
-        ...(data.timing.fill ?? {}),
-      };
+/** buildTimeline 的可选入参。
+ *  - audioMeasurements：每道题实测音频时长（毫秒）。有值时优先于字/秒估算。
+ *    与 gen-burst-tts.py 写出的 out/{video-label}-audio-measurements.json 配套。
+ *  - hookAudioMs：钩子开场 intro.title 的实测音频时长（毫秒）。有值时优先于字数估算。
+ *    若未提供，按 ttsWordsPerSecond 兜底；都没有时保持 timing.hookSeconds。
+ *  - outroHookMs：片尾 outro.hook 口播的实测音频时长（毫秒）。
+ *    若测得超出 outroSeconds，视频时长按实测 + 缓冲延长，确保口播完整。
+ *  - includePunchlineAudio：是否把 measurements.punchline 的时长算进答案段视频时长。
+ *    缺省 false（BurstScene 已不播 punchline 音频——避免与画面底部解释文字"打架"）。
+ *    设 true 时视频时长按"答案 + 一句真相"音频总和兜底（兼容未来老场景）。
+ */
+export type BuildTimelineOptions = {
+  audioMeasurements?: AudioMeasurements;
+  hookAudioMs?: number;
+  outroHookMs?: number;
+  includePunchlineAudio?: boolean;
+};
+
+export const buildTimeline = (
+  data: QuizData,
+  options: BuildTimelineOptions = {}
+): Timeline => {
+  const { fps, outroSeconds } = data.timing;
+  const includePunchlineAudio = options.includePunchlineAudio === true;
+  const audioMeas = options.audioMeasurements;
+  const hookMeasMs = options.hookAudioMs;
+  // 实测钩子音频时长存在 → 关闭字数估算，按实测走（音频驱动视频）
+  // 实测钩子音频时长不存在 → 退回字/秒估算（兼容老剪映手工配音）
+  // 都没有 → 保持 timing 字段原值
+  const hasAnyMeas = !!(audioMeas || hookMeasMs !== undefined);
+  const ttsWps = hasAnyMeas
+    ? 0
+    : data.timing.ttsWordsPerSecond ?? DEFAULT_TTS_WORDS_PER_SECOND;
+  const perQuestion = { ...DEFAULT_BURST_TIMING, ...(data.timing.perQuestion ?? {}) };
+  const fillTiming = { ...DEFAULT_BURST_TIMING, ...(data.timing.fill ?? {}) };
   const sec = (s: number) => Math.round(s * fps);
 
-  // burst 模式强制零片头：对标爆款视频第一帧即第一题
-  const introFrames = burst ? 0 : sec(introSeconds);
-  // 快闪模板钩子开场（缺省 2 秒；hookSeconds: 0 零片头直接进题）
-  let hookFrames = burst ? sec(data.timing.hookSeconds ?? 2) : 0;
-  // TTS 语速兜底：钩子开场字幕（intro.title）至少覆盖朗读时长 + 缓冲，
-  // 避免钩子口播没读完就叠进第一题题干（剪映字幕转音频会重叠）
-  if (burst && ttsWps > 0) {
+  // 快闪钩子开场（缺省 2 秒；hookSeconds: 0 零片头直接进题）
+  let hookFrames = sec(data.timing.hookSeconds ?? 2);
+  // 实测钩子音频时长优先（音频驱动视频）：
+  if (hookMeasMs !== undefined) {
+    hookFrames = Math.max(hookFrames, sec(hookMeasMs / 1000 + 0.5));
+  } else if (ttsWps > 0) {
+    // 字数兜底：钩子开场字幕（intro.title）至少覆盖朗读时长 + 缓冲，
+    // 避免钩子口播没读完就叠进第一题题干（剪映字幕转音频会重叠）
     const hookText = (data.intro?.title ?? "").replace(/\n/g, "");
     const hookNeed = speakSeconds(hookText, ttsWps) + 0.5;
     hookFrames = Math.max(hookFrames, sec(hookNeed));
   }
-  // 极简片尾（burst 专属，缺省 false）：保留文字版片尾；显式 minimalOutro: true 时
-  // 连片尾帧都不要，视频在最后一题结束，钩子图/答案图由用户发布时自行导入
-  const minimalOutro = burst && data.timing.minimalOutro === true;
-  const outroFrames = minimalOutro ? 0 : sec(outroSeconds);
-  // 快闪模板片尾答案回顾（缺省 12 秒；summarySeconds: 0 关闭；classic 恒为 0）
-  const summaryFrames = burst ? sec(data.timing.summarySeconds ?? 12) : 0;
+  // 极简片尾（缺省 false）：保留文字版片尾；显式 minimalOutro: true 时
+  // 连片尾帧都不要，视频在最后一题结束
+  const minimalOutro = data.timing.minimalOutro === true;
+  let outroFrames = minimalOutro ? 0 : sec(outroSeconds);
+  // 实测片尾口播钩子时长兜底：从片尾第 60 帧（≈2s）开始播，
+  // 总时长至少覆盖「钩子实测 + 2s 缓冲」——确保「你全对了吗…」念完再结束。
+  if (!minimalOutro && options.outroHookMs !== undefined) {
+    const outroNeed = options.outroHookMs / 1000 + 2;
+    outroFrames = Math.max(outroFrames, sec(outroNeed));
+  }
+  // 片尾答案回顾（缺省 12 秒；summarySeconds: 0 关闭）
+  const summaryFrames = sec(data.timing.summarySeconds ?? 12);
 
-  let cursor = burst ? hookFrames : introFrames;
+  let cursor = hookFrames;
   const slots: QuestionSlot[] = data.questions.map((question, index) => {
     const baseTiming = isFill(question) ? fillTiming : perQuestion;
-    const timing = resolveSlotTiming(question, baseTiming, burst, ttsWps, fps);
+    const timing = resolveSlotTiming(
+      question,
+      baseTiming,
+      ttsWps,
+      fps,
+      audioMeas?.[question.id],
+      includePunchlineAudio
+    );
     const slot: QuestionSlot = {
       kind: isFill(question) ? "fill" : "choice",
       index,
@@ -352,7 +407,6 @@ export const buildTimeline = (data: QuizData): Timeline => {
 
   return {
     fps,
-    introFrames,
     hookFrames,
     outroFrames,
     summaryFrames,

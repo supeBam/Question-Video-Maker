@@ -8,8 +8,10 @@
     "dev": "remotion studio",
     "dev:data": "node scripts/quiz/studio-with-data.mjs",
     "studio": "remotion studio",
+    "render:auto": "node scripts/quiz/render-with-cover.mjs --compose-tts",
+    "render:manual": "node scripts/quiz/render-with-cover.mjs",
     "render": "node scripts/quiz/render-with-cover.mjs",
-    "still": "remotion still LiteratureQuiz out/preview.png",
+    "still": "remotion still BurstQuiz out/preview.png",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test tests/*.test.mjs",
     "upgrade": "remotion upgrade"
   },

@@ -45,6 +45,8 @@ remotion-quiz-video/
 
 ## 二、命令
 
+> ⚠️ 从 2026-09-10 起，答题类只保留**快闪模板（BurstQuiz）**。出片只有两个指令，详见 [`docs/答题出片-使用说明.md`](docs/答题出片-使用说明.md)。
+
 ```bash
 # 安装依赖（首次）
 npm install
@@ -52,17 +54,16 @@ npm install
 # 打开可视化预览工作台（改文案实时看效果）
 npm run dev            # http://localhost:3000
 
-# 渲染成片
-npm run render         # → out/literature-quiz.mp4
+# ① 一键成片（MiniMax TTS 自动配音，无需剪映）
+#    产出：成片 + 封面 + 发布内容
+npm run render:auto -- out/成语-第17期.mp4 \
+    --data=src/data/questions-260910-1.json \
+    --video-label=成语-第17期
 
-# 自定义输出文件名（推荐按期号命名）
-npx remotion render LiteratureQuiz out/literature-quiz-ep02.mp4
-
-# 高画质版本
-npx remotion render LiteratureQuiz out/ep02-hq.mp4 --crf=16 --jpeg-quality=95
-
-# 导出某一帧当封面
-npx remotion still LiteratureQuiz out/cover.png --frame=40
+# ② 手工模式（静音+BGM，出字幕文件，剪映手工配音）
+#    产出：成片 + 字幕 + 发布内容 + 封面
+npm run render:manual -- out/成语-第17期.mp4 \
+    --data=src/data/questions-260910-1.json
 ```
 
 ---

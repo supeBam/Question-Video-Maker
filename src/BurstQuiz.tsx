@@ -6,6 +6,7 @@ import { BurstScene } from "./scenes/BurstScene";
 import { SummaryScene } from "./scenes/SummaryScene";
 import { BurstOutroScene } from "./scenes/BurstOutroScene";
 import { buildTimeline, type QuizData } from "./types";
+import { getOutroVoiceTrack } from "./questionVoiceTracks";
 
 export type BurstQuizProps = {
   data: QuizData;
@@ -114,6 +115,20 @@ export const BurstQuiz: React.FC<BurstQuizProps> = ({ data }) => {
           durationInFrames={outroFrames}
           name="片尾"
         >
+          {data.voiceOver.enabled && data.outro.hook?.trim() ? (
+            // 片尾口播钩子：与 BurstOutroScene 内文字从 frame 60 开始同步显示，
+            // 这里 from=60 让配音延迟到画面准备好再开声，避免「字幕没出就念」听感重叠
+            (() => {
+              const outroVoice = getOutroVoiceTrack(data.meta);
+              return outroVoice ? (
+                <Audio
+                  src={staticFile(outroVoice.hook)}
+                  volume={outroVoice.volume}
+                  startFrom={0}
+                />
+              ) : null;
+            })()
+          ) : null}
           <BurstOutroScene
             outro={data.outro}
             meta={data.meta}

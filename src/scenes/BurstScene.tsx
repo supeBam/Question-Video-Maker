@@ -110,9 +110,9 @@ export const BurstScene: React.FC<BurstSceneProps> = ({
           meta={meta}
           questionId={slot.question.id}
           answerStartFrame={revealStart}
-          hasPunchline={Boolean(
-            (fillQ?.punchline ?? choiceQ?.punchline) !== undefined
-          )}
+          // 快闪模板固定关闭 punchline 口播：男性声音再念一遍真相会与画面底部
+          // 同步显示的解释文字、女生念的答案产生听感重叠；真相只出字幕不配音。
+          hasPunchline={false}
           punchlineDelaySeconds={0.8}
         />
       ) : null}

@@ -188,6 +188,47 @@ export const BurstOutroScene: React.FC<BurstOutroSceneProps> = ({
         </span>
       </div>
 
+      {/* 口播钩子文案：与 BurstQuiz 内的 Audio 从 frame 60 同步出场，
+          念「你全对了吗？评论区告诉我…」之类的话。文字消失时间晚于配音结束 +1s 缓冲，
+          避免「念完了字还在」的反差。 */}
+      {outro.hook && outro.hook.trim() ? (
+        <div
+          style={{
+            position: "absolute",
+            left: layout.sideMargin,
+            right: layout.sideMargin,
+            bottom: 320,
+            padding: "20px 32px",
+            borderRadius: 20,
+            backgroundColor: "rgba(0, 0, 0, 0.55)",
+            border: `1px solid rgba(229,185,107,0.45)`,
+            opacity: interpolate(
+              frame,
+              [60, 88, Math.max(89, durationInFrames - 30), durationInFrames - 5],
+              [0, 1, 1, 0],
+              {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+              }
+            ),
+          }}
+        >
+          <div
+            style={{
+              fontFamily: fonts.kai,
+              fontSize: 38,
+              lineHeight: 1.5,
+              letterSpacing: 2,
+              color: colors.gold,
+              textAlign: "center",
+              whiteSpace: "pre-line",
+            }}
+          >
+            {outro.hook}
+          </div>
+        </div>
+      ) : null}
+
       <div
         style={{
           position: "absolute",

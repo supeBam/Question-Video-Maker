@@ -5,11 +5,19 @@ import { HookIntroScene } from "./scenes/HookIntroScene";
 import { BurstScene } from "./scenes/BurstScene";
 import { SummaryScene } from "./scenes/SummaryScene";
 import { BurstOutroScene } from "./scenes/BurstOutroScene";
-import { buildTimeline, type QuizData } from "./types";
-import { getOutroVoiceTrack } from "./questionVoiceTracks";
+import { buildRenderTimeline, type AudioMeasurements, type QuizData } from "./types";
+import { getIntroVoiceTrack, getOutroVoiceTrack } from "./questionVoiceTracks";
 
 export type BurstQuizProps = {
   data: QuizData;
+  /** 每道题实测配音时长（毫秒，gen-burst-tts.py 产出的 measurements.json）。
+   *  必须原样透传给 buildRenderTimeline：漏传会退回字/秒估算，
+   *  表现为「题干还没念完，答案口播就叠上来」+ 题干音频被 Sequence 截断。 */
+  audioMeasurements?: AudioMeasurements;
+  /** 片尾口播钩子实测时长（毫秒）：确保「你全对了吗…」念完再结束 */
+  outroHookMs?: number;
+  /** 片头钩子口播实测时长（毫秒）：片头拉到钩子念完再进第一题 */
+  hookAudioMs?: number;
 };
 
 /**
@@ -21,13 +29,15 @@ export type BurstQuizProps = {
  *   5. 短片尾 —— 3 秒结果承诺 + CTA
  * 题库 JSON 设置 timing.pacing = "burst" 即可启用本模板节奏。
  */
-export const BurstQuiz: React.FC<BurstQuizProps> = ({ data }) => {
-  // 强制零片头：旧题库切到本模板也不允许出现开头空白
-  const burstData: QuizData = {
-    ...data,
-    timing: { ...data.timing, introSeconds: 0 },
-  };
-  const timeline = buildTimeline(burstData);
+export const BurstQuiz: React.FC<BurstQuizProps> = ({
+  data,
+  audioMeasurements,
+  outroHookMs,
+  hookAudioMs,
+}) => {
+  // 时间轴与 Root.calculateMetadata 共用同一入口（含实测配音时长）：
+  // 画面切分、配音起点、合成总时长三者同源，避免「题目没读完就读答案」。
+  const timeline = buildRenderTimeline({ data, audioMeasurements, outroHookMs, hookAudioMs });
   const { hookFrames, outroFrames, summaryFrames, slots, totalFrames } = timeline;
 
   // 激励角标与常驻话术：题库可选覆盖（缺省用对标同款话术）
@@ -60,6 +70,21 @@ export const BurstQuiz: React.FC<BurstQuizProps> = ({ data }) => {
       {/* 钩子开场（hookSeconds > 0 时；封面即取此画面） */}
       {hookFrames > 0 ? (
         <Sequence from={0} durationInFrames={hookFrames} name="钩子开场">
+          {/* 片头钩子口播：台本 = 题库 intro.voice ＞ title + subtitle；
+              只在实测到了这段音频时才挂（缺 mp3 时静音，渲染不报错）。
+              片头时长已由 buildTimeline 按实测 + 0.5s 兜底，钩子念完才进第一题。 */}
+          {data.voiceOver.enabled && audioMeasurements?.__intro__?.intro ? (
+            (() => {
+              const introVoice = getIntroVoiceTrack(data.meta);
+              return introVoice ? (
+                <Audio
+                  src={staticFile(introVoice.hook)}
+                  volume={introVoice.volume}
+                  startFrom={0}
+                />
+              ) : null;
+            })()
+          ) : null}
           <HookIntroScene
             kicker={data.intro.kicker}
             title={data.intro.title}

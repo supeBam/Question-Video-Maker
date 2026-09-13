@@ -11,6 +11,7 @@
     "render:auto": "node scripts/quiz/render-with-cover.mjs --compose-tts",
     "render:manual": "node scripts/quiz/render-with-cover.mjs",
     "render": "node scripts/quiz/render-with-cover.mjs",
+    "publish:prepare": "node scripts/publish/prepare.mjs",
     "still": "remotion still BurstQuiz out/preview.png",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test tests/*.test.mjs",
     "upgrade": "remotion upgrade"

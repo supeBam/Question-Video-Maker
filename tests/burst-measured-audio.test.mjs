@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildTimeline } from "../src/types.ts";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { buildTimeline, buildRenderTimeline } from "../src/types.ts";
+
+const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 /** 最小 burst 题库（10 题选择题）—— 测实测时长兜底 */
 const burstData = () => ({
@@ -161,4 +166,127 @@ test("minimalOutro=true 时 outroHookMs 不生效（整段片尾被跳过）", (
   data.timing.minimalOutro = true;
   const t = buildTimeline(data, { outroHookMs: 8000 });
   assert.equal(t.outroFrames, 0, "极简片尾应被完全跳过");
+});
+
+// ── 回归：「题目没读完就读答案」（2026-09-10 船长反馈）────────────────────
+// 根因：Root.calculateMetadata 传了 audioMeasurements，BurstQuiz 却调裸 buildTimeline(data)
+// 走字/秒估算 → 每题 slot 偏短（题干音频被截断）+ 答案语音按估算的 revealStart 提前开声。
+
+test("buildRenderTimeline：合成元数据与组件共用的时间轴完全一致", () => {
+  const data = burstData();
+  const measurements = Object.fromEntries(
+    data.questions.map((q) => [q.id, { question: 8231, answer: 4086 }])
+  );
+  const props = { data, audioMeasurements: measurements, outroHookMs: 5201 };
+  const viaRender = buildRenderTimeline(props);
+  // 组件侧拿到的就是 props（Root 会把 introSeconds 归零后回传），必须得到同一结果
+  const viaComponentProps = buildRenderTimeline({
+    ...props,
+    data: { ...data, timing: { ...data.timing, introSeconds: 0 } },
+  });
+  assert.deepEqual(viaComponentProps, viaRender, "两条路径的时间轴必须逐帧一致");
+  // 且与「带实测的 buildTimeline」一致
+  const direct = buildTimeline(
+    { ...data, timing: { ...data.timing, introSeconds: 0 } },
+    { audioMeasurements: measurements, outroHookMs: 5201 }
+  );
+  assert.deepEqual(viaRender, direct, "渲染入口不得退化成不含实测的估算");
+});
+
+test("题干实测较长时，答案口播起点在题干念完之后（不再叠加）", () => {
+  const data = burstData();
+  const questionMs = 8231; // 冷知识 21 期 q7 实测
+  const measurements = Object.fromEntries(
+    data.questions.map((q) => [q.id, { question: questionMs, answer: 4086 }])
+  );
+  const fps = data.timing.fps;
+  const timeline = buildRenderTimeline({ data, audioMeasurements: measurements });
+
+  for (const slot of timeline.slots) {
+    const answerStartSec = (slot.presentFrames + slot.countdownFrames) / fps;
+    assert.ok(
+      answerStartSec >= questionMs / 1000,
+      `答案口播起点 ${answerStartSec.toFixed(2)}s 必须 ≥ 题干实测 ${questionMs / 1000}s`
+    );
+    // 题干 + 答案两段音频都必须放得下，否则 Sequence 会把尾巴截掉
+    const slotSec = slot.durationInFrames / fps;
+    const needSec = questionMs / 1000 + 4086 / 1000;
+    assert.ok(
+      slotSec >= needSec,
+      `单题时长 ${slotSec.toFixed(2)}s 必须 ≥ 题干+答案实测 ${needSec.toFixed(2)}s`
+    );
+  }
+
+  // 反面对照：漏传实测（旧 bug 路径）时，答案语音确实会提前开声
+  const stale = buildTimeline(
+    { ...data, timing: { ...data.timing, introSeconds: 0 } }
+  );
+  const staleAnswerStart =
+    (stale.slots[0].presentFrames + stale.slots[0].countdownFrames) / fps;
+  assert.ok(
+    staleAnswerStart < questionMs / 1000,
+    "对照组应复现旧 bug：估算路径下答案语音早于题干念完"
+  );
+});
+
+test("BurstQuiz / Root 都走 buildRenderTimeline（防止再次漏传实测时长）", () => {
+  const quiz = fs.readFileSync(path.join(projectRoot, "src/BurstQuiz.tsx"), "utf-8");
+  const root = fs.readFileSync(path.join(projectRoot, "src/Root.tsx"), "utf-8");
+
+  // 组件侧：必须用渲染入口，且不得退回裸 buildTimeline（那就是旧 bug）
+  assert.match(quiz, /buildRenderTimeline\(/, "BurstQuiz 必须用 buildRenderTimeline");
+  assert.doesNotMatch(
+    quiz,
+    /(^|[^a-zA-Z])buildTimeline\(/m,
+    "BurstQuiz 不得再直接调 buildTimeline（会漏掉实测时长）"
+  );
+  assert.match(quiz, /audioMeasurements/, "BurstQuiz 必须接收 audioMeasurements props");
+
+  // 合成侧：calculateMetadata 必须走同一入口（Root 里给 demo 题库算静态默认时长的
+  // buildTimeline(burstDemo) 不参与真实渲染，允许保留）
+  assert.match(
+    root,
+    /buildRenderTimeline\(props\)/,
+    "Root.calculateMetadata 必须用 buildRenderTimeline(props)"
+  );
+});
+
+// ── 片头钩子口播（2026-09-10 船长反馈「开头的钩子怎么没 tts」）──────────────
+
+test("hookAudioMs 经 buildRenderTimeline 拉长片头（钩子念完才进第一题）", () => {
+  const data = burstData();
+  data.timing.hookSeconds = 2; // 默认片头 2 秒
+  const measurements = Object.fromEntries(
+    data.questions.map((q) => [q.id, { question: 3000, answer: 2000 }])
+  );
+  const fps = data.timing.fps;
+  const withoutHook = buildRenderTimeline({ data, audioMeasurements: measurements });
+  const withHook = buildRenderTimeline({
+    data,
+    audioMeasurements: measurements,
+    hookAudioMs: 5201,
+  });
+
+  assert.equal(withoutHook.hookFrames, 60, "无片头口播时保持 timing.hookSeconds = 2s");
+  assert.ok(
+    withHook.hookFrames >= Math.round((5201 / 1000 + 0.5) * fps) - 1,
+    `片头应被拉到实测 5.2s + 缓冲，实际 ${withHook.hookFrames} 帧`
+  );
+  // 第一题起点必须 ≥ 片头，题目不会被钩子口播压住
+  assert.equal(withHook.slots[0].from, withHook.hookFrames, "第一题必须从片头结束后开始");
+  assert.ok(
+    withHook.slots[0].from >= withHook.hookFrames,
+    "钩子口播必须留出完整片头时长"
+  );
+});
+
+test("BurstQuiz 挂了片头钩子音轨，并按 measurements 判存在", () => {
+  const quiz = fs.readFileSync(path.join(projectRoot, "src/BurstQuiz.tsx"), "utf-8");
+  assert.match(quiz, /getIntroVoiceTrack\(/, "片头钩子必须取 __intro__-intro.mp3 音轨");
+  assert.match(
+    quiz,
+    /audioMeasurements\?\.__intro__\?\.intro/,
+    "片头音轨只在实测到该段音频时挂（缺 mp3 时静音，渲染不报错）"
+  );
+  assert.match(quiz, /hookAudioMs/, "BurstQuiz 必须接收 hookAudioMs props");
 });

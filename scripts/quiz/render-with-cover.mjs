@@ -109,6 +109,8 @@ const runComposeTts = ({ dataPath, videoLabel, extraArgs = [] }) => {
     seriesDir: payload.seriesDir,
     fps: payload.fps,
     outroHookMs: payload.outroHookMs,
+    // 片头钩子口播实测时长：有值时 buildTimeline 会把片头拉长到「实测 + 0.5s」
+    hookAudioMs: payload.introHookMs,
   };
 };
 
@@ -323,9 +325,13 @@ export const renderVideoWithCover = (
     videoLabel,
     /** 透传给 gen-burst-tts.py 的额外参数（如 --voice-stem=male-qn-jingying） */
     ttsExtraArgs = [],
+    /** 合成 id：缺省 BurstQuiz（快闪答题）；ScrollShow = 雅称诗意展示流 */
+    composition = "BurstQuiz",
+    /** 预生成的 audioMeasurements JSON 文件路径（ScrollShow 旁白时长，gen-scroll-tts.py 产出） */
+    measurementsPath,
   } = options;
-  // 快闪模板（唯一模式）：合成固定为 BurstQuiz
-  const compositionId = "BurstQuiz";
+  // 合成 id：--composition=ScrollShow 传参，缺省仍是 BurstQuiz（快闪）
+  const compositionId = composition;
 
   // 统一以项目根目录为工作目录：remotion 配置、src/、out/ 都相对它解析
   const projectRoot = path.resolve(
@@ -347,6 +353,7 @@ export const renderVideoWithCover = (
   // ── 一键出片前置：合成配音 + 拿 measurements ──
   let audioMeasurements = undefined;
   let outroHookMs = undefined;
+  let hookAudioMs = undefined;
   if (composeTts) {
     const r = runComposeTts({
       dataPath: questionsPath,
@@ -355,6 +362,11 @@ export const renderVideoWithCover = (
     });
     audioMeasurements = r.measurements;
     outroHookMs = r.outroHookMs;
+    hookAudioMs = r.hookAudioMs;
+  } else if (measurementsPath) {
+    // ScrollShow 等自管音频的模式：直接读预生成的 measurements JSON
+    const mPath = path.resolve(projectRoot, measurementsPath);
+    audioMeasurements = JSON.parse(fs.readFileSync(mPath, "utf-8"));
   }
 
   // 把题库包成 props 写入临时 JSON 文件，让 remotion render/still 按这份数据出片。
@@ -382,6 +394,7 @@ export const renderVideoWithCover = (
             data: renderData,
             audioMeasurements,
             ...(outroHookMs !== undefined ? { outroHookMs } : {}),
+            ...(hookAudioMs !== undefined ? { hookAudioMs } : {}),
           }
         : { data: renderData };
     fs.writeFileSync(propsPath, JSON.stringify(propsPayload), "utf-8");
@@ -409,11 +422,18 @@ export const renderVideoWithCover = (
       // 2. 渲染封面：有钩子开场时取钩子画面（中点帧），
       //    零片头时取第 1 秒（题目呈现中，对标封面=首帧题目）。
       //    一键出片模式：用 audioMeasurements 算时间轴，保证封面帧号与口播视频同步
-      const coverTimeline = buildTimeline(data, { audioMeasurements });
-      const coverFrame =
-        coverTimeline.hookFrames > 0
-          ? Math.round(coverTimeline.hookFrames / 2)
-          : 30;
+      let coverFrame = 30;
+      if (compositionId === "ScrollShow") {
+        // 展示流：封面取片头标题画面中点
+        const fps = data.timing?.fps ?? 30;
+        coverFrame = Math.round(((data.timing?.introSeconds ?? 4) * fps) / 2);
+      } else {
+        const coverTimeline = buildTimeline(data, { audioMeasurements });
+        coverFrame =
+          coverTimeline.hookFrames > 0
+            ? Math.round(coverTimeline.hookFrames / 2)
+            : 30;
+      }
       runRemotion([
         "remotion",
         "still",
@@ -430,7 +450,28 @@ export const renderVideoWithCover = (
 
   // 3. 生成字幕 + 发布文案
   // 一键出片模式默认跳过字幕（口播已在视频里，无需 SRT）
-  if (!composeTts) {
+  if (compositionId === "ScrollShow") {
+    // 展示流：旁白即画面主体，跳过 QuizData 版 SRT；发布文案从 publish 字段直拼
+    console.log(`字幕      →  (展示流模式跳过 SRT：大字+旁白即字幕)`);
+    const p = data.publish ?? {};
+    const hashtags = (p.hashtags ?? []).map((h) => `#${h}`).join(" ");
+    const content = [
+      `【视频号】`,
+      `标题：${p.title ?? ""}`,
+      "",
+      `话题：${hashtags}`,
+      "",
+      `【抖音】`,
+      `标题：${p.douyin?.title ?? p.title ?? ""}`,
+      "",
+      `话题：${hashtags} #涨知识 #知识分享`,
+      "",
+      `合规自检：标题无数字钩子、无禁用词；发布时勾选 AI 生成声明。`,
+      "",
+    ].join("\n");
+    fs.writeFileSync(publishTextPath, content, "utf-8");
+    console.log(`发布文案 →  ${publishTextPath}  (视频号 + 抖音)`);
+  } else if (!composeTts) {
     generateSrt(data, srtPath, { outroHookSrt });
   } else {
     console.log(`字幕      →  (一键出片模式已跳过：${srtPath})`);
@@ -473,6 +514,10 @@ const parseCliArgs = (argv) => {
     } else if (arg.startsWith("--tts-arg=")) {
       // 透传给 gen-burst-tts.py，如 --tts-arg=--voice-stem=male-qn-jingying
       opts.ttsExtraArgs.push(arg.slice("--tts-arg=".length));
+    } else if (arg.startsWith("--composition=")) {
+      opts.composition = arg.slice("--composition=".length);
+    } else if (arg.startsWith("--measurements=")) {
+      opts.measurementsPath = arg.slice("--measurements=".length);
     } else if (arg && !arg.startsWith("--")) {
       opts.videoPath = arg;
     }
@@ -484,7 +529,7 @@ if (isDirectExecution(process.argv[1], import.meta.url)) {
   try {
     const {
       videoPath, dataPath, srtOnly, outroHookSrt,
-      composeTts, videoLabel, ttsExtraArgs,
+      composeTts, videoLabel, ttsExtraArgs, composition, measurementsPath,
     } = parseCliArgs(process.argv);
     const result = renderVideoWithCover(videoPath, {
       dataPath,
@@ -493,6 +538,8 @@ if (isDirectExecution(process.argv[1], import.meta.url)) {
       composeTts,
       videoLabel,
       ttsExtraArgs,
+      composition,
+      measurementsPath,
     });
     console.log("\n✅ 全部完成：");
     console.log(`  视频: ${result.videoPath}`);

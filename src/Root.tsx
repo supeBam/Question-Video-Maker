@@ -3,14 +3,38 @@ import { Composition } from "remotion";
 import type { CalculateMetadataFunction } from "remotion";
 import { BurstQuiz } from "./BurstQuiz";
 import {
+  ScrollShow,
+  scrollTimeline,
+  type ScrollMeasurements,
+  type ScrollShowData,
+  type ScrollShowProps,
+} from "./ScrollShow";
+import {
+  buildRenderTimeline,
   buildTimeline,
   type AudioMeasurements,
   type QuizData,
 } from "./types";
 import { THEME } from "./theme";
 import burstDemoData from "./data/questions-burst-demo.json";
+import scrollDemoData from "./data/scroll-show-260911-1.json";
 
 const burstDemo = burstDemoData as QuizData;
+const scrollDemo = scrollDemoData as ScrollShowData;
+
+/** ScrollShow 合成的动态时长：按 items + 实测旁白时长推算总帧 */
+const calcScrollTimeline: CalculateMetadataFunction<ScrollShowProps> = ({
+  props,
+}) => {
+  const measurements = (props as ScrollShowProps & { audioMeasurements?: ScrollMeasurements })
+    .audioMeasurements;
+  const timeline = scrollTimeline(props.data, measurements);
+  return {
+    durationInFrames: timeline.totalFrames,
+    fps: timeline.fps,
+    props: { ...props, data: props.data },
+  };
+};
 
 /**
  * props schema（Remotion 渲染时由 --props 注入）：
@@ -34,14 +58,13 @@ type RenderProps = {
  * BurstQuiz 合成强制零片头（对齐合成内组件的处理），保证元数据与画面一致。
  */
 const calcTimeline: CalculateMetadataFunction<RenderProps> = ({ props }) => {
+  // 与 BurstQuiz 组件共用同一个解析入口（buildRenderTimeline）：
+  // 两处只要有一处漏传 audioMeasurements，就会出现「题干没念完答案口播就叠上来」。
+  const timeline = buildRenderTimeline(props);
   const effectiveData: QuizData = {
     ...props.data,
     timing: { ...props.data.timing, introSeconds: 0 },
   };
-  const timeline = buildTimeline(effectiveData, {
-    audioMeasurements: props.audioMeasurements,
-    outroHookMs: props.outroHookMs,
-  });
   return {
     durationInFrames: timeline.totalFrames,
     fps: timeline.fps,
@@ -51,15 +74,27 @@ const calcTimeline: CalculateMetadataFunction<RenderProps> = ({ props }) => {
 
 export const RemotionRoot: React.FC = () => {
   return (
-    <Composition
-      id="BurstQuiz"
-      component={BurstQuiz}
-      durationInFrames={buildTimeline(burstDemo).totalFrames}
-      fps={buildTimeline(burstDemo).fps}
-      width={THEME.layout.width}
-      height={THEME.layout.height}
-      defaultProps={{ data: burstDemo }}
-      calculateMetadata={calcTimeline}
-    />
+    <>
+      <Composition
+        id="BurstQuiz"
+        component={BurstQuiz}
+        durationInFrames={buildTimeline(burstDemo).totalFrames}
+        fps={buildTimeline(burstDemo).fps}
+        width={THEME.layout.width}
+        height={THEME.layout.height}
+        defaultProps={{ data: burstDemo }}
+        calculateMetadata={calcTimeline}
+      />
+      <Composition
+        id="ScrollShow"
+        component={ScrollShow}
+        durationInFrames={scrollTimeline(scrollDemo).totalFrames}
+        fps={scrollDemo.timing.fps}
+        width={THEME.layout.width}
+        height={THEME.layout.height}
+        defaultProps={{ data: scrollDemo }}
+        calculateMetadata={calcScrollTimeline}
+      />
+    </>
   );
 };

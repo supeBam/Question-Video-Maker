@@ -8,6 +8,8 @@
     public/assets/tts/{series}-{episodeLabel}/{questionId}-question.mp3
     public/assets/tts/{series}-{episodeLabel}/{questionId}-answer.mp3
     public/assets/tts/{series}-{episodeLabel}/{questionId}-punchline.mp3   （仅选择题有）
+    public/assets/tts/{series}-{episodeLabel}/__intro__-intro.mp3          （片头钩子口播）
+    public/assets/tts/{series}-{episodeLabel}/__outro__-outro.mp3          （片尾口播钩子）
 
 路径与 src/questionVoiceTracks.ts → getQuestionVoiceTracks() 完全对齐，Remotion 渲染时
 QuestionVoiceTracks 组件会按这套约定读 mp3，无需改 React 代码。
@@ -15,6 +17,17 @@ QuestionVoiceTracks 组件会按这套约定读 mp3，无需改 React 代码。
 增量缓存（同 scripts/dialogue/gen-minimax-tts.py）：
     指纹 = model + voice_id + speed + text，任一变化即视为新句子。
     缓存目录：src/data/.tts-cache/（gitignored，重复跑不重复扣费）
+
+读音审校（多音字消歧）：
+    题库可写 tts.textOverrides，按 "{题号}.{段}" 覆盖"念出来的文本"（画面/字幕不变）：
+        "tts": {
+          "textOverrides": {
+            "q7.question": "儿女成婚，双方父母互称的这个称呼，读音有讲究。请问该读第几声？",
+            "q7.punchline": "这个词读第四声，和「庆」同音"
+          }
+        }
+    用途：MiniMax 按字面读音，多音字（亲家 qìng、张说 yuè）会读错——
+    题干里能避开的词就避开，不能避开的用同音字改写，避免把错读音念给观众。
 
 实测时长兜底（视频时间轴）：
     每段音频合成后用 ffprobe 实测毫秒时长，写到
@@ -207,11 +220,39 @@ def build_segments(data: dict) -> list[dict]:
     speed_answer = speeds.get("answer", DEFAULT_SPEED_ANSWER)
     speed_punchline = speeds.get("punchline", DEFAULT_SPEED_PUNCHLINE)
 
+    # 读音审校覆盖：{qid}.{segment} → 改念的文本（画面/字幕仍是题库原文）
+    overrides = data.get("tts", {}).get("textOverrides", {}) or {}
+
+    def spoken(qid: str, segment: str, default_text: str) -> str:
+        return overrides.get(f"{qid}.{segment}") or default_text
+
     segs = []
+
+    # 0) 片头钩子（HookIntroScene 的画面：栏目小字 + 大字标题 + 挑战词胶囊）
+    #    台本来源：题库 intro.voice（口语钩子，可选）＞ 封面大字（intro.title）。
+    #    ⚠️ 只念封面大字，不念挑战词胶囊（「答对 8 个算你牛」画面已有，念出来是重复）
+    #    ——2026-09-10 船长定调：钩子口播和封面一致即可。
+    #    timing.hookSeconds = 0（零片头）时不合成，免得留一段用不上的音频。
+    timing = data.get("timing", {}) or {}
+    hook_seconds = timing.get("hookSeconds", 2)
+    intro = data.get("intro", {}) or {}
+    if hook_seconds:
+        intro_text = (intro.get("voice") or "").strip()
+        if not intro_text:
+            intro_text = (intro.get("title") or "").replace("\n", "，").strip()
+        if intro_text:
+            segs.append({
+                "qid": "__intro__",
+                "segment": "intro",
+                "text": spoken("__intro__", "intro", intro_text),
+                "voice": voices.get("intro", voice_stem),
+                "speed": speeds.get("intro", speeds.get("stem", DEFAULT_SPEED_STEM)),
+            })
+
     for q in data["questions"]:
         qid = q["id"]
         # 1) 题干（清除 \n，避免读出"换行"）
-        stem_text = q["stem"].replace("\n", "，")
+        stem_text = spoken(qid, "question", q["stem"]).replace("\n", "，")
         segs.append({
             "qid": qid,
             "segment": "question",
@@ -228,6 +269,7 @@ def build_segments(data: dict) -> list[dict]:
             ai = q["answerIndex"]
             letter = letters[ai] if ai < len(letters) else str(ai)
             ans_text = f"{ANSWER_PREFIX_CHOICE}{letter}，{q['options'][ai]}"
+        ans_text = spoken(qid, "answer", ans_text)
         segs.append({
             "qid": qid,
             "segment": "answer",
@@ -242,14 +284,14 @@ def build_segments(data: dict) -> list[dict]:
             segs.append({
                 "qid": qid,
                 "segment": "punchline",
-                "text": q["punchline"],
+                "text": spoken(qid, "punchline", q["punchline"]),
                 "voice": voice_punchline,
                 "speed": speed_punchline,
             })
 
     # 4) 片尾口播钩子（如「你全对了吗？评论区告诉我。点赞收藏，考考孩子。」）
     #    缺省音色同题干（磁性男声）；用 tts.voices.outro 可覆盖。
-    outro_text = (data.get("outro", {}) or {}).get("hook", "").strip()
+    outro_text = spoken("__outro__", "outro", (data.get("outro", {}) or {}).get("hook", "")).strip()
     if outro_text:
         voice_outro = voices.get("outro", voice_stem)
         speed_outro = speeds.get("outro", speeds.get("stem", DEFAULT_SPEED_STEM))
@@ -321,7 +363,9 @@ def main() -> int:
     print(f"音色：题干={args.voice_stem} / 答案={args.voice_answer} / 真相={args.voice_punchline}")
     print(f"语速：题干={args.speed_stem} / 答案={args.speed_answer} / 真相={args.speed_punchline}\n")
 
-    # 把 CLI 参数包装成 build_segments 期望的题库 tts 结构（不写回原题库）
+    # 把 CLI 参数包装成 build_segments 期望的题库 tts 结构（不写回原题库）；
+    # textOverrides（读音审校覆盖）来自题库本身，必须原样带过去，否则会被这里清掉。
+    json_text_overrides = (data.get("tts") or {}).get("textOverrides") or {}
     data_for_segments = {
         **data,
         "tts": {
@@ -335,10 +379,16 @@ def main() -> int:
                 "answer": args.speed_answer,
                 "punchline": args.speed_punchline,
             },
+            "textOverrides": json_text_overrides,
         },
     }
     segments = build_segments(data_for_segments)
-    print(f"待合成：{len(segments)} 段（{len(data['questions'])} 道题）\n")
+    print(f"待合成：{len(segments)} 段（{len(data['questions'])} 道题）")
+    if json_text_overrides:
+        print(f"读音审校覆盖：{len(json_text_overrides)} 处（画面不变，仅改念的文本）")
+        for key, text in json_text_overrides.items():
+            print(f"  · {key} → {text}")
+    print()
 
     measurements: dict[str, dict[str, float]] = {}  # {qid: {segment: ms}}
     hit = miss = 0
@@ -384,6 +434,9 @@ def main() -> int:
         # render-with-cover.mjs 收到 undefined 时不传给 buildTimeline 的 outroHookMs，
         # 视频片尾时长继续用 timing.outroSeconds。
         "outroHookMs": measurements.get("__outro__", {}).get("outro"),
+        # 片头钩子口播实测时长（毫秒）—— 同上，缺省不写字段；
+        # 有值时 buildTimeline 会把片头拉长到「实测 + 0.5s」，避免钩子没念完就进第一题。
+        "introHookMs": measurements.get("__intro__", {}).get("intro"),
     }
     measurements_path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"

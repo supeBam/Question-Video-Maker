@@ -60,3 +60,22 @@ export const getOutroVoiceTrack = (
     volume: VOICE_VOLUME,
   };
 };
+
+/**
+ * 取片头钩子的配音轨道（HookIntroScene 的口播）。约定由 gen-burst-tts.py 合成
+ * `__intro__-intro.mp3`；缺该文件时返回 null，调用方按静音渲染。
+ * 台本来源：题库 `intro.voice`（口语钩子）＞ `intro.title` + `intro.subtitle` 拼句。
+ */
+export const getIntroVoiceTrack = (
+  meta: VoiceTrackMeta
+): OutroVoiceTrack | null => {
+  const series = meta.series.trim();
+  const episodeLabel = meta.episodeLabel.replace(/\s+/g, "");
+  if (!series || !episodeLabel) return null;
+
+  const seriesDirectory = `assets/tts/${series}-${episodeLabel}`;
+  return {
+    hook: `${seriesDirectory}/__intro__-intro.mp3`,
+    volume: VOICE_VOLUME,
+  };
+};

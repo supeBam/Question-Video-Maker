@@ -239,11 +239,16 @@ const answerText = (q: AnyQuestion): string => {
  *   - "question"  题干段（含 punchline 时还覆盖题干的 present+countdown）
  *   - "answer"    答案段（揭晓答案那一行）
  *   - "punchline" 一句真相段（选择题且题库带 punchline 才有）
+ *   - "intro"     片头钩子口播（键为 `__intro__`，HookIntroScene 的画面文案）
+ *   - "outro"     片尾口播钩子（键为 `__outro__`）
+ * 键：题目 id；片头/片尾用 `__intro__` / `__outro__` 这两个伪 id。
  */
 export type AudioSegmentMeasurements = {
   question?: number;
   answer?: number;
   punchline?: number;
+  intro?: number;
+  outro?: number;
 };
 
 /** 实测音频时长 → buildTimeline 兜底（gen-burst-tts.py 输出）。 */
@@ -413,4 +418,35 @@ export const buildTimeline = (
     slots,
     totalFrames: cursor + summaryFrames + outroFrames,
   };
+};
+
+/** 渲染 props（`--props` 注入的 JSON：题库 + 实测配音时长） */
+export type BurstRenderProps = {
+  data: QuizData;
+  audioMeasurements?: AudioMeasurements;
+  outroHookMs?: number;
+  /** 片头钩子口播实测时长（毫秒）：片头时长按「实测 + 0.5s」兜底，钩子念完才进第一题 */
+  hookAudioMs?: number;
+};
+
+/**
+ * **渲染侧唯一入口**：把渲染 props 解析成「每题画面切分 / 音频起点 / 合成总时长」共用的时间轴。
+ *
+ * ⚠️ `Root.calculateMetadata`（算合成总时长）与 `BurstQuiz`（排每题画面与配音）**必须都走这里**。
+ * 历史 bug（2026-09-10 船长反馈「有时候题目没读完，就读答案了」）：calculateMetadata 传了
+ * audioMeasurements、BurstQuiz 却调裸的 buildTimeline(data) 走字/秒估算，于是
+ * ①每题 slot 时长偏短 → 题干音频被 Sequence 截断；②答案语音按估算的 revealStart 提前开声
+ * → 题干还没念完答案口播就叠上来。两处输入一致才能对齐。
+ */
+export const buildRenderTimeline = (props: BurstRenderProps): Timeline => {
+  const data: QuizData = {
+    ...props.data,
+    // 快闪模板强制零片头（与组件内处理一致），保证元数据与画面同一套时长
+    timing: { ...props.data.timing, introSeconds: 0 },
+  };
+  return buildTimeline(data, {
+    audioMeasurements: props.audioMeasurements,
+    outroHookMs: props.outroHookMs,
+    hookAudioMs: props.hookAudioMs,
+  });
 };

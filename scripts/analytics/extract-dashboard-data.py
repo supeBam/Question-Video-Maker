@@ -27,7 +27,7 @@ import sys
 import xml.etree.ElementTree as ET
 import zipfile
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 IMPORT_DIR = os.path.join(ROOT, "docs", "数据分析", "导入")
 LEDGER_PATH = os.path.join(ROOT, "docs", "发布台账.md")
 OUT_PATH = os.path.join(ROOT, "docs", "数据分析", "看板-data.json")

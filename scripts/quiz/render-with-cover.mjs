@@ -16,6 +16,13 @@ const TTS_SCRIPT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "gen-burst-tts.py"
 );
+/** ScrollShow（画卷流）用独立 TTS 脚本：它读 data.items，而 gen-burst-tts.py 只读 data.questions */
+const SCROLL_TTS_SCRIPT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "gen-scroll-tts.py"
+);
+export const getTtsScript = (composition) =>
+  composition === "ScrollShow" ? SCROLL_TTS_SCRIPT : TTS_SCRIPT;
 
 // ── helpers ───────────────────────────────────────────────
 
@@ -57,7 +64,12 @@ const runRemotion = (args) => {
  *
  * videoLabel 缺省取 episodeLabel（与脚本内默认一致）。
  */
-const runComposeTts = ({ dataPath, videoLabel, extraArgs = [] }) => {
+const runComposeTts = ({
+  dataPath,
+  videoLabel,
+  extraArgs = [],
+  composition = "BurstQuiz",
+}) => {
   if (!fs.existsSync(PYTHON_BIN)) {
     throw new Error(
       `一键出片需要 .venv-asr/bin/python，但没找到：${PYTHON_BIN}\n` +
@@ -65,7 +77,7 @@ const runComposeTts = ({ dataPath, videoLabel, extraArgs = [] }) => {
     );
   }
   const args = [
-    TTS_SCRIPT,
+    getTtsScript(composition),
     `--data=${dataPath}`,
     ...(videoLabel ? [`--video-label=${videoLabel}`] : []),
     ...extraArgs,
@@ -85,18 +97,25 @@ const runComposeTts = ({ dataPath, videoLabel, extraArgs = [] }) => {
     path.dirname(fileURLToPath(import.meta.url)),
     "../.."
   );
-  const inferredLabel = videoLabel ?? (() => {
-    // 读题库兜底：episodeLabel 去掉空格
+  // 读题库兜底：episodeLabel 原样（gen-scroll-tts.py 用原样，会保留「第 1 期」里的空格）
+  const rawLabel = (() => {
     try {
       const d = JSON.parse(fs.readFileSync(dataPath, "utf-8"));
-      return d?.meta?.episodeLabel?.replace(/\s+/g, "");
+      return d?.meta?.episodeLabel ?? null;
     } catch {
       return null;
     }
   })();
-  const measurementsPath = inferredLabel
-    ? path.join(projectRoot, "out", `${inferredLabel}-audio-measurements.json`)
-    : null;
+  // 两个 TTS 脚本命名不一致（quiz 线去空格 / scroll 线保留空格），逐个候选试
+  const labelCandidates = [
+    videoLabel,
+    rawLabel,
+    rawLabel?.replace(/\s+/g, ""),
+  ].filter(Boolean);
+  const measurementsPath =
+    labelCandidates
+      .map((l) => path.join(projectRoot, "out", `${l}-audio-measurements.json`))
+      .find((p) => fs.existsSync(p)) ?? null;
   if (!measurementsPath || !fs.existsSync(measurementsPath)) {
     throw new Error(
       `TTS 合成完成但未找到 measurements.json：${measurementsPath ?? "(video-label 无法推断)"}`
@@ -303,14 +322,16 @@ export const generatePublishText = (data, publishTextPath) => {
       ].join("\n");
     })
     .join("\n");
-  fs.writeFileSync(publishTextPath, content, "utf-8");
+  // 审核基准 8.5：AI 生成内容需声明。两条线（quiz/scroll）均为 TTS 配音，统一标注
+  const aiNote = "配音：AI 合成，如与史实有出入欢迎指正\n";
+  fs.writeFileSync(publishTextPath, content + "\n" + aiNote, "utf-8");
   console.log(`发布文案 →  ${publishTextPath}  (视频号 + 抖音)`);
 };
 
 // ── main ──────────────────────────────────────────────────
 
 export const renderVideoWithCover = (
-  videoPath = "out/burst-quiz.mp4",
+  videoPathArg = "out/burst-quiz.mp4",
   options = {}
 ) => {
   const {
@@ -342,13 +363,22 @@ export const renderVideoWithCover = (
     process.chdir(projectRoot);
   }
 
-  const coverPath = getCoverPath(videoPath);
-  const srtPath = getSrtPath(videoPath);
-  const publishTextPath = getPublishTextPath(videoPath);
-
   // 读取题库数据：视频渲染、字幕、发布文案共用同一份数据
   const questionsPath = path.resolve(projectRoot, dataPath);
   const data = JSON.parse(fs.readFileSync(questionsPath, "utf-8"));
+
+  // 输出名：未显式指定时按「栏目-期号」命名。
+  // 历史默认 burst-quiz.mp4 每期互相覆盖，与期号体系冲突（2026-09-15 修）。
+  const seriesName = String(data?.meta?.series ?? "").trim();
+  const episodeName = String(data?.meta?.episodeLabel ?? "").replace(/\s+/g, "");
+  const videoPath =
+    videoPathArg === "out/burst-quiz.mp4" && seriesName && episodeName
+      ? `out/${seriesName}-${episodeName}.mp4`
+      : videoPathArg;
+
+  const coverPath = getCoverPath(videoPath);
+  const srtPath = getSrtPath(videoPath);
+  const publishTextPath = getPublishTextPath(videoPath);
 
   // ── 一键出片前置：合成配音 + 拿 measurements ──
   let audioMeasurements = undefined;
@@ -359,6 +389,7 @@ export const renderVideoWithCover = (
       dataPath: questionsPath,
       videoLabel,
       extraArgs: ttsExtraArgs,
+      composition: compositionId,
     });
     audioMeasurements = r.measurements;
     outroHookMs = r.outroHookMs;

@@ -76,3 +76,7 @@ video/
 
 # TTS 增量合成缓存（按 音色+语速+文本 指纹存 mp3）
 .tts-cache/
+
+
+# AI 生图原始产物（按提示词可复现，不入库）
+dsh-image-gen/

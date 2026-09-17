@@ -161,32 +161,45 @@ def main():
         frames.append((fp, dur))
         print(f"帧 {i+1}/{len(sentences)} [{role}] {dur:.1f}s", flush=True)
 
-    inputs = []
-    for fp, dur in frames:
-        inputs += ["-loop", "1", "-t", f"{dur:.3f}", "-i", fp]
-    for role in roles:
-        inputs += ["-i", os.path.join(OUT, f"{label}-{role}-minimax.mp3")]
-    inputs += ["-stream_loop", "-1", "-i", BGM]  # BGM 循环
+    out_mp4 = os.path.join(OUT, f"{label}-成片.mp4")
+    # 2026-09-17 修复（第二次）：单条 filter_complex（concat 视频 + 多输入 amix 音频 + -t）存在
+    # 非确定性截断 bug —— 同一命令在 bash 直跑正常、subprocess 里音频随机被截到第一段（5s）。
+    # 改为两段式：① 图片序列 → 纯视频 mp4；② mp3 + BGM → 混音 wav（实测稳定）；
+    # ③ -c:v copy 合流。三步各自原子，彻底绕开图内调度竞争。
+    total_s = sum(d for _, d in frames)
+    v_only = os.path.join(TMP, f"{label}-video-only.mp4")
+    a_mix = os.path.join(TMP, f"{label}-audio-mix.wav")
 
-    n = len(frames)
-    concat_in = "".join(f"[{i}:v]" for i in range(n))
-    amix_in = "".join(f"[{n + j}:a]" for j in range(len(roles)))
-    bgm_idx = n + len(roles)
-    fc = (
-        f"{concat_in}concat=n={n}:v=1:a=0[v];"
+    # ① 纯视频
+    v_inputs = []
+    for fp, dur in frames:
+        v_inputs += ["-loop", "1", "-t", f"{dur:.3f}", "-i", fp]
+    vconcat = "".join(f"[{i}:v]" for i in range(len(frames)))
+    run(["ffmpeg", "-y", "-v", "error", *v_inputs,
+         "-filter_complex", f"{vconcat}concat=n={len(frames)}:v=1:a=0[v]",
+         "-map", "[v]", "-c:v", "libx264", "-preset", "medium", "-crf", "20",
+         "-pix_fmt", "yuv420p", "-r", "30", v_only])
+
+    # ② 音频混音（voice 全轨 + BGM，响度标准化）
+    a_inputs = []
+    for role in roles:
+        a_inputs += ["-i", os.path.join(OUT, f"{label}-{role}-minimax.mp3")]
+    a_inputs += ["-stream_loop", "-1", "-i", BGM]
+    amix_in = "".join(f"[{j}:a]" for j in range(len(roles)))
+    afc = (
         f"{amix_in}amix=inputs={len(roles)}:duration=longest:normalize=0,"
         f"loudnorm=I={VOICE_LUFS}:TP=-1.0:LRA=9,aresample=44100[voice];"
-        f"[{bgm_idx}:a]loudnorm=I={BGM_LUFS}:TP=-9:LRA=7,aresample=44100[bgm];"
+        f"[{len(roles)}:a]loudnorm=I={BGM_LUFS}:TP=-9:LRA=7,aresample=44100[bgm];"
         f"[voice][bgm]amix=inputs=2:duration=first:normalize=0,"
         f"aformat=sample_fmts=fltp:channel_layouts=stereo[a]"
     )
-    out_mp4 = os.path.join(OUT, f"{label}-成片.mp4")
-    cmd = ["ffmpeg", "-y", "-v", "error", *inputs,
-           "-filter_complex", fc, "-map", "[v]", "-map", "[a]",
-           "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-           "-pix_fmt", "yuv420p", "-r", "30",
-           "-c:a", "aac", "-b:a", "192k", "-shortest", out_mp4]
-    run(cmd)
+    run(["ffmpeg", "-y", "-v", "error", *a_inputs,
+         "-filter_complex", afc, "-map", "[a]", "-t", f"{total_s:.3f}", a_mix])
+
+    # ③ 合流（视频流直接 copy，不重编码）
+    run(["ffmpeg", "-y", "-v", "error", "-i", v_only, "-i", a_mix,
+         "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+         "-t", f"{total_s:.3f}", out_mp4])
     print(f"成片: {out_mp4}", flush=True)
 
 

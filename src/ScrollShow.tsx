@@ -3,6 +3,7 @@ import { AbsoluteFill, Audio, Sequence, staticFile } from "remotion";
 import { Background } from "./components/Background";
 import { HookIntroScene } from "./scenes/HookIntroScene";
 import { ScrollItemScene } from "./scenes/ScrollItemScene";
+import { VOICE_VOLUME } from "./questionVoiceTracks";
 import { THEME } from "./theme";
 
 /**
@@ -20,6 +21,12 @@ export type ScrollItem = {
   poem: string;
   poemAuthor: string;
   story: string;
+  /** ↓ 反差陈述式（contrast）新增，全部可选：缺省即回退为原雅称展示流，不影响既有数据 */
+  label?: string;    // 顶部标签，如「你只听过前半句」
+  youThink?: string; // 你以为（左栏·灰色划掉）
+  actually?: string; // 实际本义（右栏·朱砂高亮）
+  source?: string;   // 出处，优先于 poemAuthor 展示
+  stamp?: string;    // 印章字，默认「雅」
 };
 
 export type ScrollShowData = {
@@ -117,7 +124,7 @@ export const ScrollShow: React.FC<ScrollShowProps> = ({ data, audioMeasurements 
           {audioMeasurements?.intro ? (
             <Audio
               src={staticFile(`${data.tts.audioDir}/item-intro.mp3`)}
-              volume={1}
+              volume={VOICE_VOLUME}
             />
           ) : null}
         </Sequence>
@@ -141,7 +148,7 @@ export const ScrollShow: React.FC<ScrollShowProps> = ({ data, audioMeasurements 
           />
           <Audio
             src={staticFile(`${data.tts.audioDir}/item-${item.id}.mp3`)}
-            volume={1}
+            volume={VOICE_VOLUME}
           />
         </Sequence>
       ))}
@@ -155,7 +162,7 @@ export const ScrollShow: React.FC<ScrollShowProps> = ({ data, audioMeasurements 
         {audioMeasurements?.outro ? (
           <Audio
             src={staticFile(`${data.tts.audioDir}/item-outro.mp3`)}
-            volume={1}
+            volume={VOICE_VOLUME}
           />
         ) : null}
         <AbsoluteFill

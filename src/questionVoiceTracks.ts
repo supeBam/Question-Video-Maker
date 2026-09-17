@@ -17,7 +17,17 @@ export type OutroVoiceTrack = {
   volume: number;
 };
 
-const VOICE_VOLUME = 4;
+/**
+ * 人声增益倍数。
+ *
+ * TTS 原始 mp3 实测约 -22~-23 LUFS，直接挂上去成片只有 -23 LUFS，
+ * 比账号历史正常成片（-11~-13 LUFS）低约 12 LU，中老年用户听不清。
+ * ×4 ≈ +12 dB，正好补齐到 -11 LUFS 左右，与成语/答题线听感一致。
+ *
+ * ⚠️ ScrollShow（画卷流）此前硬编码 volume={1} 未走这个常量，
+ * 导致该线全部成片偏轻。2026-09-15 起两条线共用此常量，改这里即可。
+ */
+export const VOICE_VOLUME = 4;
 
 type VoiceTrackMeta = Pick<QuizData["meta"], "series" | "episodeLabel">;
 

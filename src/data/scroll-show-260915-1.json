@@ -1,0 +1,109 @@
+{
+  "schema": "scroll-show@1",
+  "meta": {
+    "series": "只听过前半句",
+    "episode": 1,
+    "episodeLabel": "第 1 期",
+    "hostTag": "@每日文化小测"
+  },
+  "timing": {
+    "fps": 30,
+    "introSeconds": 4,
+    "outroSeconds": 6,
+    "minItemSeconds": 11,
+    "itemBufferSeconds": 1.6
+  },
+  "intro": {
+    "kicker": "只听过前半句 · 第 1 期",
+    "title": "这 3 句老话",
+    "subtitle": "90% 的人只听过前半句",
+    "voice": "这 3 句老话，90% 的人只听过前半句。"
+  },
+  "items": [
+    {
+      "id": "i1",
+      "noun": "以德报怨",
+      "aka": "以德报怨",
+      "label": "第 1 句",
+      "youThink": "别人欺负你，你还要对他好",
+      "actually": "以直报怨，以德报德",
+      "source": "《论语·宪问》",
+      "stamp": "反",
+      "poem": "",
+      "poemAuthor": "",
+      "story": "孔子没说过以德报怨。他反问：那拿什么报德？原话是——以直报怨，以德报德。",
+      "captionLines": [
+        "孔子没说过以德报怨",
+        "原话：以直报怨，以德报德"
+      ]
+    },
+    {
+      "id": "i2",
+      "noun": "相濡以沫",
+      "aka": "相濡以沫",
+      "label": "第 2 句",
+      "youThink": "夫妻恩爱，患难与共",
+      "actually": "不如相忘于江湖",
+      "source": "《庄子·大宗师》",
+      "stamp": "反",
+      "poem": "",
+      "poemAuthor": "",
+      "story": "泉水干了，两条鱼互相哈气沫活命。庄子接着写：不如相忘于江湖。这话不是夸共患难。",
+      "captionLines": [
+        "庄子后面还有一句",
+        "不如相忘于江湖"
+      ]
+    },
+    {
+      "id": "i3",
+      "noun": "父母在不远游",
+      "aka": "父母在不远游",
+      "label": "第 3 句",
+      "youThink": "父母在，就不能出远门",
+      "actually": "游必有方",
+      "source": "《论语·里仁》",
+      "stamp": "反",
+      "poem": "",
+      "poemAuthor": "",
+      "story": "听着像不许出门。可后面还有半句：游必有方。走可以，得有方向。",
+      "captionLines": [
+        "后面还有半句：游必有方",
+        "孔子没不让走，只要求有方向"
+      ]
+    }
+  ],
+  "outro": {
+    "cta": "老话没说错，是我们只记了半句",
+    "follow": "下期：另外三句被砍了一半的老话",
+    "disclaimer": "出处：《论语》《庄子》",
+    "voice": "老话没说错，是我们只记了半句。下期见。"
+  },
+  "bgm": {
+    "enabled": true,
+    "file": "assets/bg-audio/bgm_guzheng_liqiu-soft.mp3",
+    "volume": 0.18
+  },
+  "background": {
+    "src": "assets/bg-yacheng.svg",
+    "cloudSrc": null,
+    "drift": 0.04
+  },
+  "tts": {
+    "audioDir": "assets/tts/只听过前半句-第1期",
+    "voice": "male-qn-qingse",
+    "speed": 0.92
+  },
+  "publish": {
+    "title": "这 3 句老话，90% 的人只听过前半句，第 2 句你可能也理解错了，敢不敢自测一下",
+    "douyin": {
+      "title": "以德报怨，孔子其实不同意"
+    },
+    "hashtags": [
+      "成语",
+      "国学",
+      "冷知识",
+      "涨知识",
+      "传统文化"
+    ]
+  }
+}

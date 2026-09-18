@@ -80,3 +80,6 @@ video/
 
 # AI 生图原始产物（按提示词可复现，不入库）
 dsh-image-gen/
+
+# 系统误产物
+Macintosh HD

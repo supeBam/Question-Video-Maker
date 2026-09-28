@@ -83,3 +83,15 @@ dsh-image-gen/
 
 # 系统误产物
 Macintosh HD
+
+# OpenLux 生图 API key（本地密钥，严禁提交）
+.openlux.key
+
+# 带日期后缀的手工备份文件
+*.bak-*
+
+# 对标参考视频（大文件，勿提交；jpg/mp3/srt 等小素材照常入库）
+public/assets/参考素材/*.mp4
+
+# 第三方字体（仓耳竹言体仅限个人非商用，不随仓库分发，本地放 assets/fonts/）
+assets/fonts/

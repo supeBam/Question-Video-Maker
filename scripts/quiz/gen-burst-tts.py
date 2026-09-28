@@ -129,8 +129,8 @@ def ffprobe_duration_ms(path: Path) -> float:
 
 # ── 缓存与合成 ─────────────────────────────────────────────
 
-def cache_key(voice_id: str, speed: float, text: str) -> str:
-    raw = f"{MODEL}|{voice_id}|{speed}|{text}"
+def cache_key(voice_id: str, speed: float, vol: float, text: str) -> str:
+    raw = f"{MODEL}|{voice_id}|{speed}|{vol}|{text}"
     return hashlib.md5(raw.encode("utf-8")).hexdigest()
 
 
@@ -141,6 +141,7 @@ def synth_one(
     speed: float,
     out_path: Path,
     cache_dir: Path,
+    vol: float = 1.0,
 ) -> tuple[Path, bool]:
     """合成一句文本。
 
@@ -149,7 +150,7 @@ def synth_one(
     - 未命中：调 MiniMax t2a_v2 → 写缓存 → 落 out_path
     """
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    ck = cache_key(voice_id, speed, text)
+    ck = cache_key(voice_id, speed, vol, text)
     cache_file = cache_dir / f"{ck}.mp3"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -161,7 +162,7 @@ def synth_one(
         "model": MODEL,
         "text": text,
         "stream": False,
-        "voice_setting": {"voice_id": voice_id, "speed": speed, "vol": 1.0, "pitch": 0},
+        "voice_setting": {"voice_id": voice_id, "speed": speed, "vol": vol, "pitch": 0},
         "audio_setting": {
             "sample_rate": SAMPLE_RATE,
             "bitrate": BITRATE,
@@ -329,6 +330,10 @@ def main() -> int:
     parser.add_argument("--speed-stem", type=float, default=DEFAULT_SPEED_STEM)
     parser.add_argument("--speed-answer", type=float, default=DEFAULT_SPEED_ANSWER)
     parser.add_argument("--speed-punchline", type=float, default=DEFAULT_SPEED_PUNCHLINE)
+    parser.add_argument(
+        "--voice-vol", type=float, default=1.0,
+        help="MiniMax vol 增益（0.1~10）；克隆音色偏响时调低对齐公共音色（默认 1.0）",
+    )
     args = parser.parse_args()
 
     # 真实缺省值：--voice-punchline 缺省回落到 --voice-stem
@@ -361,7 +366,8 @@ def main() -> int:
     print(f"题库：{data_path.relative_to(project_root_path)}")
     print(f"系列目录：{series_out_dir.relative_to(project_root_path)}")
     print(f"音色：题干={args.voice_stem} / 答案={args.voice_answer} / 真相={args.voice_punchline}")
-    print(f"语速：题干={args.speed_stem} / 答案={args.speed_answer} / 真相={args.speed_punchline}\n")
+    print(f"语速：题干={args.speed_stem} / 答案={args.speed_answer} / 真相={args.speed_punchline}")
+    print(f"音量：vol={args.voice_vol}\n")
 
     # 把 CLI 参数包装成 build_segments 期望的题库 tts 结构（不写回原题库）；
     # textOverrides（读音审校覆盖）来自题库本身，必须原样带过去，否则会被这里清掉。
@@ -398,7 +404,7 @@ def main() -> int:
         try:
             out, cached = synth_one(
                 api_key, seg["text"], seg["voice"], seg["speed"],
-                mp3_path, cache_dir,
+                mp3_path, cache_dir, args.voice_vol,
             )
         except Exception as e:
             print(f"[{i}/{len(segments)}] {seg['qid']}-{seg['segment']} 失败：{e}", file=sys.stderr)

@@ -35,11 +35,15 @@ DEFAULT_COLORS = {
     "王阳明": (232, 201, 122), # 淡金
     "孔子": (127, 181, 184),   # 淡青
 }
-FONT_PATH = "/System/Library/Fonts/STHeiti Medium.ttc"
-FONT_SIZE = 58
+FONT_PATH = "assets/fonts/仓耳竹言体.ttf"
+FONT_SIZE = 78          # 字幕字号（规则 78px）
+FONT_SIZE_MIN = 48      # 长句自动缩小下限
+SUBTITLE_CY = 1190      # 字幕垂直中心（62% 高度，1080×1920）
+SUBTITLE_COLOR = (255, 220, 0)   # 黄
+STROKE_COLOR = (0, 0, 0)         # 黑描边
+MAX_SHORT = 14          # 单短句超 14 字硬切
 W, H = 1080, 1920
 MARGIN_X = 60
-SUBTITLE_TOP = 1460
 # 响度标准化（EBU R128）：不用拍脑袋的音量系数，直接锁 LUFS 目标，每期自动正确
 VOICE_LUFS = -14   # 人声目标响度（流媒体标准偏上限，中老年友好）
 BGM_LUFS = -34     # BGM 目标响度（恒比人声低 20dB，只垫氛围）
@@ -80,40 +84,38 @@ def fullscreen(path, size):
     return img.crop((left, top, left + w, top + h))
 
 
-def wrap_text(text, font, max_width):
-    lines, cur = [], ""
-    for ch in text:
-        if font.getbbox(cur + ch)[2] <= max_width:
-            cur += ch
-        else:
-            lines.append(cur)
-            cur = ch
-    if cur:
-        lines.append(cur)
-    return lines
+_PUNCT_CHARS = "，。？！、；：""''（）《》【】…·—"
 
 
-def draw_subtitle(img, color, text):
-    max_height = H - SUBTITLE_TOP - 40  # 字幕可用高度（底部留 40px 边距）
+def split_short(text):
+    """去标点 + 按标点切自然短句，单句超 14 字硬切。返回短句列表。"""
+    for ch in _PUNCT_CHARS:
+        text = text.replace(ch, "|")
+    parts = [p.strip() for p in text.split("|") if p.strip()]
+    shorts = []
+    for p in parts:
+        while len(p) > MAX_SHORT:
+            shorts.append(p[:MAX_SHORT])
+            p = p[MAX_SHORT:]
+        if p:
+            shorts.append(p)
+    return shorts if shorts else [text]
+
+
+def draw_subtitle(img, text):
+    """单行滚动字幕：黄字黑描边、垂直中心 62%、78px 长句缩到 48px、水平居中。"""
     font_size = FONT_SIZE
     font = ImageFont.truetype(FONT_PATH, font_size)
-    lines = wrap_text(text, font, W - 2 * MARGIN_X)
-    # 超长文本自动缩字号，保证完整显示在字幕区内
-    while font_size > 32 and (font_size + 16) * len(lines) > max_height:
+    max_w = W - 2 * MARGIN_X
+    while font_size > FONT_SIZE_MIN and font.getbbox(text)[2] > max_w:
         font_size -= 4
         font = ImageFont.truetype(FONT_PATH, font_size)
-        lines = wrap_text(text, font, W - 2 * MARGIN_X)
-    line_h = font_size + 16
-    total_h = line_h * len(lines)
-    y = SUBTITLE_TOP
-    pad = 26
-    overlay = Image.new("RGBA", (W, total_h + pad * 2), (0, 0, 0, 160))
-    img.paste(overlay, (0, y - pad), overlay)
     draw = ImageDraw.Draw(img)
-    for ln in lines:
-        w = font.getbbox(ln)[2]
-        draw.text(((W - w) // 2, y), ln, font=font, fill=color)
-        y += line_h
+    w = font.getbbox(text)[2]
+    x = (W - w) // 2
+    y = SUBTITLE_CY - font_size // 2
+    draw.text((x, y), text, font=font, fill=SUBTITLE_COLOR,
+              stroke_width=4, stroke_fill=STROKE_COLOR)
 
 
 def main():
@@ -150,16 +152,20 @@ def main():
 
     frames = []
     for i, (role, start, end, text) in enumerate(sentences):
-        img = base_map[role].copy()
-        draw_subtitle(img, colors[role], text)
-        fp = os.path.join(TMP, f"f{i:02d}.png")
-        img.save(fp)
         if i + 1 < len(sentences):
-            dur = (sentences[i + 1][1] - start) / 1000.0
+            total_ms = sentences[i + 1][1] - start
         else:
-            dur = (end - start) / 1000.0
-        frames.append((fp, dur))
-        print(f"帧 {i+1}/{len(sentences)} [{role}] {dur:.1f}s", flush=True)
+            total_ms = end - start
+        shorts = split_short(text)
+        total_chars = sum(len(s) for s in shorts) or 1
+        for s in shorts:
+            seg_ms = total_ms * len(s) / total_chars
+            img = base_map[role].copy()
+            draw_subtitle(img, s)
+            fp = os.path.join(TMP, f"f{len(frames):02d}.png")
+            img.save(fp)
+            frames.append((fp, seg_ms / 1000.0))
+    print(f"滚动字幕：{len(sentences)} 句 → {len(frames)} 个短句", flush=True)
 
     out_mp4 = os.path.join(OUT, f"{label}-成片.mp4")
     # 2026-09-17 修复（第二次）：单条 filter_complex（concat 视频 + 多输入 amix 音频 + -t）存在

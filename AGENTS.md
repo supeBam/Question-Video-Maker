@@ -6,6 +6,39 @@
 - 项目内新增或修改的设计文档、实施计划和使用说明统一使用中文。
 - 代码标识符、命令、文件路径、第三方 API 名称及必须保持原文的技术术语可以使用英文。
 
+## 文件命名规范
+
+### 数据文件
+- **题库**：`questions-YYMMDD-序号.json`
+  - 例如：`questions-241007-1.json`（使用24年，不要用26年）
+- **对话**：`dialogue-主题-序号.json`
+  - 例如：`dialogue-zhangye-01.json`
+
+### 脚本文件
+- **位置**：按功能放入子目录（`quiz/`、`dialogue/`、`utils/`）
+- **命名**：动词开头（`gen-`、`transcribe-`、`compose-`、`analyze-`）
+
+### 输出文件
+- **成片**：`{系列}-第{期数}期.mp4`
+- **封面**：`{系列}-第{期数}期-封面.png`
+
+## 工具脚本说明
+
+### 通用工具（scripts/utils/）
+- `transcribe-ref.py` - 提取视频文案（FunASR）
+- `gen-minimax-image.py` - MiniMax 生图
+- `gen-image-openlux.py` - OpenLux 生图
+- `burn-subtitles.py` - 字幕渲染工具
+- `assemble-nine-sons.py` - 龙生九子视频合成
+- `gen-h3-video.py` - H3 视频生成
+
+### 分类工具
+- **scripts/quiz/** - 题目类脚本
+- **scripts/dialogue/** - 对话类脚本
+- **scripts/analytics/** - 数据分析脚本
+- **scripts/story/** - 故事类脚本
+- **scripts/publish/** - 发布脚本
+
 ## 题目查重与分级复用（2026-09-10 修订）
 
 - 创作任何题目（选择题 / 填空题 / 诗词填字）之前，先查看 [`题库记录.md`](题库记录.md) 逐词查重——查重的目的不是「出过的永不再出」，而是**知道已用过什么角度，才能做出有增量的新角度**。重复分三级：

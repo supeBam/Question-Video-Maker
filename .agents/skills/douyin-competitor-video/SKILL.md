@@ -1,6 +1,6 @@
 ---
 name: douyin-competitor-video
-description: 扒抖音对标视频做竞品分析或提取文案。当用户发抖音/西瓜/头条视频链接、要「分析这条视频」「扒对标视频」「把视频文案/字幕拿下来」「拆解爆款文案结构」「看看这类内容值不值得做」时使用。只做数据分析（标题/点赞/评论/收藏/转发/章节要点/评论区）用 huashu-chrome 抓详情 API；要逐句文案则再走「下载视频 → whisper 本地转写 → 校正文言文错字」。适用于抖音系站点（douyin.com / iesdouyin / v.douyin 短链）。
+description: 扒抖音对标视频做竞品分析或提取文案。当用户发抖音/西瓜/头条视频链接、要「分析这条视频」「扒对标视频」「把视频文案/字幕拿下来」「拆解爆款文案结构」「看看这类内容值不值得做」时使用。只做数据分析（标题/点赞/评论/收藏/转发/章节要点/评论区）用 huashu-chrome 抓详情 API；要逐句文案则再走「下载视频 → FunASR 本地转写 → 校对错字」。适用于抖音系站点（douyin.com / iesdouyin / v.douyin 短链）。
 ---
 
 # 扒抖音对标视频（竞品分析 + 提取文案）
@@ -21,14 +21,18 @@ description: 扒抖音对标视频做竞品分析或提取文案。当用户发�
 
 1. **huashu-chrome MCP**（带用户真实登录态，抓链接 + 下载视频）。先 `mcp_load huashu-chrome`。
 2. **本地 ffmpeg**（提取音频，`brew install ffmpeg`）。
-3. **faster-whisper 虚拟环境**（转写），项目根目录执行一次：
+3. **ASR 虚拟环境**（转写），项目根目录执行一次：
 
    ```bash
    python3 -m venv .venv-asr
-   .venv-asr/bin/pip install --no-cache-dir faster-whisper
+   .venv-asr/bin/pip install --no-cache-dir funasr modelscope   # 唯一引擎 FunASR
    ```
 
+   （2026-09-30 起 whisper/faster-whisper 已全面退役删除，不再安装。）
+
    ⚠️ pip 下载慢时前台会超时，改用**后台 job** 跑这一条即可（不限时）。
+   ⚠️ FunASR 首次转写会从 ModelScope 下载权重（paraformer 约 944MB + 标点模型），
+   缓存到 `work/modelscope/`，之后纯离线。
 
 ## 三、流程 A：竞品数据分析（快）
 
@@ -56,17 +60,18 @@ description: 扒抖音对标视频做竞品分析或提取文案。当用户发�
    ffmpeg -y -v error -i <视频.mp4> -vn -ac 1 -ar 16000 <音频.wav>
    ```
 
-6. 转写（脚本已内置 `HF_HOME` 自动落到项目 `.hf-cache`，无需手动加）：
+6. 转写（**FunASR 单引擎**，脚本已内置模型缓存重定向，无需手动加环境变量）：
 
    ```bash
-   .venv-asr/bin/python .agents/skills/douyin-competitor-video/scripts/transcribe-video.py <音频.wav> small
+   # FunASR paraformer-zh（中文准 + 自动标点；生僻/多音字加 --hotword 压制同音误听）
+   .venv-asr/bin/python .agents/skills/douyin-competitor-video/scripts/transcribe-video.py <音频.wav> --hotword "杜甫,契,秣陵"
    ```
 
-   - 首次会下载模型（small 约 466MB），耐心等几分钟。
-   - 文言文/生僻字多的内容用 `medium`（更准，慢 3-5 倍）。
-7. **校对（必须）**：small/medium 对文言文、成语、生僻字常出同音错字（如「庖丁解牛」→「陶鼎解牛」、「游刃有余」→「犹然犹鱼」、「栋梁」→「冻粮」）。交付前逐句过一遍，附校对清单。
-   - **文案一律输出中文简体**：faster-whisper 默认可能输出繁体，校对时须统一转为简体（校正版用简体交付）。
-8. 输出：视频 + `ASR原始.txt/.md`（保留原始，可为繁体）+ `校正版.md`（**简体** + 分段 + 错字修正 + 角色标注）。
+   - 首次转写会下载模型（FunASR paraformer 约 944MB 存到 `work/modelscope/`），耐心等几分钟。
+   - **读音审校 / 生僻字多的内容**：务必用 `--hotword` 把高危词喂进去（如「杜甫、脉脉、契、阏、秣陵」），FunASR 会强制倾向这些词，同音误听基本被压死。
+7. **校对（仍建议，但量大幅下降）**：FunASR 精度高、内置标点恢复，转出即简体带标点；但人名/冷僻成语仍可能有个别同音字，交付前快速过一遍即可。
+   - **文案一律输出中文简体**：FunASR 默认输出简体。
+8. 输出：视频 + `ASR原始.txt/.md`（保留原始）+ `校正版.md`（**简体** + 分段 + 错字修正 + 角色标注，FunASR 版通常只需隐式核对）。
 
 ## 五、关键接口与字段速查（aweme/detail）
 
@@ -89,14 +94,14 @@ description: 扒抖音对标视频做竞品分析或提取文案。当用户发�
 3. **`network` 初次无捕获** → 必须加 `reload:true`。
 4. **`is_subtitled:0` 时别找字幕接口** → 直接下载 + ASR。
 5. **下载选 720p mp4，别选 1080p/dash** → 音频码率更高、单文件更省事。
-6. **pip 装 faster-whisper 前台超时** → 改后台 job。
-7. **HF 模型缓存默认写 `~/.cache/huggingface` 被沙箱拒绝** → 脚本已内置自动落到 `cwd/.hf-cache`。
-8. **small 模型文言文同音错字多** → 转写后必须人工校对。
-9. **`.hf-cache/`、`.venv-asr/` 要进 `.gitignore`** → 别把 466MB 模型误提交。
+6. **pip 装 ASR 依赖前台超时** → 改后台 job。
+7. **模型缓存默认写 home 下被沙箱拒绝** → 脚本已内置重定向：FunASR 落 `work/modelscope/`（含 `MODELSCOPE_CREDENTIALS_PATH`，缺了会报 `~/.modelscope` PermissionError）。
+8. **whisper 引擎已退役（2026-09-30）** → 统一 FunASR；其精度高 + `--hotword` 可压同音误听，但仍建议快速过一遍。
+9. **`work/modelscope/`、`.venv-asr/` 要进 `.gitignore`** → 别把几百 MB 模型误提交。
 
 ## 七、输出规范
 
 - 文件统一放 `out/`，命名 `ref-<主题>.mp4` / `ref-<主题>-完整文案-*.md|txt`。
 - 交付至少给：数据面结论 + 章节骨架 + 校正版文案。
-- **文案一律中文简体**：校正版文案必须简体交付（faster-whisper 默认可能输出繁体，校对环节统一转简体）。
+- **文案一律中文简体**：校正版文案必须简体交付（FunASR 默认输出简体）。
 - 提醒用户：文案仅用于研究结构/选题/话术，**不可照搬发布**（版权/搬运风险）。

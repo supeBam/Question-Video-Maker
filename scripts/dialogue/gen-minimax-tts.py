@@ -134,13 +134,14 @@ def main():
     label = data["label"]
     voices = data["voices"]
     speeds = data.get("speeds", {})  # 可选：按角色调语速，如 {"旁白": 1.15}
-    lines = [(ln["role"], ln["text"]) for ln in data["lines"]]
+    # 每句 structure：角色 / 字幕文本 / 配音文本（可选 tts 字段，缺省用 text）
+    lines = [(ln["role"], ln["text"], ln.get("tts", ln["text"])) for ln in data["lines"]]
 
     os.makedirs(TMP, exist_ok=True)
     durations = []
     hit_count = 0
-    for i, (role, text) in enumerate(lines):
-        mp3, hit = synth(api_key, voices, speeds, role, text, i)
+    for i, (role, sub_text, tts_text) in enumerate(lines):
+        mp3, hit = synth(api_key, voices, speeds, role, tts_text, i)
         hit_count += 1 if hit else 0
         wav = os.path.join(TMP, f"l{i:02d}.wav")
         run(["ffmpeg", "-y", "-v", "error", "-i", mp3, "-ac", "1", "-ar", "44100", wav])
@@ -156,7 +157,7 @@ def main():
         cur += int(d) + GAP_MS
 
     by_role = defaultdict(list)
-    for i, (role, _) in enumerate(lines):
+    for i, (role, _sub, _tts) in enumerate(lines):
         by_role[role].append(i)
     for role, idxs in by_role.items():
         segs = []

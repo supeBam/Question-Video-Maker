@@ -84,6 +84,18 @@ def fullscreen(path, size):
     return img.crop((left, top, left + w, top + h))
 
 
+def fullscreen_center(path, size):
+    """画像缩放到覆盖 size，水平+垂直都居中裁切（用于书/器物等居中主体，不裁头部）"""
+    img = Image.open(path).convert("RGB")
+    w, h = size
+    ratio = max(w / img.width, h / img.height)
+    nw, nh = int(img.width * ratio), int(img.height * ratio)
+    img = img.resize((nw, nh), Image.LANCZOS)
+    left = (nw - w) // 2
+    top = (nh - h) // 2
+    return img.crop((left, top, left + w, top + h))
+
+
 _PUNCT_CHARS = "，。？！、；：""''（）《》【】…·—"
 
 
@@ -130,6 +142,16 @@ def main():
     portraits = data.get("portraits", DEFAULT_PORTRAITS)
     colors = {r: tuple(data.get("colors", {}).get(r) or DEFAULT_COLORS.get(r, (255, 255, 255))) for r in roles}
 
+    # 每句可选的独立画面（line.img），按「角色 → 该角色第几句」建立映射
+    line_img_map = {}
+    role_counters = {}
+    for ln in data.get("lines", []):
+        r = ln["role"]
+        idx = role_counters.get(r, 0)
+        role_counters[r] = idx + 1
+        if ln.get("img"):
+            line_img_map[(r, idx)] = ln["img"]
+
     os.makedirs(TMP, exist_ok=True)
 
     # 底图：每个人物一张全屏；旁白 → 全部人物上下合并
@@ -151,16 +173,27 @@ def main():
     sentences.sort(key=lambda x: x[1])
 
     frames = []
+    sent_counters = {}
     for i, (role, start, end, text) in enumerate(sentences):
         if i + 1 < len(sentences):
             total_ms = sentences[i + 1][1] - start
         else:
             total_ms = end - start
+        # 该角色第几句（用于查 line.img 独立画面）
+        sidx = sent_counters.get(role, 0)
+        sent_counters[role] = sidx + 1
+        base = None
+        if (role, sidx) in line_img_map:
+            fimg = line_img_map[(role, sidx)]
+            if os.path.exists(fimg):
+                base = fullscreen_center(fimg, (W, H))
+        if base is None:
+            base = base_map[role]
         shorts = split_short(text)
         total_chars = sum(len(s) for s in shorts) or 1
         for s in shorts:
             seg_ms = total_ms * len(s) / total_chars
-            img = base_map[role].copy()
+            img = base.copy()
             draw_subtitle(img, s)
             fp = os.path.join(TMP, f"f{len(frames):02d}.png")
             img.save(fp)
@@ -176,15 +209,18 @@ def main():
     v_only = os.path.join(TMP, f"{label}-video-only.mp4")
     a_mix = os.path.join(TMP, f"{label}-audio-mix.wav")
 
-    # ① 纯视频
-    v_inputs = []
-    for fp, dur in frames:
-        v_inputs += ["-loop", "1", "-t", f"{dur:.3f}", "-i", fp]
-    vconcat = "".join(f"[{i}:v]" for i in range(len(frames)))
-    run(["ffmpeg", "-y", "-v", "error", *v_inputs,
-         "-filter_complex", f"{vconcat}concat=n={len(frames)}:v=1:a=0[v]",
-         "-map", "[v]", "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-         "-pix_fmt", "yuv420p", "-r", "30", v_only])
+    # ① 纯视频（concat demuxer 单输入读帧列表，避免 N 个 -loop 输入触发线程/进程上限）
+    listfile = os.path.join(TMP, f"{label}-frames.txt")
+    with open(listfile, "w", encoding="utf-8") as f:
+        for fp, dur in frames:
+            f.write(f"file '{os.path.abspath(fp)}'\n")
+            f.write(f"duration {dur:.3f}\n")
+        if frames:  # concat demuxer 需重复末帧以撑满其时长
+            f.write(f"file '{os.path.abspath(frames[-1][0])}'\n")
+    run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0",
+         "-i", listfile, "-vf", "fps=30,format=yuv420p",
+         "-c:v", "libx264", "-preset", "medium", "-crf", "20",
+         "-r", "30", "-t", f"{total_s:.3f}", v_only])
 
     # ② 音频混音（voice 全轨 + BGM，响度标准化）
     a_inputs = []

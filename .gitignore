@@ -99,3 +99,6 @@ assets/fonts/
 # 通用本地私钥文件
 *.key
 *.pem
+
+# 本地生成配音与示例渲染数据
+public/assets/tts/

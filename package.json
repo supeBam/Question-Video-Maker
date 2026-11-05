@@ -14,7 +14,8 @@
     "publish:prepare": "node scripts/publish/prepare.mjs",
     "still": "remotion still BurstQuiz out/preview.png",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test tests/*.test.mjs",
-    "upgrade": "remotion upgrade"
+    "upgrade": "remotion upgrade",
+    "demo:render": "node scripts/quiz/render-with-cover.mjs out/入门示例-第01期.mp4 --data=examples/questions-261105-1.json"
   },
   "dependencies": {
     "@remotion/cli": "4.0.507",
@@ -25,5 +26,9 @@
   "devDependencies": {
     "@types/react": "19.2.2",
     "typescript": "5.9.3"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

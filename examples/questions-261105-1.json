@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "series": "入门示例",
+    "episode": 1,
+    "episodeLabel": "第01期",
+    "hostTag": "@你的账号"
+  },
+  "timing": {
+    "fps": 30,
+    "introSeconds": 0,
+    "hookSeconds": 2,
+    "outroSeconds": 4,
+    "summarySeconds": 0,
+    "soundEffects": false,
+    "ttsWordsPerSecond": 0,
+    "perQuestion": {
+      "presentSeconds": 2,
+      "countdownSeconds": 0,
+      "revealSeconds": 2,
+      "pauseSeconds": 0.5
+    },
+    "fill": {
+      "presentSeconds": 2,
+      "countdownSeconds": 0,
+      "revealSeconds": 2,
+      "pauseSeconds": 0.5
+    }
+  },
+  "intro": {
+    "kicker": "本地演示",
+    "title": "两道常识题",
+    "subtitle": "选择题与填空题",
+    "hint": "无需 API"
+  },
+  "outro": {
+    "headline": "示例完成",
+    "scoreHints": [],
+    "cta": "试试替换题库",
+    "ctaSub": "先预览，再出片"
+  },
+  "voiceOver": {
+    "enabled": false
+  },
+  "bgm": {
+    "enabled": false,
+    "file": "",
+    "volume": 0
+  },
+  "background": {
+    "src": "assets/example-paper.svg",
+    "cloudSrc": null,
+    "drift": 0
+  },
+  "publish": {
+    "title": "两道常识题入门演示",
+    "hashtags": [
+      "知识分享"
+    ],
+    "badge": "入门演示",
+    "saveText": "本地示例",
+    "disclaimer": "教学演示内容",
+    "challenge": "选择题 + 填空题"
+  },
+  "questions": [
+    {
+      "type": "choice",
+      "id": "q1",
+      "stem": "一个小时有多少分钟？",
+      "options": [
+        "30 分钟",
+        "60 分钟",
+        "90 分钟",
+        "120 分钟"
+      ],
+      "answerIndex": 1,
+      "explanation": "1 小时等于 60 分钟。",
+      "punchline": "一小时等于六十分钟"
+    },
+    {
+      "type": "fill",
+      "id": "f1",
+      "stem": "「月亮」的一个雅称是？",
+      "hint": "两个字的雅称",
+      "answer": "望舒",
+      "explanation": "望舒是月亮的雅称之一。",
+      "punchline": "月亮也称望舒"
+    }
+  ]
+}

@@ -9,9 +9,8 @@ import { fileURLToPath } from "node:url";
  * 输入：一条成片（默认自动找同名的 .png 封面 + .txt 发布文案）
  * 输出：out/<期号>-publish.json —— 视频号 / 抖音 各自的待填字段 + 素材绝对路径 + 合规自检
  *
- * 这个脚本只做「取数 + 校验」，不碰浏览器。
- * 真正的填表由 huashu-chrome 按 .agents/skills/one-click-publish/SKILL.md 执行，
- * 「确认发布」那一下永远留给人。
+ * 这个脚本只做「取数 + 校验」，不碰浏览器，也不负责平台发布。
+ * 后续平台填写应使用当前可用且经用户授权的工作流；不要依赖已移除的历史发布 Skill。
  *
  * 用法：
  *   node scripts/publish/prepare.mjs out/成语-第17期.mp4

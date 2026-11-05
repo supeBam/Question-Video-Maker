@@ -8,7 +8,7 @@
  *   ③ 输出本周复盘摘要（台账规模 / 新增 / 未识别 / 平台分布 / 清理结果）
  *
  * 用法：
- *   node scripts/weekly-review.mjs --wechat=导入/视频号/…csv --douyin=导入/抖音/…xlsx
+ *   node scripts/analytics/weekly-review.mjs --wechat=导入/视频号/…csv --douyin=导入/抖音/…xlsx
  *   可选：--no-clean 跳过 out/ 清理；--out=… 指定台账路径（默认 docs/发布台账.md）
  *   多个同平台文件用逗号分隔。
  */
@@ -111,7 +111,7 @@ const main = () => {
   const wechatFiles = (args.wechat || "").split(",").filter(Boolean);
   const douyinFiles = (args.douyin || "").split(",").filter(Boolean);
   if (wechatFiles.length === 0 && douyinFiles.length === 0) {
-    console.error("用法：node scripts/weekly-review.mjs --wechat=导入/视频号/…csv --douyin=导入/抖音/…xlsx [--no-clean] [--out=docs/发布台账.md]");
+    console.error("用法：node scripts/analytics/weekly-review.mjs --wechat=导入/视频号/…csv --douyin=导入/抖音/…xlsx [--no-clean] [--out=docs/发布台账.md]");
     process.exit(1);
   }
 

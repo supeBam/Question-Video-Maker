@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "视频号竖屏「中国文学常识选择题」短视频 - Remotion 模板（换题库即可批量复刻）",
+  "description": "面向 Agent 工作流的多类型短视频生产项目，包含 Remotion 模板与媒体生产脚本",
   "scripts": {
     "dev": "remotion studio",
     "dev:data": "node scripts/quiz/studio-with-data.mjs",

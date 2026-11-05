@@ -4,9 +4,9 @@
 key 来源优先级：--key 参数 > 环境变量 OPENLUX_API_KEY > --key-file 文件 > 项目根 .openlux.key
 
 单张：
-    .venv-asr/bin/python scripts/gen-image-openlux.py --prompt "..." --out out/x.png
+    .venv-asr/bin/python scripts/utils/gen-image-openlux.py --prompt "..." --out out/x.png
 批量：
-    .venv-asr/bin/python scripts/gen-image-openlux.py --json out/zhangsanfeng01/images.json
+    .venv-asr/bin/python scripts/utils/gen-image-openlux.py --json out/zhangsanfeng01/images.json
 """
 import argparse
 import base64

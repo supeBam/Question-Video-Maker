@@ -91,7 +91,11 @@ Macintosh HD
 *.bak-*
 
 # 对标参考视频（大文件，勿提交；jpg/mp3/srt 等小素材照常入库）
-public/assets/参考素材/*.mp4
+public/assets/参考素材/**/*.mp4
 
 # 第三方字体（仓耳竹言体仅限个人非商用，不随仓库分发，本地放 assets/fonts/）
 assets/fonts/
+
+# 通用本地私钥文件
+*.key
+*.pem

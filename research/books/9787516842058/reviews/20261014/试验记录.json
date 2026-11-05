@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-14",
+  "production": "canzhuo-01",
+  "published_at": "2026-10-14T06:00:00+08:00",
+  "platforms": [
+    "douyin",
+    "channels_wechat"
+  ],
+  "state": "发布当日早期观察",
+  "primary_hypothesis": "具体知识与行为更早兑现能否改善前段观看",
+  "known_issues": [
+    "第一条23.214秒开始",
+    "单章一幅插画持续26至32秒"
+  ],
+  "unknowns": [
+    "视频号指标",
+    "两平台留存曲线",
+    "本条完播率",
+    "本条两秒跳出率",
+    "传播来源",
+    "商品转化"
+  ],
+  "next_priority": "优先测试具体开场，保持其他制作风格；短形式另列探索",
+  "next_due_snapshots": [
+    "2026-10-15T06:00:00+08:00",
+    "2026-10-17T06:00:00+08:00"
+  ],
+  "scheduled_automation": false
+}

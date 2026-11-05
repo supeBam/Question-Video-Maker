@@ -10,7 +10,7 @@
  *   5. 识别不出的行输出「未识别清单」到 out/，绝不猜测。
  *
  * 用法：
- *   node scripts/build-ledger.mjs --wechat=路径.csv [--douyin=路径.xlsx或csv] [--data=src/data] [--out=docs/发布台账.md]
+ *   node scripts/analytics/build-ledger.mjs --wechat=路径.csv [--douyin=路径.xlsx或csv] [--data=src/data] [--out=docs/发布台账.md]
  *   多个同平台文件用逗号分隔。
  */
 
@@ -413,7 +413,7 @@ const main = () => {
   const wechatFiles = (args.wechat || "").split(",").filter(Boolean);
   const douyinFiles = (args.douyin || "").split(",").filter(Boolean);
   if (wechatFiles.length === 0 && douyinFiles.length === 0) {
-    console.error("用法：node scripts/build-ledger.mjs --wechat=路径.csv [--douyin=路径.xlsx] [--data=src/data] [--out=docs/发布台账.md]");
+    console.error("用法：node scripts/analytics/build-ledger.mjs --wechat=路径.csv [--douyin=路径.xlsx] [--data=src/data] [--out=docs/发布台账.md]");
     process.exit(1);
   }
   try {

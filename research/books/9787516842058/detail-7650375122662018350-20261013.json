@@ -1,0 +1,36 @@
+{
+  "collected_on": "2026-10-13",
+  "source_url": "https://www.douyin.com/video/7650375122662018350",
+  "video_id": "7650375122662018350",
+  "title": "为什么我们总是在饭局上推推搡搡、吃得不踏实，甚至因为一个不经意的动作就被全村孤立？这些让你感到累和拧巴的“老规矩”，底层逻辑到底是什么？《一看就上瘾的中国文化1000问》撕开了传统习俗的温情面纱，带你揭露老规矩背后藏着的“怕”与“盼”，让你在看穿身边活人的同时，多一份少碰壁的生存智慧。#一看就上瘾的中国文化1000问 #老规矩  #读书分享  #人情世故  #生存指南",
+  "create_time": 1781241771,
+  "duration_ms": 781748,
+  "author": {
+    "name": "知行解读",
+    "follower_count": 2447
+  },
+  "chapters": null,
+  "has_anchor": true,
+  "anchor_type": 3,
+  "book_isbn_verified": false,
+  "observed_metrics": {
+    "likes": 15,
+    "comments": 1,
+    "collects": 8,
+    "shares": 3,
+    "source": "抖音网页详情响应，页面正文同时展示 15、1、8、3。"
+  },
+  "unavailable_metrics": {
+    "views": null,
+    "completion_rate": null,
+    "product_clicks": null,
+    "orders": null
+  },
+  "quality_notes": [
+    "接口 play_count=0，与其他字段有互动的组合不能证明真实零播放，分析层置为空。",
+    "anchor_info 存在且 type=3；尚未核实锚点内容，不据此断言挂书商品。",
+    "has_subtitle 缺失；chapters 为 null，不据此认定没有字幕或章节。",
+    "本次未转写、未完整观看、未分析评论正文、未核实成交。",
+    "只核实标题提到书名，没有核实 ISBN。"
+  ]
+}

@@ -9,9 +9,9 @@
     # 看有哪些期可以当模板
     .venv-asr/bin/python scripts/utils/new-hypit-production.py --list
 
-    # 从《神兽雌雄》开一期新的
+    # 从《一匹马·六个成语》开一期新的
     .venv-asr/bin/python scripts/utils/new-hypit-production.py \
-        --from shenshou-01 --name longyan-01 --label "龙眼·六个成语"
+        --from yifu-02 --name yideng-01 --label "一盏灯·六个成语"
 
 之后只需填两个文件：productions/<name>/narration.json 与 shots.json。
 完整说明见 work/hypit-yifu/README.md。

@@ -126,9 +126,12 @@ def synth(api_key, voices, speeds, role, text, idx):
 def main():
     api_key = get_api_key()
     data_path = DEFAULT_DATA
+    gap_ms = GAP_MS
     for a in sys.argv[1:]:
         if a.startswith("--data="):
             data_path = a[len("--data="):]
+        elif a.startswith("--gap-ms="):
+            gap_ms = int(a[len("--gap-ms="):])
 
     data = load_data(data_path)
     label = data["label"]
@@ -154,7 +157,7 @@ def main():
     cur = 0
     for d in durations:
         timeline.append((cur, cur + int(d)))
-        cur += int(d) + GAP_MS
+        cur += int(d) + gap_ms
 
     by_role = defaultdict(list)
     for i, (role, _sub, _tts) in enumerate(lines):

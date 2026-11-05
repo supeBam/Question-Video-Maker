@@ -5,12 +5,12 @@
 提取结构化数据，输出 docs/数据分析/看板-data.json 供看板（看板.html）导入。
 
 用法：
-    python3 scripts/extract-dashboard-data.py --organize    # 自动识别+改名+归位（用户只把文件放进 导入/ 即可）
-    python3 scripts/extract-dashboard-data.py               # 生成 看板-data.json
-    python3 scripts/extract-dashboard-data.py --sync-seed   # 生成 JSON 并同步 看板.html 内嵌基线
-    python3 scripts/extract-dashboard-data.py --to-csv      # 抖音单条视频 xlsx → out/ 下 UTF-8 CSV
+    python3 scripts/analytics/extract-dashboard-data.py --organize    # 自动识别+改名+归位（用户只把文件放进 导入/ 即可）
+    python3 scripts/analytics/extract-dashboard-data.py               # 生成 看板-data.json
+    python3 scripts/analytics/extract-dashboard-data.py --sync-seed   # 生成 JSON 并同步 看板.html 内嵌基线
+    python3 scripts/analytics/extract-dashboard-data.py --to-csv      # 抖音单条视频 xlsx → out/ 下 UTF-8 CSV
                                                             # （macOS 无 Excel COM，供 build-ledger.mjs 使用）
-规则（与 docs/数据分析/README.md 对齐）：
+规则（期号匹配方式与发布台账对齐）：
 - 同一颗粒度目录下取「导出日」最新的文件（文件名第 2 段）。
 - 同一条视频出现多份快照时，取导出日最新的那份（由看板导入合并时处理）。
 - 期号/主题：按「平台 + 发布日期 + 发布时间」匹配发布台账；匹配不到再尝试

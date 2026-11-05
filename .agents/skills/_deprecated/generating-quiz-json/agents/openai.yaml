@@ -1,4 +1,0 @@
-interface:
-  display_name: "生成题库 JSON"
-  short_description: "根据要求生成并校验可渲染的题库 JSON 文件"
-  default_prompt: "使用 $generating-quiz-json 根据我的主题和要求生成可直接渲染的题库 JSON。"

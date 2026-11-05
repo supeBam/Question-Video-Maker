@@ -1,0 +1,265 @@
+{
+  "target_isbn": "9787516842058",
+  "collected_at_utc": "2026-10-13 08:07:30 UTC",
+  "metric_source": "抖音网页详情实际响应，点赞、评论、收藏、分享与页面展示对照",
+  "records": [
+    {
+      "id": "7641485405992291618",
+      "url": "https://www.douyin.com/video/7641485405992291618",
+      "title": "一座桥，能让全世界的工程师闭嘴，它就是我门赵州桥。#历史故事 #语文 #赵州桥#中国式家庭教育 #给孩子一本好书 #中国文化1000问",
+      "create_time": 1779171971,
+      "duration_ms": 495771,
+      "author": {
+        "name": "谈谈古今006",
+        "follower_count": 87687,
+        "profile_url": "https://www.douyin.com/user/MS4wLjABAAAA5lAt1-zU9wxuZPFRAg9pfrPSHMrBXgYLgWwSKe2fLOmBYcZDM7qIsrdmKbJ9Vfbs"
+      },
+      "metrics": {
+        "likes": 103659,
+        "comments": 4550,
+        "collects": 13345,
+        "shares": 5075,
+        "views": null
+      },
+      "products": [],
+      "chapters": null,
+      "book_isbn_verified": false,
+      "sales_verified": false,
+      "collected_at_utc": "2026-10-13 08:07:30 UTC",
+      "group": "重点研究候选",
+      "priority": 3,
+      "reason": "熟悉课文中的建筑形成具体问题，公开互动较高，适合研究建筑视觉、知识叙事与图书推荐的衔接。",
+      "visual_observation": "抽查为桥梁俯拍画面；页面标注AI生成，素材来源及全片形式未核实。",
+      "comment_observation": "可见课本记忆、工匠认同和对重修情况的质疑；平台章节摘要提到结尾推荐中国文化一千问。",
+      "limits": [
+        "章节为平台摘要，只作定位线索；尚未完成逐句转写。",
+        "标题和工程能力相关夸张说法不可作为史实依据。",
+        "未获取商品锚点，未核实同ISBN及成交。"
+      ],
+      "review_status": "初筛，已核互动、抽查画面与可见评论；未完成全片转写和镜头拆解"
+    },
+    {
+      "id": "7662274338619542834",
+      "url": "https://www.douyin.com/video/7662274338619542834",
+      "title": "三餐日常里，藏着一个孩子真正的教养 老一辈传下来的餐桌礼仪，藏着一户人家独有的家风底蕴\n#中国文化1000问 #家教 #饭桌礼仪 #传统美德 #教养",
+      "create_time": 1784012272,
+      "duration_ms": 271303,
+      "author": {
+        "name": "清风闲叙",
+        "follower_count": 40484,
+        "profile_url": "https://www.douyin.com/user/MS4wLjABAAAAeqB0K6136y6d_kahbjIH7N2cdBlSB6e64wK_Y9yTRD_xsCw9fpNJLaU-S-wZVews"
+      },
+      "metrics": {
+        "likes": 122970,
+        "comments": 4014,
+        "collects": 98010,
+        "shares": 225843,
+        "views": null
+      },
+      "products": [
+        {
+          "title": "中国文化1000问 古典觅今意国学寻人生 领略千年文化魅力！",
+          "price_fen": 3980,
+          "sales_display_value": 54,
+          "sales_scope": "商品字段，无法归因单条视频",
+          "product_id": "3824971653520162924",
+          "promotion_id": "3824974866155700409"
+        }
+      ],
+      "chapters": null,
+      "book_isbn_verified": false,
+      "sales_verified": false,
+      "collected_at_utc": "2026-10-13 08:07:30 UTC",
+      "group": "重点研究候选",
+      "priority": 1,
+      "reason": "高收藏、高分享；公开页面标注 AI 生成；商品锚点指向中国文化1000问且显示39.8元，适合优先研究文化知识与家教场景怎样连接图书。",
+      "visual_observation": "抽查为竖屏插画式画面；页面标注内容由AI生成。",
+      "comment_observation": "可见评论包括童年家教记忆、补充地方习惯、支持教育孩子，以及反对用规矩评判人品的意见；未据此认定购买。",
+      "limits": [
+        "同ISBN未核实；商品详情页要求进入抖音，未继续绕过。",
+        "商品sales=54的统计范围不明，不能当作这条视频售出54单。",
+        "高分享与高收藏的成因尚未完成转写验证。"
+      ],
+      "review_status": "已取得完整视频并转写；按章节抽帧及关键字幕校对，加入同账号完整对照。研究稿有两处短语待核。",
+      "deep_analysis": {
+        "path": "cases/7662274338619542834/拆解报告.md",
+        "classification": "高互动文化内容，挂书，转化未验证",
+        "findings": [
+          "完整台本没有书名或明确购书CTA",
+          "抽帧未见目标书商品展示",
+          "普通样本的文案结构高度相近，不能确认此结构导致起量"
+        ],
+        "book_isbn_verified": false,
+        "video_sales_verified": false
+      }
+    },
+    {
+      "id": "7501160259684257062",
+      "url": "https://www.douyin.com/video/7501160259684257062",
+      "title": "中国文化1000问，一本囊括了中国文化常识的百科全书， #好书推荐 #智慧人生 #百科知识 #家长必读 #干货分享",
+      "create_time": 1746607800,
+      "duration_ms": 167719,
+      "author": {
+        "name": "萌姐说智慧",
+        "follower_count": 152869,
+        "profile_url": "https://www.douyin.com/user/MS4wLjABAAAAsXbzw2bxZojxLLCjJFloqbcK8nrAG7V6DTJPNqtmav-LCcSh5pn6UfqM8PsZIsyM"
+      },
+      "metrics": {
+        "likes": 73156,
+        "comments": 2369,
+        "collects": 47666,
+        "shares": 38913,
+        "views": null
+      },
+      "products": [],
+      "chapters": null,
+      "book_isbn_verified": false,
+      "sales_verified": false,
+      "collected_at_utc": "2026-10-13 08:07:30 UTC",
+      "group": "辅助研究候选",
+      "priority": 5,
+      "reason": "2分48秒文化常识讲解有较高收藏与分享，画面直接展示书，适合研究具体问题怎样承接图书。",
+      "visual_observation": "抽查为真人讲解形式，桌面有打开的书籍与封面。",
+      "comment_observation": "可见大量地域认同及对人物籍贯、民族数量的纠错，不是清晰的购买证据。",
+      "limits": [
+        "发布时间2025-05-07，作品年龄较长，不能与近期条目横向比总量。",
+        "书籍版本待核实；未获取当前商品锚点。",
+        "真人表达的信任作用与内容结构不能混为同一变量。"
+      ],
+      "review_status": "初筛，已核互动、抽查画面与可见评论；未完成全片转写和镜头拆解"
+    },
+    {
+      "id": "7596246879210392878",
+      "url": "https://www.douyin.com/video/7596246879210392878",
+      "title": "大语文时代，知识面非常灵活，一定要帮助孩子多积累这些文化常识 #文学常识 #中华文化",
+      "create_time": 1768705859,
+      "duration_ms": 182345,
+      "author": {
+        "name": "我们的林姨",
+        "follower_count": 2513233,
+        "profile_url": "https://www.douyin.com/user/MS4wLjABAAAAEDweMHSmO6oZBiWDDxAakSZ-jCBqhlPkVyp3PJYFRo-i3CXXJ67slCIs5Mg_a8RR"
+      },
+      "metrics": {
+        "likes": 105398,
+        "comments": 202,
+        "collects": 39508,
+        "shares": 15543,
+        "views": null
+      },
+      "products": [
+        {
+          "title": "漫画中国文化百科常识1000问 AI秒懂数理化 冷知识 文理知识积累",
+          "price_fen": 3980,
+          "sales_display_value": 127484,
+          "sales_scope": "未知，不归因到单条视频",
+          "product_id": "3797405844769996911",
+          "promotion_id": "3797410277075583473"
+        }
+      ],
+      "chapters": [
+        {
+          "desc": "引言",
+          "detail": "",
+          "timestamp": 0
+        },
+        {
+          "desc": "云南的名称由来",
+          "detail": "云南的云是指云岭山脉，其北部延伸到四川、西藏地区，历史上未形成以云岭之北为核心的统一行政区。",
+          "timestamp": 46000
+        },
+        {
+          "desc": "长江与黄河名称的由来",
+          "detail": "长江是江，黄河是河，这是百科常识，中高考可能会考。",
+          "timestamp": 76000
+        },
+        {
+          "desc": "推荐书籍",
+          "detail": "推荐漫画版《中国文化1000问》，涵盖文学、历史、民俗文化九大板块，适合小学、初中、高中学生。",
+          "timestamp": 104000
+        }
+      ],
+      "book_isbn_verified": false,
+      "sales_verified": false,
+      "collected_at_utc": "2026-10-13 08:07:30 UTC",
+      "group": "辅助研究候选",
+      "priority": 4,
+      "reason": "相关文化问题连接家长阅读场景，挂有漫画版文化常识书，可研究知识展示到荐书的过程。",
+      "visual_observation": "抽查为真人讲解形式、黑板背景、字幕。",
+      "comment_observation": "可见地名追问、术语纠错、声称已收到书的评论及阅读体验反馈；评论不能验证真实购买。",
+      "limits": [
+        "明确是漫画版商品，不作为目标ISBN同书案例。",
+        "账号约251万粉丝，真人形象与既有受众难以直接迁移。",
+        "商品累计销量字段不归因这条视频。"
+      ],
+      "review_status": "初筛，已核互动、抽查画面与可见评论；未完成全片转写和镜头拆解"
+    },
+    {
+      "id": "7636588611026732731",
+      "url": "https://www.douyin.com/video/7636588611026732731",
+      "title": "在海拔两千两百多米的万丈悬崖之上，三座金碧辉煌的宫殿，孤傲地矗立在云海之中。每当大雪封山，或者云海翻腾的时候，那里简直就不像人间，活脱脱就是天庭的凌霄宝殿。#王立群读史记#老君山#历史文化#中国文化1000问#知识分享",
+      "create_time": 1778031842,
+      "duration_ms": 665367,
+      "author": {
+        "name": "史韵长谈",
+        "follower_count": 25373,
+        "profile_url": "https://www.douyin.com/user/MS4wLjABAAAAPPKAV2b0gUfeII15K7LPAdAF-VWhwifIXHqnFktWEYDuEYQocKwvgXgnmasaQF4-"
+      },
+      "metrics": {
+        "likes": 34567,
+        "comments": 869,
+        "collects": 7803,
+        "shares": 2461,
+        "views": null
+      },
+      "products": [],
+      "chapters": null,
+      "book_isbn_verified": false,
+      "sales_verified": false,
+      "collected_at_utc": "2026-10-13 08:07:30 UTC",
+      "group": "反例记录",
+      "priority": null,
+      "reason": "高互动但可见评论集中质疑将现代金顶描述为古建。保留供事实风险与视觉展示研究，不作为正向文案依据。",
+      "visual_observation": "抽查为雪山金顶画面、两处字幕；作者声明AI生成。",
+      "comment_observation": "多条可见评论指出近现代建设或重建；这些反馈构成核查线索，具体历史仍需权威资料验证。",
+      "limits": [
+        "未完成独立史实核查，不把评论意见直接判为事实。",
+        "未核实挂书商品或成交。"
+      ],
+      "review_status": "初筛，已核互动、抽查画面与可见评论；未完成全片转写和镜头拆解"
+    },
+    {
+      "id": "7637171661065735478",
+      "url": "https://www.douyin.com/video/7637171661065735478",
+      "title": "你知道门口为什么放一对石狮子吗？#中华文化1000问#史记#历史#王立群读史记#图书#中国传统文化",
+      "create_time": 1778212800,
+      "duration_ms": 323548,
+      "author": {
+        "name": "王老讲史记",
+        "follower_count": 10884,
+        "profile_url": "https://www.douyin.com/user/MS4wLjABAAAAv5GlPrfRJn4mCI9rB29-jPa8o2usvGgBxxZn4_54OhLWlGOCHcbE41T44Xu6xWJ6"
+      },
+      "metrics": {
+        "likes": 21580,
+        "comments": 1459,
+        "collects": 14047,
+        "shares": 6923,
+        "views": null
+      },
+      "products": [],
+      "chapters": null,
+      "book_isbn_verified": false,
+      "sales_verified": false,
+      "collected_at_utc": "2026-10-13 08:07:30 UTC",
+      "group": "重点研究候选",
+      "priority": 2,
+      "reason": "从日常可见物件提出具体文化问题，AI画面与口播产线较接近，公开收藏和分享有研究价值。",
+      "visual_observation": "抽查为石狮与中式门楼的插画，单句字幕；作者声明AI生成。",
+      "comment_observation": "可见多人指出面对大门与背对大门的左右方向混淆；另有狮子来历、陵园摆放等追问。",
+      "limits": [
+        "只能学习选题、提问与表现方式；方向等事实需重新核验。",
+        "未获取商品锚点，不能确认当前挂书或同ISBN。"
+      ],
+      "review_status": "初筛，已核互动、抽查画面与可见评论；未完成全片转写和镜头拆解"
+    }
+  ]
+}

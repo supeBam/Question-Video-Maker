@@ -1,0 +1,161 @@
+{
+  "target_isbn": "9787516842058",
+  "records": [
+    {
+      "role": "main",
+      "video_id": "7662274338619542834",
+      "url": "https://www.douyin.com/video/7662274338619542834",
+      "title": "三餐日常里，藏着一个孩子真正的教养 老一辈传下来的餐桌礼仪，藏着一户人家独有的家风底蕴\n#中国文化1000问 #家教 #饭桌礼仪 #传统美德 #教养",
+      "publish_unix": 1784012272,
+      "duration_ms": 271303,
+      "author": "清风闲叙",
+      "metrics": {
+        "likes": 122974,
+        "comments": 4014,
+        "collects": 98008,
+        "shares": 225843,
+        "views": null
+      },
+      "products": [
+        {
+          "title": "中国文化1000问 古典觅今意国学寻人生 领略千年文化魅力！",
+          "price_fen": 3980,
+          "sales_display": 54,
+          "sales_scope": "未知，不归因本片",
+          "product_id": "3824971653520162924"
+        }
+      ],
+      "book_isbn_verified": false,
+      "video_sales_verified": false,
+      "comments_sample": {
+        "total": 4014,
+        "has_more": 1,
+        "cursor": 15,
+        "comments": [
+          {
+            "text": "说的非常好，值得推荐。",
+            "likes": 116,
+            "reply_count": 1,
+            "create_time": 1784091389
+          },
+          {
+            "text": "十几岁跟大人出去坐席，父亲嘱咐别管多想吃的那道菜上来，别人不动筷你就不能动那个菜，现在60岁了，还记忆犹新",
+            "likes": 10,
+            "reply_count": 1,
+            "create_time": 1784092680
+          },
+          {
+            "text": "我婆婆就爱翻菜，叫她拿个勺去弄，还不能说，说了还说你别吃我吃了有毒[捂脸]",
+            "likes": 1,
+            "reply_count": 2,
+            "create_time": 1784079282
+          },
+          {
+            "text": "端碗拿筷：龙含珠，凤点头",
+            "likes": 1,
+            "reply_count": 0,
+            "create_time": 1784431504
+          },
+          {
+            "text": "确实好用，值得推荐[赞][赞][赞]",
+            "likes": 0,
+            "reply_count": 0,
+            "create_time": 1789682623
+          },
+          {
+            "text": "夹菜不过河，竟然有人不懂[捂脸]",
+            "likes": 1,
+            "reply_count": 0,
+            "create_time": 1784421917
+          },
+          {
+            "text": "那到底大的谁吃？总得有人先动筷吧[捂脸]",
+            "likes": 2,
+            "reply_count": 1,
+            "create_time": 1784433406
+          },
+          {
+            "text": "不要再给大好中华子孙后代上枷锁了！   有些人吃相好看！  背后确做着最龌龊的事！  五胡乱华  八国联军进北京！日本人……  不还是逼最无辜的老百姓……",
+            "likes": 2,
+            "reply_count": 0,
+            "create_time": 1784092970
+          },
+          {
+            "text": "[赞][赞][赞][赞][赞]教育孩子太好了。",
+            "likes": 13,
+            "reply_count": 1,
+            "create_time": 1784079948
+          },
+          {
+            "text": "老祖宗留下的话，到了八零后，九零后，再往后，就沒了，我们小时候，家里来人，大人不吃完饭，孩子们不上桌。现在是孩子们吃完，大人才能上桌，饭菜扒拉的到处都是，你要看不惯站出来说，大人孩子，一起跟你嚷。",
+            "likes": 10,
+            "reply_count": 1,
+            "create_time": 1784128346
+          }
+        ],
+        "scope": "页面实际加载的一页主评论，不是全量，不含全部回复"
+      },
+      "collected_at_utc": "2026-10-13 09:39:33 UTC"
+    },
+    {
+      "role": "control",
+      "video_id": "7680134834886282559",
+      "url": "https://www.douyin.com/video/7680134834886282559",
+      "title": "一顿饭，就能看出孩子有没有家教 \n#家庭教育  #餐桌礼仪  #孩子教养  #育儿",
+      "publish_unix": 1788170742,
+      "duration_ms": 275181,
+      "author": "清风闲叙",
+      "metrics": {
+        "likes": 25,
+        "comments": 4,
+        "collects": 11,
+        "shares": 9,
+        "views": null
+      },
+      "products": [
+        {
+          "title": "中国人的规矩正版书籍精装升级版文化礼仪家教为人处世人情世故",
+          "price_fen": 3980,
+          "sales_display": 48444,
+          "sales_scope": "未知，不归因本片",
+          "product_id": "3731674312449589580"
+        }
+      ],
+      "book_isbn_verified": false,
+      "video_sales_verified": false,
+      "comments_sample": {
+        "total": 4,
+        "has_more": 0,
+        "cursor": 5,
+        "comments": [
+          {
+            "text": "",
+            "likes": 0,
+            "reply_count": 0,
+            "create_time": 1788222524
+          },
+          {
+            "text": "",
+            "likes": 0,
+            "reply_count": 0,
+            "create_time": 1788222575
+          },
+          {
+            "text": "",
+            "likes": 0,
+            "reply_count": 0,
+            "create_time": 1788222538
+          },
+          {
+            "text": "",
+            "likes": 0,
+            "reply_count": 0,
+            "create_time": 1788222478
+          }
+        ],
+        "scope": "页面实际加载的一页主评论，不是全量，不含全部回复"
+      },
+      "collected_at_utc": "2026-10-13 09:39:33 UTC"
+    }
+  ]
+}

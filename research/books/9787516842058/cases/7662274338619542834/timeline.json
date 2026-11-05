@@ -1,0 +1,105 @@
+{
+  "speech_timing_method": "FunASR逐字时间戳；语义章节边界约值，镜头边界来自实际视频检测",
+  "speech_blocks": [
+    {
+      "start_s": 0,
+      "end_s": 38.91,
+      "topic": "开场与五条清单承诺",
+      "function": "丢脸提问→他人判断→家长责任→明确数量",
+      "visual": "多人餐桌插画，前段有两行黄色主题字"
+    },
+    {
+      "start_s": 38.91,
+      "end_s": 93.93,
+      "topic": "坐相",
+      "function": "具体动作→正确与错误姿态→他人眼光",
+      "visual": "单人扶碗"
+    },
+    {
+      "start_s": 93.93,
+      "end_s": 131.16,
+      "topic": "端碗",
+      "function": "动作解释→比喻与贬低性对比→处世评价",
+      "visual": "孩子端碗近景"
+    },
+    {
+      "start_s": 131.16,
+      "end_s": 167.62,
+      "topic": "夹菜越界",
+      "function": "边界规则→社交关系后果",
+      "visual": "多人共享餐桌"
+    },
+    {
+      "start_s": 167.62,
+      "end_s": 204.82,
+      "topic": "翻拣菜",
+      "function": "可见动作→他人感受→人格评判",
+      "visual": "夹肉特写"
+    },
+    {
+      "start_s": 204.82,
+      "end_s": 242.92,
+      "topic": "竖插筷子",
+      "function": "禁忌解释→家长提醒责任",
+      "visual": "竖插筷子的饭碗，末段切父子画面"
+    },
+    {
+      "start_s": 242.92,
+      "end_s": 271.302,
+      "topic": "结尾",
+      "function": "清单自测→家教施压收口；无明确荐书CTA",
+      "visual": "父子读书插画，不是目标书商品展示"
+    }
+  ],
+  "visual_sections": [
+    {
+      "index": 1,
+      "start_s": 0,
+      "end_s": 36.3,
+      "duration_s": 36.3,
+      "method": "ffmpeg场景差异检测并对照全片抽帧确认章节插画变化"
+    },
+    {
+      "index": 2,
+      "start_s": 36.3,
+      "end_s": 90.566667,
+      "duration_s": 54.267,
+      "method": "ffmpeg场景差异检测并对照全片抽帧确认章节插画变化"
+    },
+    {
+      "index": 3,
+      "start_s": 90.566667,
+      "end_s": 127.933333,
+      "duration_s": 37.367,
+      "method": "ffmpeg场景差异检测并对照全片抽帧确认章节插画变化"
+    },
+    {
+      "index": 4,
+      "start_s": 127.933333,
+      "end_s": 164.933333,
+      "duration_s": 37,
+      "method": "ffmpeg场景差异检测并对照全片抽帧确认章节插画变化"
+    },
+    {
+      "index": 5,
+      "start_s": 164.933333,
+      "end_s": 203.133333,
+      "duration_s": 38.2,
+      "method": "ffmpeg场景差异检测并对照全片抽帧确认章节插画变化"
+    },
+    {
+      "index": 6,
+      "start_s": 203.133333,
+      "end_s": 231.9,
+      "duration_s": 28.767,
+      "method": "ffmpeg场景差异检测并对照全片抽帧确认章节插画变化"
+    },
+    {
+      "index": 7,
+      "start_s": 231.9,
+      "end_s": 271.302,
+      "duration_s": 39.402,
+      "method": "ffmpeg场景差异检测并对照全片抽帧确认章节插画变化"
+    }
+  ]
+}

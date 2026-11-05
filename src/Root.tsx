@@ -55,7 +55,8 @@ type RenderProps = {
  * 根据渲染时传入的 props.data 动态重算时长与帧率。
  * 让 render 脚本能通过 `--props`（指向一个含 data 的 JSON 文件）渲染任意题库文件，
  * 而不再把合成时长写死成默认导入的 questions.json。
- * BurstQuiz 合成强制零片头（对齐合成内组件的处理），保证元数据与画面一致。
+ * BurstQuiz 将旧字段 introSeconds 置零；钩子开场由 hookSeconds 单独控制。
+ * 与组件使用相同时间轴入口，保证元数据与画面一致。
  */
 const calcTimeline: CalculateMetadataFunction<RenderProps> = ({ props }) => {
   // 与 BurstQuiz 组件共用同一个解析入口（buildRenderTimeline）：

@@ -22,12 +22,12 @@ export type BurstQuizProps = {
 
 /**
  * 爆款快闪模板（对标「学霸都考哭了」系列提取的优势）：
- *   1. 零片头 —— 第一帧就是第一题题干 + 选项，无开场动画
- *   2. 快节奏 —— 每题约 5 秒两段式（呈现 2.2s → 揭晓 2.8s），无倒计时
+ *   1. 可选钩子开场 —— timing.hookSeconds 缺省 2 秒，设为 0 时第一帧进入第一题
+ *   2. 快节奏 —— 每题基础 6 秒（呈现 2.2s → 揭晓 2.8s → 停顿 1s），可选倒计时
  *   3. 激励角标 —— 顶部常驻「全对 = 学霸」+ 题号计数
  *   4. 收藏指令 + 免责声明 —— 底部常驻
  *   5. 短片尾 —— 3 秒结果承诺 + CTA
- * 题库 JSON 设置 timing.pacing = "burst" 即可启用本模板节奏。
+ * 当前合成始终使用快闪时间轴；保留 timing.pacing 仅为兼容旧题库。
  */
 export const BurstQuiz: React.FC<BurstQuizProps> = ({
   data,
